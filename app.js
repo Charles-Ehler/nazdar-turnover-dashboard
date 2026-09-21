@@ -348,7 +348,7 @@ function renderStory() {
   ];
   el('story').innerHTML = `<p class="kicker">The story, year to date</p><ol>` + items.map((it, i) => `<li><button type="button" data-i="${i}">${it.text}</button></li>`).join('') + `</ol><p class="caption">Click a line to see the evidence.</p>`;
   el('story').querySelectorAll('button').forEach(b => {
-    b.onclick = () => { const it = items[+b.dataset.i]; setState({ ...DEFAULT_STATE, ...(it.view || {}) }); document.querySelector(it.go).scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+    b.onclick = () => { const it = items[+b.dataset.i]; setState({ ...DEFAULT_STATE, ...(it.view || {}) }); showTab(document.querySelector(it.go).closest('.panel-tab').id, false); document.querySelector(it.go).scrollIntoView({ behavior: 'smooth', block: 'start' }); };
   });
 }
 
@@ -532,16 +532,40 @@ function renderSection6() {
   el('s6-body').innerHTML = `This dashboard uses Nazdar US manufacturing only, separations through 9/18. On that basis August is ${aug} ÷ ${hc} = ${pct(aug / hc)}, and the prior monthly high is ${full(prior.label)} at ${pct(prior.rate)}. The Hiring &amp; Retention Snapshot dated September 19 reported August at ${pct(D.meta.snapshot_reported_august_rate)} (15 terminations ÷ 155, data through 9/5, UK plant administration included) against a prior high of 4.7%. Year to date, the snapshot's 29.7% divides 46 separations by the August headcount of 155; this dashboard's ${pct(y.rate, 0)} divides ${y.seps} by the January to August average of ${num(y.avg)}. All of these are correct on their own definitions.`;
 }
 
-function setState(patch) {
-  state = { ...state, ...patch };
-  if (state.m0 > state.m1) [state.m0, state.m1] = [state.m1, state.m0];
-  el('f-cat').value = state.cat; el('f-dept').value = state.dept; el('f-tenure').value = state.tenure; el('f-m0').value = state.m0; el('f-m1').value = state.m1;
+const TABS = ['s0', 's1', 's2', 's3', 's4', 's5', 's6'];
+let tab = 's0';
+function showTab(id, scrollTop = true) {
+  if (!TABS.includes(id)) id = 's0';
+  tab = id;
+  document.querySelectorAll('.panel-tab').forEach(p => p.classList.toggle('active', p.id === id));
+  document.querySelectorAll('.tabs a').forEach(a => { if (a.dataset.tab === id) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+  Object.values(charts).forEach(c => { if (el(id).contains(c.canvas)) c.resize(); });
+  writeHash();
+  if (scrollTop) window.scrollTo({ top: 0, behavior: 'instant' });
+}
+function pagers() {
+  TABS.forEach((id, i) => {
+    const sec = el(id); let p = sec.querySelector('.pager');
+    if (!p) { p = document.createElement('nav'); p.className = 'pager'; p.setAttribute('aria-label', 'Previous and next section'); sec.appendChild(p); }
+    const name = t => document.querySelector(`.tabs a[data-tab="${t}"] span`).textContent;
+    p.innerHTML = (i > 0 ? `<a href="#tab=${TABS[i - 1]}" class="prev"><span>Previous</span>${name(TABS[i - 1])}</a>` : '') + (i < TABS.length - 1 ? `<a href="#tab=${TABS[i + 1]}" class="next"><span>Next</span>${name(TABS[i + 1])}</a>` : '');
+  });
+}
+function writeHash() {
   const q = new URLSearchParams();
+  if (tab !== 's0') q.set('tab', tab);
   if (state.cat !== 'All') q.set('cat', state.cat);
   if (state.dept !== 'All MFG') q.set('dept', state.dept);
   if (state.tenure !== 'All') q.set('tenure', state.tenure);
   if (state.m0 !== 1 || state.m1 !== DEFAULT_STATE.m1) q.set('m', `${state.m0}-${state.m1}`);
   history.replaceState(null, '', q.toString() ? '#' + q.toString() : location.pathname + location.search);
+}
+
+function setState(patch) {
+  state = { ...state, ...patch };
+  if (state.m0 > state.m1) [state.m0, state.m1] = [state.m1, state.m0];
+  el('f-cat').value = state.cat; el('f-dept').value = state.dept; el('f-tenure').value = state.tenure; el('f-m0').value = state.m0; el('f-m1').value = state.m1;
+  writeHash();
   renderAll();
 }
 
@@ -569,10 +593,20 @@ function init(data) {
   const [qm0, qm1] = (q.get('m') || '').split('-').map(Number);
   state = { ...state, ...(q.get('cat') && { cat: q.get('cat') }), ...(q.get('dept') && { dept: q.get('dept') }), ...(q.get('tenure') && { tenure: q.get('tenure') }), ...(qm0 && qm1 && { m0: qm0, m1: qm1 }) };
   renderStory();
+  pagers();
+  // The filter bar wraps at narrower widths; keep the tab rail parked just below it.
+  new ResizeObserver(() => document.documentElement.style.setProperty('--fb', document.querySelector('.filterbar').offsetHeight + 'px')).observe(document.querySelector('.filterbar'));
+  document.addEventListener('click', e => {
+    const a = e.target.closest('a[href^="#tab="]');
+    if (a) { e.preventDefault(); showTab(a.getAttribute('href').slice(5)); }
+  });
+  showTab(q.get('tab') || 's0', false);
   el('btn-print').onclick = () => {
     document.querySelectorAll('details').forEach(d => { d.open = true; });
     document.querySelectorAll('.chart-table').forEach(t => t.classList.add('open'));
-    window.print();
+    document.querySelectorAll('.panel-tab').forEach(p => p.classList.add('active'));
+    Object.values(charts).forEach(c => c.resize());
+    setTimeout(() => { window.print(); showTab(tab, false); }, 200);
   };
   el('notes').innerHTML = D.meta.notes.map(n => `<li>${esc(n)}</li>`).join('');
   el('footer-line').textContent = `As of ${D.meta.as_of}. Source: HR separations and hires log, aggregated ${D.meta.as_of}.`;

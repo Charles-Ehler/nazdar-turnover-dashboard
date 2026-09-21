@@ -17,15 +17,6 @@
   </div>
 </header>
 
-<nav class="toc wrap" aria-label="Contents">
-  <a href="#s1">Turnover by month</a>
-  <a href="#s2">New-hire retention</a>
-  <a href="#s3">Shifts and supervisors</a>
-  <a href="#s4">Employee voice</a>
-  <a href="#s5">Monthly bridge</a>
-  <a href="#s6">Basis</a>
-</nav>
-
 <div class="filterbar" role="region" aria-label="Filters">
   <div class="wrap filters">
     <label>Category
@@ -51,23 +42,34 @@
   <p id="selection" class="wrap selection" aria-live="polite"></p>
 </div>
 
-<main class="wrap">
-  <section class="kpis" id="kpis" aria-label="Key figures"></section>
-  <section class="story" id="story" aria-label="The story"></section>
+<div class="layout wrap">
+<nav class="tabs" aria-label="Sections">
+  <a href="#tab=s0" data-tab="s0"><span>Overview</span></a>
+  <a href="#tab=s1" data-tab="s1"><small>01</small><span>Turnover by month</span></a>
+  <a href="#tab=s2" data-tab="s2"><small>02</small><span>New-hire retention</span></a>
+  <a href="#tab=s3" data-tab="s3"><small>03</small><span>Shifts and supervisors</span></a>
+  <a href="#tab=s4" data-tab="s4"><small>04</small><span>Employee voice</span></a>
+  <a href="#tab=s5" data-tab="s5"><small>05</small><span>Monthly bridge</span></a>
+  <a href="#tab=s6" data-tab="s6"><small>06</small><span>Basis note</span></a>
+</nav>
+<main>
+  <section id="s0" class="panel-tab">
+    <div class="kpis" id="kpis" aria-label="Key figures"></div>
+    <div class="story" id="story" aria-label="The story"></div>
+  </section>
 
-  <section id="s1">
-    <h2>Turnover by month</h2>
+  <section id="s1" class="panel-tab">
+    <h2 data-n="01">Turnover by month</h2>
     <p class="scope">Responds to every filter above. Turnover % = separations in the month ÷ start-of-month headcount for the selected department.</p>
     <figure id="c11"></figure>
     <figure id="c12"></figure>
     <figure id="c13"></figure>
     <figure id="t14"></figure>
     <figure id="t15"></figure>
-    <a class="totop" href="#top">Back to top</a>
   </section>
 
-  <section id="s2">
-    <h2>New-hire retention by cohort</h2>
+  <section id="s2" class="panel-tab">
+    <h2 data-n="02">New-hire retention by cohort</h2>
     <p class="scope">Scope: 2026 Nazdar MFG hires. Not affected by the filter bar; use the two selectors below.</p>
     <div class="filters local">
       <label>Scope <select id="f2-scope"><option value="all">All MFG</option><option value="frontline">Packaging + Processing</option></select></label>
@@ -77,11 +79,10 @@
     <figure id="c22"></figure>
     <figure id="c23"></figure>
     <p class="caption">Retention counts a hire as retained if they are still employed N days after hire; only hires with at least N days of service by September 21, 2026 are eligible.</p>
-    <a class="totop" href="#top">Back to top</a>
   </section>
 
-  <section id="s3">
-    <h2>Departures against headcount, by shift and supervisor</h2>
+  <section id="s3" class="panel-tab">
+    <h2 data-n="03">Departures against headcount, by shift and supervisor</h2>
     <p class="scope">Scope: year to date, all categories. Only the Department filter affects this section (the reason columns in 3.2).</p>
     <figure id="t31"></figure>
     <figure id="t32"></figure>
@@ -90,30 +91,27 @@
       <summary>Show supervisor view</summary>
       <div class="details-body"></div>
     </details>
-    <a class="totop" href="#top">Back to top</a>
   </section>
 
-  <section id="s4">
-    <h2>What employees are telling us</h2>
+  <section id="s4" class="panel-tab">
+    <h2 data-n="04">What employees are telling us</h2>
     <div id="s4-body" class="panel"></div>
-    <a class="totop" href="#top">Back to top</a>
   </section>
 
-  <section id="s5">
-    <h2>Monthly bridge</h2>
+  <section id="s5" class="panel-tab">
+    <h2 data-n="05">Monthly bridge</h2>
     <p class="scope">Scope: year to date, all categories. Not affected by the filter bar. The source has no transfer records, so the last column is the gap to reconcile.</p>
     <figure id="t51a"></figure>
     <figure id="t51b"></figure>
     <figure id="c52"></figure>
-    <a class="totop" href="#top">Back to top</a>
   </section>
 
-  <section id="s6">
-    <h2>Basis note</h2>
+  <section id="s6" class="panel-tab">
+    <h2 data-n="06">Basis note</h2>
     <p id="s6-body" class="panel"></p>
-    <a class="totop" href="#top">Back to top</a>
   </section>
 </main>
+</div>
 
 <footer class="wrap">
   <ul id="notes"></ul>
