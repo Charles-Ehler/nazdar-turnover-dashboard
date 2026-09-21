@@ -39,6 +39,17 @@ const calc = {
     }
     return out;
   },
+  // Month x department x category matrix (Ed's Q1 in one view). Respects Tenure and Months, not Category or Department.
+  matrix(D, s) {
+    const depts = ['Packaging', 'Processing', 'Other MFG'];
+    const f = calc.pred(s, ['cat', 'dept', 'months']);
+    const cell = (m, dept, cat) => calc.sum(D, r => f(r) && (m == null || r.month === m) && (dept == null || r.department === dept) && (cat == null || r.category === cat));
+    const row = m => ({ label: m == null ? 'Total' : D.meta.months[m - 1], cols: depts.concat([null]).map(d => CATS.map(c => cell(m, d, c)).concat([cell(m, d, null)])), hc: m == null ? calc.avgHeadcount(D.headcount_start_of_month['Nazdar MFG'], s.m0, s.m1) : D.headcount_start_of_month['Nazdar MFG'][m - 1] });
+    const rows = []; for (let m = s.m0; m <= s.m1; m++) rows.push(row(m));
+    rows.push(row(null));
+    rows.forEach(r => { r.rate = r.hc ? r.cols[3][3] / r.hc : null; });
+    return { depts: depts.concat(['All MFG']), rows };
+  },
   ytd(D, s) {
     const seps = calc.sum(D, calc.pred(s));
     const avg = calc.avgHeadcount(calc.headcount(D, s.dept), s.m0, s.m1);
@@ -188,6 +199,16 @@ const dataLabels = {
       const fmt = ds.labelFmt || (v => v);
       const stacked = chart.options.scales?.y?.stacked && meta.type === 'bar';
       const horizontal = chart.options.indexAxis === 'y';
+      if (stacked && i === chart.data.datasets.length - 1) {
+        // total above each stack
+        meta.data.forEach((elm, j) => {
+          const total = chart.data.datasets.reduce((a, d, k) => a + (chart.getDatasetMeta(k).hidden ? 0 : (d.data[j] || 0)), 0);
+          if (!total) return;
+          const top = Math.min(...chart.data.datasets.map((d, k) => chart.getDatasetMeta(k).data[j]?.y ?? Infinity));
+          ctx.save(); ctx.font = '700 12px Campton, Arial, Helvetica, sans-serif'; ctx.fillStyle = COLORS.text; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+          ctx.fillText(fmt(total), elm.x, top - 4); ctx.restore();
+        });
+      }
       meta.data.forEach((elm, j) => {
         const v = ds.data[j];
         if (v == null || v === 0) return;
@@ -387,6 +408,18 @@ function renderSection1(s) {
     html: table(['Reason', 'Count', 'Share', 'Coded as'], r.list.map(x => [x.reason, x.n, pct(x.share), `<span class="swatch" style="background:${COLORS[x.category]}"></span>${x.category}`]).concat([['Total', r.total, '100.0%', '']]), { totalLast: true }),
     callout: `Poor Attendance + Job Abandonment: ${r.attn} of ${r.total} ${scopeR} exits (${pct(r.attnShare, 0)}).`,
   });
+
+  // 1.5 month x department matrix
+  const mx = calc.matrix(D, s);
+  const head1 = `<tr><th scope="col" rowspan="2">Month</th>${mx.depts.map(d => `<th scope="colgroup" colspan="4" class="grp">${d}</th>`).join('')}<th scope="col" rowspan="2">MFG turnover %</th></tr>`;
+  const head2 = `<tr>${mx.depts.map(() => '<th scope="col">Vol</th><th scope="col">Invol</th><th scope="col">Ret</th><th scope="col">Total</th>').join('')}</tr>`;
+  const body = mx.rows.map((r, i) => `<tr${i === mx.rows.length - 1 ? ' class="total"' : ''}><th scope="row">${r.label}</th>${r.cols.map(c => c.map((v, j) => `<td class="${j === 3 ? 'tot' : ''}">${v || (j === 3 ? 0 : '')}</td>`).join('')).join('')}<td>${r.rate == null ? na(NA_HC) : pct(r.rate)}</td></tr>`).join('');
+  const mt = mx.rows[mx.rows.length - 1].cols;
+  tableFigure('t15', {
+    takeaway: `By department: Packaging ${mt[0][3]}, Processing ${mt[1][3]}, Other MFG ${mt[2][3]}, all manufacturing ${mt[3][3]} (${mt[3][0]} voluntary, ${mt[3][1]} involuntary, ${mt[3][2]} retirements).`,
+    caption: `Every department and category by month, ${monthsLabel(s)}${s.tenure === 'All' ? '' : ', tenure ' + s.tenure}. Category and Department filters do not apply to this table. Turnover % = all MFG separations ÷ start-of-month MFG headcount.`,
+    html: `<div class="table-scroll"><table class="matrix"><thead>${head1}${head2}</thead><tbody>${body}</tbody></table></div>`,
+  });
 }
 
 function renderSection2() {
@@ -495,7 +528,8 @@ function renderSection5() {
 
 function renderSection6() {
   const aug = calc.sum(D, r => r.month === 8), hc = D.headcount_start_of_month['Nazdar MFG'][7];
-  el('s6-body').innerHTML = `This dashboard uses Nazdar US manufacturing only, separations through 9/18. On that basis August is ${aug} ÷ ${hc} = ${pct(aug / hc)}. The Hiring &amp; Retention Snapshot dated September 19 reported ${pct(D.meta.snapshot_reported_august_rate)} (15 terminations ÷ 155, data through 9/5, UK plant administration included). Both are correct on their own definitions.`;
+  const m = calc.monthly(D, DEFAULT_STATE).filter(x => x.rate != null && x.month !== 8), prior = m.reduce((a, b) => (b.rate > a.rate ? b : a)), y = calc.ytd(D, DEFAULT_STATE);
+  el('s6-body').innerHTML = `This dashboard uses Nazdar US manufacturing only, separations through 9/18. On that basis August is ${aug} ÷ ${hc} = ${pct(aug / hc)}, and the prior monthly high is ${full(prior.label)} at ${pct(prior.rate)}. The Hiring &amp; Retention Snapshot dated September 19 reported August at ${pct(D.meta.snapshot_reported_august_rate)} (15 terminations ÷ 155, data through 9/5, UK plant administration included) against a prior high of 4.7%. Year to date, the snapshot's 29.7% divides 46 separations by the August headcount of 155; this dashboard's ${pct(y.rate, 0)} divides ${y.seps} by the January to August average of ${num(y.avg)}. All of these are correct on their own definitions.`;
 }
 
 function setState(patch) {

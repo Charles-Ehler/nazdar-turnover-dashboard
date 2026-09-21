@@ -102,6 +102,9 @@ thead th { background: var(--n50); font-weight: 500; position: sticky; top: 0; }
 tbody tr:hover td, tbody tr:hover th { background: var(--n50); }
 tbody tr.total td, tbody tr.total th { font-weight: 700; border-top: 2px solid var(--text); }
 .table-scroll { overflow-x: auto; }
+.matrix th.grp { text-align: center; border-left: 1px solid var(--n200); }
+.matrix td.tot { font-weight: 500; border-right: 1px solid var(--n200); }
+.matrix td:empty::after { content: '·'; color: var(--n300); }
 .callout { background: var(--n50); border-left: 4px solid var(--red); padding: 8px 12px; margin: 8px 0; font-weight: 500; }
 .na { color: var(--muted); font-size: 13px; cursor: help; border-bottom: 1px dotted var(--muted); }
 .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 8px; vertical-align: middle; }
