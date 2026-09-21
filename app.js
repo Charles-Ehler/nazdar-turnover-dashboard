@@ -178,7 +178,7 @@ const full = m => { const [mo, yr] = String(m).split(' '); return (FULL[mo] || m
 const na = why => `<span class="na" title="${why}" aria-label="not available: ${why}">n/a</span>`;
 const NA_HC = 'No start-of-month headcount reported for this month yet';
 const NA_COHORT = 'Cohort too recent: no hires have reached this many days of service';
-const NA_DEPT = 'No headcount is reported for Other MFG';
+const NA_DEPT = 'No headcount is reported for Other MFG (Plant Admin, Warehouse, QC)';
 const cell = (v, why) => v == null ? na(why) : v;
 const WORDS = ['', '', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
 const timesWord = r => WORDS[Math.round(r)] ? `${WORDS[Math.round(r)]} times` : `${Math.round(r)} times`;
@@ -417,7 +417,7 @@ function renderSection1(s) {
 
   // 1.5 month x department matrix
   const mx = calc.matrix(D, s);
-  const head1 = `<tr><th scope="col" rowspan="2">Month</th>${mx.depts.map(d => `<th scope="colgroup" colspan="4" class="grp">${d}</th>`).join('')}<th scope="col" rowspan="2">MFG turnover %</th></tr>`;
+  const head1 = `<tr><th scope="col" rowspan="2">Month</th>${mx.depts.map(d => `<th scope="colgroup" colspan="4" class="grp">${d === 'Other MFG' ? 'Other MFG (Plant Admin, Warehouse, QC)' : d}</th>`).join('')}<th scope="col" rowspan="2">MFG turnover %</th></tr>`;
   const head2 = `<tr>${mx.depts.map(() => '<th scope="col">Vol</th><th scope="col">Invol</th><th scope="col">Ret</th><th scope="col">Total</th>').join('')}</tr>`;
   const body = mx.rows.map((r, i) => `<tr${i === mx.rows.length - 1 ? ' class="total"' : ''}><th scope="row">${r.label}</th>${r.cols.map(c => c.map((v, j) => `<td class="${j === 3 ? 'tot' : ''}">${v || (j === 3 ? 0 : '')}</td>`).join('')).join('')}<td>${r.rate == null ? na(NA_HC) : pct(r.rate)}</td></tr>`).join('');
   const mt = mx.rows[mx.rows.length - 1].cols;

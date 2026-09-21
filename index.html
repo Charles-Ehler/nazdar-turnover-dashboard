@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Manufacturing turnover: October 2025 to September 2026</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27%3E%3Cpath fill=%27%23CF102D%27 d=%27M0 0h16v12L12 16H0z%27/%3E%3C/svg%3E">
-<link rel="stylesheet" href="styles.css?v=e166a08">
+<link rel="stylesheet" href="styles.css?v=6091adf">
 </head>
 <body>
 <a id="top"></a>
@@ -26,7 +26,7 @@
     </label>
     <label>Department
       <select id="f-dept">
-        <option>All MFG</option><option>Packaging</option><option>Processing</option><option>Other MFG</option>
+        <option>All MFG</option><option>Packaging</option><option>Processing</option><option value="Other MFG">Other MFG (Plant Admin, Warehouse, QC)</option>
       </select>
     </label>
     <label>Tenure at exit
@@ -60,7 +60,7 @@
 
   <section id="s1" class="panel-tab">
     <h2 data-n="01">Turnover by month</h2>
-    <p class="scope">Responds to every filter above. Turnover % = separations in the month ÷ start-of-month headcount for the selected department.</p>
+    <p class="scope">Responds to every filter above. Turnover % = separations in the month ÷ start-of-month headcount for the selected department. "Other MFG" = Plant Administration, Warehouse MFG and Quality Control MFG, the manufacturing departments outside Packaging and Processing.</p>
     <figure id="c11"></figure>
     <figure id="c12"></figure>
     <figure id="c13"></figure>
@@ -119,7 +119,7 @@
 </footer>
 
 <script src="vendor/chart.umd.js"></script>
-<script src="data/data.js?v=e166a08"></script>
-<script src="app.js?v=e166a08"></script>
+<script src="data/data.js?v=6091adf"></script>
+<script src="app.js?v=6091adf"></script>
 </body>
 </html>
