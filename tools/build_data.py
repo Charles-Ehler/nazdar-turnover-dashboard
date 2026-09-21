@@ -192,8 +192,9 @@ def build(xlsx, as_of, history=None, start=None):
     month_cols = {}
     for r in wb["2026 Headcount"].iter_rows(values_only=True):
         for i, v in enumerate(r):
-            if isinstance(v, dt.datetime) and in_window(v):
-                month_cols[i] = idx(v)
+            # column headers are first-of-month dates used as month labels, so map by label (a fiscal period can start in the prior month)
+            if isinstance(v, dt.datetime) and f"{MON[v.month - 1]} {v.year}" in months:
+                month_cols[i] = months.index(f"{MON[v.month - 1]} {v.year}") + 1
         if r[0] in hc_names:
             for i, m in month_cols.items():
                 if isinstance(r[i], (int, float)):
@@ -347,8 +348,8 @@ def build(xlsx, as_of, history=None, start=None):
             "notes": [
                 (f"No start-of-month headcount is reported for {', '.join(no_hc)}; turnover % shows n/a there."
                  if no_hc else "Start-of-month headcount is reported for every month shown."),
-                "The Hiring & Retention Snapshot dated Sep 19 reported August at 9.7% (15 terminations ÷ 155, data through 9/5, "
-                f"UK plant administration included). On this dataset's basis August is {aug} ÷ {aug_hc} = {100 * aug / aug_hc:.1f}%. "
+                "The Hiring & Retention Snapshot dated Sep 19 reported August at 9.7% (15 terminations ÷ 155, data through the August close on 9/5, "
+                f"UK plant administration included). This dataset is US only: August is {aug} ÷ {aug_hc} = {100 * aug / aug_hc:.1f}%. "
                 "Both are correct on their own definitions.",
             ],
             "snapshot_reported_august_rate": 0.097,

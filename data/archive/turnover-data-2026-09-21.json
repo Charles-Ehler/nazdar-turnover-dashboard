@@ -3,7 +3,69 @@
   "title": "Nazdar manufacturing turnover: October 2025 to September 2026",
   "as_of": "2026-09-21",
   "window_start": "2025-10-01",
-  "basis": "Nazdar US manufacturing (Shawnee) only; separations through 2026-09-18; hires through 2026-09-21. Retirements shown as their own category.",
+  "basis": "Nazdar US manufacturing (Shawnee) only; separations through 2026-09-18; hires through 2026-09-21. Retirements shown as their own category. Months are fiscal periods (2025-09-28 to 2026-10-03), matching the monthly report.",
+  "fiscal_periods": [
+   {
+    "label": "Oct 2025",
+    "start": "2025-09-28",
+    "end": "2025-10-25"
+   },
+   {
+    "label": "Nov 2025",
+    "start": "2025-10-26",
+    "end": "2025-11-29"
+   },
+   {
+    "label": "Dec 2025",
+    "start": "2025-11-30",
+    "end": "2026-01-03"
+   },
+   {
+    "label": "Jan 2026",
+    "start": "2026-01-04",
+    "end": "2026-01-31"
+   },
+   {
+    "label": "Feb 2026",
+    "start": "2026-02-01",
+    "end": "2026-03-07"
+   },
+   {
+    "label": "Mar 2026",
+    "start": "2026-03-08",
+    "end": "2026-04-04"
+   },
+   {
+    "label": "Apr 2026",
+    "start": "2026-04-05",
+    "end": "2026-05-02"
+   },
+   {
+    "label": "May 2026",
+    "start": "2026-05-03",
+    "end": "2026-06-06"
+   },
+   {
+    "label": "Jun 2026",
+    "start": "2026-06-07",
+    "end": "2026-07-04"
+   },
+   {
+    "label": "Jul 2026",
+    "start": "2026-07-05",
+    "end": "2026-08-01"
+   },
+   {
+    "label": "Aug 2026",
+    "start": "2026-08-02",
+    "end": "2026-09-05"
+   },
+   {
+    "label": "Sep 2026",
+    "start": "2026-09-06",
+    "end": "2026-10-03"
+   }
+  ],
   "months": [
    "Oct 2025",
    "Nov 2025",
@@ -19,10 +81,10 @@
    "Sep 2026"
   ],
   "year_start_month_index": 4,
-  "months_elapsed": 11.7,
+  "months_elapsed": 11.5,
   "notes": [
-   "No start-of-month headcount is reported for Sep 2026; turnover % shows n/a for those months.",
-   "The Hiring & Retention Snapshot dated Sep 19 reported August at 9.7% (15 terminations ÷ 155, data through 9/5, UK plant administration included). On this dataset's basis August is 12 ÷ 155 = 7.7%. Both are correct on their own definitions."
+   "No start-of-month headcount is reported for Sep 2026; turnover % shows n/a there.",
+   "The Hiring & Retention Snapshot dated Sep 19 reported August at 9.7% (15 terminations ÷ 155, data through 9/5, UK plant administration included). On this dataset's basis August is 13 ÷ 155 = 8.4%. Both are correct on their own definitions."
   ],
   "snapshot_reported_august_rate": 0.097
  },
@@ -229,7 +291,7 @@
    "shift": "Day Shift",
    "category": "Involuntary",
    "tenure_bucket": "0-30 days",
-   "count": 1
+   "count": 2
   },
   {
    "month": 6,
@@ -274,15 +336,15 @@
   {
    "month": 7,
    "department": "Packaging",
-   "shift": "Day Shift",
-   "category": "Involuntary",
-   "tenure_bucket": "0-30 days",
+   "shift": "Mid-Shift",
+   "category": "Voluntary",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
-   "month": 7,
-   "department": "Packaging",
-   "shift": "Mid-Shift",
+   "month": 8,
+   "department": "Other MFG",
+   "shift": "Day Shift",
    "category": "Voluntary",
    "tenure_bucket": "Over 180 days",
    "count": 1
@@ -330,14 +392,6 @@
   {
    "month": 9,
    "department": "Other MFG",
-   "shift": "Day Shift",
-   "category": "Voluntary",
-   "tenure_bucket": "Over 180 days",
-   "count": 1
-  },
-  {
-   "month": 9,
-   "department": "Other MFG",
    "shift": "N/A",
    "category": "Involuntary",
    "tenure_bucket": "Over 180 days",
@@ -470,6 +524,14 @@
    "category": "Voluntary",
    "tenure_bucket": "0-30 days",
    "count": 2
+  },
+  {
+   "month": 11,
+   "department": "Processing",
+   "shift": "Mid-Shift",
+   "category": "Voluntary",
+   "tenure_bucket": "31-90 days",
+   "count": 1
   },
   {
    "month": 11,
@@ -534,14 +596,6 @@
    "category": "Involuntary",
    "tenure_bucket": "31-90 days",
    "count": 2
-  },
-  {
-   "month": 12,
-   "department": "Processing",
-   "shift": "Mid-Shift",
-   "category": "Voluntary",
-   "tenure_bucket": "31-90 days",
-   "count": 1
   }
  ],
  "separation_reasons": [
@@ -611,6 +665,13 @@
   {
    "month": 6,
    "department": "Packaging",
+   "reason": "Job Abandonment",
+   "category": "Involuntary",
+   "count": 1
+  },
+  {
+   "month": 6,
+   "department": "Packaging",
    "reason": "Poor Attendance",
    "category": "Involuntary",
    "count": 1
@@ -646,14 +707,14 @@
   {
    "month": 7,
    "department": "Packaging",
-   "reason": "Job Abandonment",
-   "category": "Involuntary",
+   "reason": "Personal Reasons",
+   "category": "Voluntary",
    "count": 1
   },
   {
-   "month": 7,
-   "department": "Packaging",
-   "reason": "Personal Reasons",
+   "month": 8,
+   "department": "Other MFG",
+   "reason": "Another job",
    "category": "Voluntary",
    "count": 1
   },
@@ -697,7 +758,7 @@
    "department": "Other MFG",
    "reason": "Another job",
    "category": "Voluntary",
-   "count": 2
+   "count": 1
   },
   {
    "month": 9,
@@ -800,6 +861,13 @@
   {
    "month": 11,
    "department": "Processing",
+   "reason": "Dissatisfaction with Job",
+   "category": "Voluntary",
+   "count": 1
+  },
+  {
+   "month": 11,
+   "department": "Processing",
    "reason": "Personal Reasons",
    "category": "Voluntary",
    "count": 1
@@ -858,13 +926,6 @@
    "department": "Packaging",
    "reason": "Violation of Policy",
    "category": "Involuntary",
-   "count": 1
-  },
-  {
-   "month": 12,
-   "department": "Processing",
-   "reason": "Dissatisfaction with Job",
-   "category": "Voluntary",
    "count": 1
   },
   {
@@ -931,7 +992,7 @@
   {
    "month": 6,
    "category": "Retirement",
-   "count": 1
+   "count": 2
   },
   {
    "month": 7,
@@ -941,17 +1002,17 @@
   {
    "month": 8,
    "category": "Retirement",
-   "count": 2
+   "count": 1
+  },
+  {
+   "month": 8,
+   "category": "Voluntary",
+   "count": 1
   },
   {
    "month": 9,
    "category": "Retirement",
-   "count": 1
-  },
-  {
-   "month": 9,
-   "category": "Voluntary",
-   "count": 1
+   "count": 2
   },
   {
    "month": 10,
@@ -960,11 +1021,6 @@
   },
   {
    "month": 10,
-   "category": "Retirement",
-   "count": 1
-  },
-  {
-   "month": 10,
    "category": "Voluntary",
    "count": 2
   },
@@ -976,16 +1032,11 @@
   {
    "month": 11,
    "category": "Voluntary",
-   "count": 3
+   "count": 4
   },
   {
    "month": 12,
    "category": "Retirement",
-   "count": 1
-  },
-  {
-   "month": 12,
-   "category": "Voluntary",
    "count": 1
   }
  ],
@@ -1133,6 +1184,20 @@
   {
    "hire_month": 8,
    "department_group": "Frontline",
+   "source": "Referral",
+   "hires": 1,
+   "eligible_30": 1,
+   "retained_30": 1,
+   "eligible_90": 1,
+   "retained_90": 1,
+   "eligible_180": 0,
+   "retained_180": 0,
+   "still_employed": 1,
+   "left_within_30": 0
+  },
+  {
+   "hire_month": 8,
+   "department_group": "Frontline",
    "source": "Rehire",
    "hires": 1,
    "eligible_30": 1,
@@ -1143,6 +1208,20 @@
    "retained_180": 0,
    "still_employed": 0,
    "left_within_30": 0
+  },
+  {
+   "hire_month": 8,
+   "department_group": "Other MFG",
+   "source": "Indeed",
+   "hires": 1,
+   "eligible_30": 1,
+   "retained_30": 0,
+   "eligible_90": 1,
+   "retained_90": 0,
+   "eligible_180": 0,
+   "retained_180": 0,
+   "still_employed": 0,
+   "left_within_30": 1
   },
   {
    "hire_month": 9,
@@ -1162,29 +1241,29 @@
    "hire_month": 9,
    "department_group": "Frontline",
    "source": "Referral",
-   "hires": 4,
-   "eligible_30": 4,
-   "retained_30": 4,
-   "eligible_90": 3,
-   "retained_90": 3,
+   "hires": 3,
+   "eligible_30": 3,
+   "retained_30": 3,
+   "eligible_90": 2,
+   "retained_90": 2,
    "eligible_180": 0,
    "retained_180": 0,
-   "still_employed": 3,
+   "still_employed": 2,
    "left_within_30": 0
   },
   {
    "hire_month": 9,
    "department_group": "Other MFG",
    "source": "Indeed",
-   "hires": 2,
-   "eligible_30": 2,
+   "hires": 1,
+   "eligible_30": 1,
    "retained_30": 0,
-   "eligible_90": 2,
+   "eligible_90": 1,
    "retained_90": 0,
    "eligible_180": 0,
    "retained_180": 0,
    "still_employed": 0,
-   "left_within_30": 2
+   "left_within_30": 1
   },
   {
    "hire_month": 10,
@@ -1350,7 +1429,7 @@
   "mfg_retirements": 3,
   "packaging": 23,
   "processing": 18,
-  "august_mfg": 12,
+  "august_mfg": 13,
   "left_within_30_days": 19,
   "left_within_180_days": 32,
   "frontline_attendance_plus_abandonment": 22,
@@ -1627,8 +1706,8 @@
    1,
    7,
    2,
-   5,
-   11,
+   7,
+   9,
    7,
    15,
    1
@@ -1641,8 +1720,8 @@
    1,
    7,
    2,
-   5,
-   9,
+   6,
+   8,
    6,
    11,
    0

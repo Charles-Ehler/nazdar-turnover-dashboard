@@ -158,7 +158,7 @@ const calc = {
     const sga = D.sga_separations_by_month.filter(inYear);
     eq('SG&A separations', sga.reduce((a, x) => a + x.count, 0), E.sga_separations_ytd);
     eq('SG&A retirements', sga.filter(x => x.category === 'Retirement').reduce((a, x) => a + x.count, 0), E.sga_retirements);
-    eq('Monthly MFG turnover %', m.map(x => x.rate == null ? 'n/a' : +(x.rate * 100).toFixed(1)), [2.7, 0.7, 2.7, 2.7, 4.1, 5.4, 2.0, 7.7, 'n/a']);
+    eq('Monthly MFG turnover % (fiscal periods)', m.map(x => x.rate == null ? 'n/a' : +(x.rate * 100).toFixed(1)), [2.7, 0.7, 3.4, 2.1, 4.7, 4.7, 2.0, 8.4, 'n/a']);
     eq('YTD rate % / avg headcount', [Math.round(y.rate * 100), y.avg], [34, 148.75]);
     const ft = { ...s, dept: 'Processing', tenure: '0-30 days' };
     eq('Filter test Processing 0-30', [calc.sum(D, calc.pred(ft)), calc.sum(D, x => calc.pred(ft)(x) && x.category === 'Voluntary'), calc.sum(D, x => calc.pred(ft)(x) && x.category === 'Involuntary')], [7, 3, 4]);
@@ -536,7 +536,7 @@ function renderSection6() {
   const ai = calc.mi(D, 'Aug'), aug = calc.sum(D, r => r.month === ai), hc = D.headcount_start_of_month['Nazdar MFG'][ai - 1];
   const ytdState = { ...DEFAULT_STATE, m0: D.meta.year_start_month_index };
   const m = calc.monthly(D, DEFAULT_STATE).filter(x => x.rate != null && x.month !== ai), prior = m.reduce((a, b) => (b.rate > a.rate ? b : a)), y = calc.ytd(D, ytdState);
-  el('s6-body').innerHTML = `This dashboard uses Nazdar US manufacturing only, separations through 9/18. On that basis August is ${aug} ÷ ${hc} = ${pct(aug / hc)}, and the prior monthly high is ${full(prior.label)} at ${pct(prior.rate)}. The Hiring &amp; Retention Snapshot dated September 19 reported August at ${pct(D.meta.snapshot_reported_august_rate)} (15 terminations ÷ 155, data through 9/5, UK plant administration included) against a prior high of 4.7%. For ${D.meta.months[D.meta.year_start_month_index - 1].slice(-4)} year to date, the snapshot's 29.7% divides 46 separations by the August headcount of 155; this dashboard's ${pct(y.rate, 0)} divides ${y.seps} (${monthsLabel(ytdState)}) by the January to August average of ${num(y.avg)}. All of these are correct on their own definitions.`;
+  el('s6-body').innerHTML = `This dashboard uses Nazdar US manufacturing only, separations through 9/18, on the fiscal calendar the monthly report uses (August = ${D.meta.fiscal_periods ? D.meta.fiscal_periods[ai - 1].start.slice(5).replace('-', '/') + ' to ' + D.meta.fiscal_periods[ai - 1].end.slice(5).replace('-', '/') : 'calendar month'}). On that basis August is ${aug} ÷ ${hc} = ${pct(aug / hc)}, and the prior monthly high is ${full(prior.label)} at ${pct(prior.rate)}. The Hiring &amp; Retention Snapshot dated September 19 reported August at ${pct(D.meta.snapshot_reported_august_rate)}: the same ${aug} US separations plus 2 in UK plant administration, 15 ÷ 155, against the same prior high of 4.7%. For ${D.meta.months[D.meta.year_start_month_index - 1].slice(-4)} year to date, the snapshot's 29.7% divides 46 separations (43 US + 3 UK, through the August close on 9/5) by the August headcount of 155; this dashboard's ${pct(y.rate, 0)} divides ${y.seps} (${monthsLabel(ytdState)}) by the January to August average of ${num(y.avg)}. All of these are correct on their own definitions.`;
 }
 
 const TABS = ['s0', 's1', 's2', 's3', 's4', 's5', 's6'];

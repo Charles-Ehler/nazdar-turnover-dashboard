@@ -13,7 +13,7 @@ A single-page, filterable dashboard answering the six production hiring and rete
 | `data/turnover-data.json` | The only source of every number shown |
 | `data/data.js` | The same JSON inlined, used automatically when the page is opened from `file://` and `fetch` is blocked |
 | `data/archive/` | One dated copy of the JSON per refresh, so month-over-month changes are traceable |
-| `data/fiscal-periods.csv` | Optional. `label,start,end` for each fiscal period; when present, dates are bucketed by fiscal period instead of calendar month, to match the monthly report. Not yet supplied. |
+| `data/fiscal-periods.csv` | Optional. `label,start,end` for each fiscal period; when present, dates are bucketed by fiscal period instead of calendar month, to match the monthly report. Built from the US close dates in Accounting's "Closing Dates / Billing Days" workbooks; add next year's periods when they are published. |
 | `data/headcount-history.csv` | Start-of-month headcounts for months the workbook lacks (Oct to Dec 2025 today). Fills gaps only. |
 | `tools/build_data.py` | Regenerates `data/turnover-data.json` and `data/data.js` from Taylor's workbook |
 | `tools/check.js` | Runs the acceptance checks against the JSON without a browser |
