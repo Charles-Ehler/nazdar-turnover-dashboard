@@ -43,10 +43,15 @@ node tools/check.js
 
    Update the expected values inside `calc.selfCheck` in `app.js` if the month has genuinely changed them (they are the handover's September 21 acceptance figures).
 
-4. Open `index.html` locally to eyeball it, then commit and push:
+4. Stamp the asset URLs so browsers pick up the new files (GitHub Pages caches for 10 minutes), then open `index.html` locally to eyeball it, commit and push:
 
 ```bash
-git add data && git commit -m "Data refresh through 2026-10-20" && git push
+sh tools/bump.sh
+```
+
+
+```bash
+git add -A && git commit -m "Data refresh through 2026-10-20" && git push
 ```
 
 ### Rules the build script applies
