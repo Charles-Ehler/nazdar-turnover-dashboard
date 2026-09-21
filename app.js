@@ -457,7 +457,7 @@ function renderSection2() {
   const bs = c.bySource, worst = bs.filter(x => x.hires >= 2).sort((a, b) => b.left30Share - a.left30Share)[0];
   figure('c23', {
     takeaway: worst ? `${worst.label} hires leave earliest: ${worst.left_within_30} of ${worst.hires} (${pct(worst.left30Share, 0)}) gone within 30 days.` : 'Too few hires to compare sources.',
-    caption: `${scopeTxt}, by hire source. Left axis: people. Right axis: % of that source's hires who left within 30 days.`,
+    caption: `${scopeTxt}, by hire source. Left axis: people. Right axis: % of that source's hires who left within 30 days. Hire source records where the candidate first applied, so "Hiring Event" understates job-fair hires: the August 4 fair produced 11 starts on August 10 to 18, coded across Indeed, Referral and Hiring Event.`,
     config: { type: 'bar', data: { labels: bs.map(x => x.label), datasets: [
       { label: 'Hires', data: bs.map(x => x.hires), backgroundColor: COLORS.dark, yAxisID: 'y' },
       { label: 'Still employed', data: bs.map(x => x.still_employed), backgroundColor: COLORS.light, yAxisID: 'y' },
