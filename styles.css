@@ -14,6 +14,8 @@
 html { scroll-behavior: smooth; }
 body {
   margin: 0;
+  font-variant-numeric: tabular-nums;
+  counter-reset: sec;
   font-family: Campton, Arial, Helvetica, sans-serif;
   font-size: 16px;
   line-height: 1.55;
@@ -22,7 +24,8 @@ body {
 }
 .wrap { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
 h1 { font-size: 31px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; margin: 0 0 8px; }
-h2 { font-size: 25px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.15; margin: 48px 0 8px; }
+h2 { font-size: 25px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.15; margin: 56px 0 8px; }
+main section > h2::before { counter-increment: sec; content: counter(sec, decimal-leading-zero); display: block; font-size: 12px; font-weight: 500; letter-spacing: 0.12em; line-height: 1.2; color: var(--red); margin-bottom: 8px; }
 h3 { font-size: 20px; font-weight: 500; margin: 20px 0 8px; }
 a { color: var(--red-dark); }
 a:hover { color: var(--red); }
@@ -30,6 +33,11 @@ a:hover { color: var(--red); }
 /* The one diagonal-cut rule per piece: under the headline. */
 .cut { width: 96px; height: 4px; background: var(--red); margin: 0 0 12px; clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 100%, 0 100%); }
 .basis { color: var(--muted); font-size: 14px; line-height: 1.45; margin: 0; }
+
+/* Contents */
+.toc { display: flex; flex-wrap: wrap; gap: 4px 24px; padding-top: 4px; padding-bottom: 12px; }
+.toc a { font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; line-height: 1.2; color: var(--text); text-decoration: none; padding: 6px 0; border-bottom: 2px solid transparent; }
+.toc a:hover { color: var(--red-dark); border-color: var(--red); }
 
 /* Filter bar */
 .filterbar {
@@ -49,9 +57,12 @@ a:hover { color: var(--red); }
 .selection { margin: 8px auto 0; font-size: 14px; }
 
 /* KPIs */
-.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(176px, 1fr)); gap: 12px; margin: 24px 0; }
-.kpi { background: var(--n50); border-radius: 4px; padding: 12px 16px; }
+.kpis { display: grid; grid-template-columns: 1.6fr repeat(4, 1fr); gap: 12px; margin: 24px 0; }
+.kpi { background: var(--n50); border-radius: 4px; padding: 16px; }
 .kpi .v { font-size: 39px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.05; }
+.kpi.hero { background: #fff; border: 1px solid var(--n200); border-top: 4px solid var(--red); }
+.kpi.hero .v { font-size: 61px; color: var(--red); }
+.kpi.hero .l { color: var(--text); font-size: 16px; }
 .kpi .l { font-size: 14px; line-height: 1.45; color: var(--muted); margin-top: 4px; }
 
 /* Figures */
@@ -70,6 +81,7 @@ table { border-collapse: collapse; width: 100%; font-size: 14px; line-height: 1.
 th, td { padding: 8px; border-bottom: 1px solid var(--n200); text-align: right; white-space: nowrap; font-weight: 400; }
 th:first-child, td:first-child { text-align: left; }
 thead th { background: var(--n50); font-weight: 500; position: sticky; top: 0; }
+tbody tr:hover td, tbody tr:hover th { background: var(--n50); }
 tbody tr.total td, tbody tr.total th { font-weight: 700; border-top: 2px solid var(--text); }
 .table-scroll { overflow-x: auto; }
 .callout { background: var(--n50); border-left: 4px solid var(--red); padding: 8px 12px; margin: 8px 0; font-weight: 500; }
@@ -85,8 +97,13 @@ summary { cursor: pointer; font-weight: 500; color: var(--red-dark); }
 footer { margin: 56px auto 32px; font-size: 14px; line-height: 1.45; color: var(--muted); border-top: 1px solid var(--n200); padding-top: 12px; }
 footer ul { padding-left: 20px; }
 
+@media (max-width: 900px) {
+  .kpis { grid-template-columns: 1fr 1fr; }
+  .kpi.hero { grid-column: span 2; }
+}
 @media (max-width: 640px) {
   .filterbar { position: static; }
+  .kpi.hero .v { font-size: 49px; }
   h1 { font-size: 25px; }
   .kpi .v { font-size: 31px; }
   .chartbox { height: 260px; }

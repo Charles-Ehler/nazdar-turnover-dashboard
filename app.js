@@ -215,6 +215,13 @@ Chart.register(dataLabels);
 Chart.defaults.font.family = 'Campton, Arial, Helvetica, sans-serif';
 Chart.defaults.font.size = 13;
 Chart.defaults.color = COLORS.text;
+Chart.defaults.scale.grid.color = '#E9EDF0';
+Chart.defaults.scale.border.display = false;
+Chart.defaults.plugins.legend.labels.boxWidth = 12;
+Chart.defaults.plugins.legend.labels.boxHeight = 12;
+Chart.defaults.plugins.legend.align = 'start';
+Chart.defaults.plugins.tooltip.backgroundColor = COLORS.dark;
+Chart.defaults.plugins.tooltip.cornerRadius = 2;
 
 const charts = {};
 function figure(id, { takeaway, caption, config, tall }) {
@@ -224,7 +231,7 @@ function figure(id, { takeaway, caption, config, tall }) {
     <div class="chartbox${tall ? ' tall' : ''}"><canvas id="${cid}" role="img" aria-label="${esc(takeaway)}"></canvas></div>
     <button type="button" class="btn tbl-toggle" aria-expanded="false">Show as table</button><div class="chart-table"></div>`;
   if (charts[id]) charts[id].destroy();
-  config.options = Object.assign({ responsive: true, maintainAspectRatio: false, animation: false, layout: { padding: { top: 16, right: 24 } } }, config.options);
+  config.options = Object.assign({ responsive: true, maintainAspectRatio: false, animation: { duration: 400 }, layout: { padding: { top: 16, right: 24 } } }, config.options);
   charts[id] = new Chart(el(cid), config);
   const fmtOf = ds => ds.labelFmt || (v => v);
   const rows = config.data.labels.map((l, j) => [l, ...config.data.datasets.map(ds => ds.data[j] == null ? na(ds.naWhy || NA_HC) : fmtOf(ds)(ds.data[j]))]);
@@ -254,9 +261,9 @@ function renderKpis(s) {
   const t30 = calc.sum(D, r => calc.pred(s, ['tenure'])(r) && r.tenure_bucket === '0-30 days');
   const all = calc.sum(D, calc.pred(s, ['tenure']));
   const c = calc.cohorts(D, 'all', 'All');
-  const k = (v, l) => `<div class="kpi"><div class="v">${v}</div><div class="l">${l}</div></div>`;
+  const k = (v, l, cls = '') => `<div class="kpi ${cls}"><div class="v">${v}</div><div class="l">${l}</div></div>`;
   el('kpis').innerHTML =
-    k(y.seps, 'Separations (current filter)') +
+    k(y.seps, `Separations, ${s.dept}, ${monthsLabel(s)}${s.cat === 'All' ? '' : ', ' + s.cat.toLowerCase()}${s.tenure === 'All' ? '' : ', ' + s.tenure}`, 'hero') +
     k(all ? pct(t30 / all, 0) : na('No separations in this selection'), `Share gone within 30 days (${s.dept}, ${monthsLabel(s)})`) +
     k(y.rate == null ? na(s.dept === 'Other MFG' ? NA_DEPT : NA_HC) : pct(y.rate, 0), `Separations ÷ average headcount, ${monthsLabel(s)} (${s.dept})`) +
     k(`${c.total.still_employed} <span style="font-size:18px">(${pct(c.total.still_employed / c.total.hires, 0)})</span>`, '2026 MFG hires still employed (not filtered)') +
