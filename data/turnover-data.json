@@ -21,16 +21,16 @@
   "year_start_month_index": 4,
   "months_elapsed": 11.7,
   "notes": [
-   "No start-of-month headcount is reported for Oct 2025, Nov 2025, Dec 2025, Sep 2026; turnover % shows n/a for those months.",
+   "No start-of-month headcount is reported for Sep 2026; turnover % shows n/a there.",
    "The Hiring & Retention Snapshot dated Sep 19 reported August at 9.7% (15 terminations ÷ 155, data through 9/5, UK plant administration included). On this dataset's basis August is 12 ÷ 155 = 7.7%. Both are correct on their own definitions."
   ],
   "snapshot_reported_august_rate": 0.097
  },
  "headcount_start_of_month": {
   "Nazdar MFG": [
-   null,
-   null,
-   null,
+   148,
+   150,
+   147,
    147,
    146,
    147,

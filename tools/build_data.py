@@ -10,6 +10,8 @@ Requires: pip install openpyxl
 Inputs:
 - The main workbook (tabs `2026 YTD Terms`, `2026 YTD Hires`, `2026 Headcount`, roster tabs `1-26`, `2-26`, ...).
   It is the only source of headcount, rosters, hire source and hire status.
+- Optional `data/headcount-history.csv` (series,month,headcount): start-of-month headcounts for months the main workbook
+  lacks. Fills gaps only; the workbook always wins.
 - Optional `--history`: a workbook with `Terms` and `Hires` tabs reaching back before the main workbook's year.
   Rows dated before the main workbook's year are merged in; later rows are ignored (the main workbook wins).
   Exact duplicate rows are dropped and reported. Hires from history get source "Not recorded".
@@ -171,6 +173,15 @@ def build(xlsx, as_of, history=None, start=None):
                 if isinstance(r[i], (int, float)):
                     headcount[hc_names[r[0]]][m - 1] = int(r[i])
 
+    # Months the main workbook does not carry (e.g. late 2025) come from data/headcount-history.csv; it never overrides the workbook.
+    extra = Path(__file__).resolve().parent.parent / "data" / "headcount-history.csv"
+    if extra.exists():
+        import csv
+        for row in csv.DictReader(extra.open()):
+            d = dt.date.fromisoformat(row["month"] + "-01")
+            if row["series"] in headcount and in_window(dt.datetime(d.year, d.month, 1)) and headcount[row["series"]][idx(d) - 1] is None:
+                headcount[row["series"]][idx(d) - 1] = int(row["headcount"])
+
     # ---- Rosters: dept|shift headcount and supervisor team sizes ----
     roster_tabs = [(i, f"{m}-{str(y)[2:]}") for i, (m, y) in enumerate(ym)]
     roster_tabs = [(i, t) for i, t in roster_tabs if t in wb.sheetnames]
@@ -305,7 +316,7 @@ def build(xlsx, as_of, history=None, start=None):
             "year_start_month_index": jan_idx,
             "months_elapsed": round(n_months - 1 + as_of.day / 30, 1),
             "notes": [
-                (f"No start-of-month headcount is reported for {', '.join(no_hc)}; turnover % shows n/a for those months."
+                (f"No start-of-month headcount is reported for {', '.join(no_hc)}; turnover % shows n/a there."
                  if no_hc else "Start-of-month headcount is reported for every month shown."),
                 "The Hiring & Retention Snapshot dated Sep 19 reported August at 9.7% (15 terminations ÷ 155, data through 9/5, "
                 f"UK plant administration included). On this dataset's basis August is {aug} ÷ {aug_hc} = {100 * aug / aug_hc:.1f}%. "
