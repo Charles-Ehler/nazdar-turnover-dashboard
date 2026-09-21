@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manufacturing turnover: 2026 year to date</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a id="top"></a>
+<header class="page-header">
+  <div class="wrap">
+    <h1>Manufacturing turnover: 2026 year to date</h1>
+    <div class="cut" aria-hidden="true"></div>
+    <p id="basis" class="basis"></p>
+  </div>
+</header>
+
+<div class="filterbar" role="region" aria-label="Filters">
+  <div class="wrap filters">
+    <label>Category
+      <select id="f-cat">
+        <option>All</option><option>Voluntary</option><option>Involuntary</option><option>Retirement</option>
+      </select>
+    </label>
+    <label>Department
+      <select id="f-dept">
+        <option>All MFG</option><option>Packaging</option><option>Processing</option><option>Other MFG</option>
+      </select>
+    </label>
+    <label>Tenure at exit
+      <select id="f-tenure">
+        <option>All</option><option>0-30 days</option><option>31-90 days</option><option>91-180 days</option><option>Over 180 days</option>
+      </select>
+    </label>
+    <label>From <select id="f-m0"></select></label>
+    <label>To <select id="f-m1"></select></label>
+    <button type="button" id="btn-reset" class="btn">Reset filters</button>
+    <button type="button" id="btn-print" class="btn btn-primary">Print / Save as PDF</button>
+  </div>
+  <p id="selection" class="wrap selection" aria-live="polite"></p>
+</div>
+
+<main class="wrap">
+  <section class="kpis" id="kpis" aria-label="Key figures"></section>
+
+  <section id="s1">
+    <h2>1. Turnover by month</h2>
+    <p class="scope">Responds to every filter above. Turnover % = separations in the month ÷ start-of-month headcount for the selected department.</p>
+    <figure id="c11"></figure>
+    <figure id="c12"></figure>
+    <figure id="c13"></figure>
+    <figure id="t14"></figure>
+    <a class="totop" href="#top">Back to top</a>
+  </section>
+
+  <section id="s2">
+    <h2>2. New-hire retention by cohort</h2>
+    <p class="scope">Scope: 2026 Nazdar MFG hires. Not affected by the filter bar; use the two selectors below.</p>
+    <div class="filters local">
+      <label>Scope <select id="f2-scope"><option value="all">All MFG</option><option value="frontline">Packaging + Processing</option></select></label>
+      <label>Hire source <select id="f2-source"><option>All</option></select></label>
+    </div>
+    <figure id="t21"></figure>
+    <figure id="c22"></figure>
+    <figure id="c23"></figure>
+    <p class="caption">Retention counts a hire as retained if they are still employed N days after hire; only hires with at least N days of service by September 21, 2026 are eligible.</p>
+    <a class="totop" href="#top">Back to top</a>
+  </section>
+
+  <section id="s3">
+    <h2>3. Departures against headcount, by shift and supervisor</h2>
+    <p class="scope">Scope: year to date, all categories. Only the Department filter affects this section (the reason columns in 3.2).</p>
+    <figure id="t31"></figure>
+    <figure id="t32"></figure>
+    <figure id="c32"></figure>
+    <details id="t33">
+      <summary>Show supervisor view</summary>
+      <div class="details-body"></div>
+    </details>
+    <a class="totop" href="#top">Back to top</a>
+  </section>
+
+  <section id="s4">
+    <h2>4. What employees are telling us</h2>
+    <div id="s4-body" class="panel"></div>
+    <a class="totop" href="#top">Back to top</a>
+  </section>
+
+  <section id="s5">
+    <h2>5. Monthly bridge</h2>
+    <p class="scope">Scope: year to date, all categories. Not affected by the filter bar. The source has no transfer records, so the last column is the gap to reconcile.</p>
+    <figure id="t51a"></figure>
+    <figure id="t51b"></figure>
+    <figure id="c52"></figure>
+    <a class="totop" href="#top">Back to top</a>
+  </section>
+
+  <section id="s6">
+    <h2>6. Basis note</h2>
+    <p id="s6-body" class="panel"></p>
+    <a class="totop" href="#top">Back to top</a>
+  </section>
+</main>
+
+<footer class="wrap">
+  <ul id="notes"></ul>
+  <p id="footer-line"></p>
+</footer>
+
+<script src="vendor/chart.umd.js"></script>
+<script src="data/data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
