@@ -216,6 +216,7 @@ Chart.defaults.font.family = 'Campton, Arial, Helvetica, sans-serif';
 Chart.defaults.font.size = 13;
 Chart.defaults.color = COLORS.text;
 Chart.defaults.scale.grid.color = '#E9EDF0';
+Chart.defaults.datasets.bar.maxBarThickness = 72;
 Chart.defaults.scale.border.display = false;
 Chart.defaults.plugins.legend.labels.boxWidth = 12;
 Chart.defaults.plugins.legend.labels.boxHeight = 12;
@@ -224,7 +225,7 @@ Chart.defaults.plugins.tooltip.backgroundColor = COLORS.dark;
 Chart.defaults.plugins.tooltip.cornerRadius = 2;
 
 const charts = {};
-function figure(id, { takeaway, caption, config, tall }) {
+function figure(id, { takeaway, caption, config, tall, onBar, onLegend }) {
   const host = el(id);
   const cid = id + '-canvas';
   host.innerHTML = `<figcaption><p class="takeaway">${takeaway}</p><p class="caption">${caption}</p></figcaption>
@@ -232,6 +233,13 @@ function figure(id, { takeaway, caption, config, tall }) {
     <button type="button" class="btn tbl-toggle" aria-expanded="false">Show as table</button><div class="chart-table"></div>`;
   if (charts[id]) charts[id].destroy();
   config.options = Object.assign({ responsive: true, maintainAspectRatio: false, animation: { duration: 400 }, layout: { padding: { top: 16, right: 24 } } }, config.options);
+  // Click-to-filter: onBar(index) and/or onLegend(datasetLabel) drill the whole page into that slice.
+  if (onBar || onLegend) {
+    config.options.onHover = (e, els) => { e.native.target.style.cursor = els.length ? 'pointer' : 'default'; };
+    // Defer: the handler re-renders (destroys) this chart, and Chart.js still has event work to finish on it.
+    if (onBar) config.options.onClick = (e, els) => { if (els.length) setTimeout(() => onBar(els[0].index), 0); };
+    if (onLegend) config.options.plugins = Object.assign({}, config.options.plugins, { legend: Object.assign({}, config.options.plugins?.legend, { onClick: (e, item) => setTimeout(() => onLegend(item.text), 0), onHover: e => { e.native.target.style.cursor = 'pointer'; } }) });
+  }
   charts[id] = new Chart(el(cid), config);
   const fmtOf = ds => ds.labelFmt || (v => v);
   const rows = config.data.labels.map((l, j) => [l, ...config.data.datasets.map(ds => ds.data[j] == null ? na(ds.naWhy || NA_HC) : fmtOf(ds)(ds.data[j]))]);
@@ -253,7 +261,37 @@ function monthsLabel(s) { return s.m0 === s.m1 ? `${D.meta.months[s.m0 - 1]} 202
 function renderSelection(s) {
   const cat = s.cat === 'All' ? 'all separations' : `${s.cat.toLowerCase()} separations`;
   const ten = s.tenure === 'All' ? '' : s.tenure === 'Over 180 days' ? ', leaving after 180 days' : `, leaving within ${s.tenure}`;
-  el('selection').textContent = `Showing ${cat}, ${s.dept}${ten}, ${monthsLabel(s)}.`;
+  const chips = [];
+  if (s.cat !== 'All') chips.push(['cat', s.cat]);
+  if (s.dept !== 'All MFG') chips.push(['dept', s.dept]);
+  if (s.tenure !== 'All') chips.push(['tenure', s.tenure]);
+  if (s.m0 !== 1 || s.m1 !== DEFAULT_STATE.m1) chips.push(['months', monthsLabel(s)]);
+  el('selection').innerHTML = `<span>Showing ${cat}, ${s.dept}${ten}, ${monthsLabel(s)}.</span>` +
+    chips.map(([k, v]) => `<button type="button" class="chip" data-clear="${k}" aria-label="Remove filter ${esc(v)}">${esc(v)} <span aria-hidden="true">×</span></button>`).join('') +
+    (chips.length ? '<button type="button" class="chip chip-all" data-clear="all">Clear all</button>' : '');
+  el('selection').querySelectorAll('.chip').forEach(btn => { btn.onclick = () => clearFilter(btn.dataset.clear); });
+}
+function clearFilter(k) {
+  if (k === 'all') setState({ ...DEFAULT_STATE });
+  else if (k === 'months') setState({ m0: 1, m1: DEFAULT_STATE.m1 });
+  else setState({ [k]: DEFAULT_STATE[k] });
+}
+// Small inline trend line for the hero number: monthly totals across the selected range, peak marked.
+function sparkline(vals) {
+  const max = Math.max(...vals, 1), w = 160, h = 36, n = vals.length;
+  const pt = (v, i) => [n === 1 ? w / 2 : (i / (n - 1)) * w, h - 3 - (v / max) * (h - 6)];
+  const pts = vals.map(pt);
+  const peak = pts[vals.indexOf(max)];
+  return `<svg class="spark" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" aria-hidden="true">
+    <polyline fill="none" stroke="#B9C1C9" stroke-width="2" points="${pts.map(p => p.map(x => x.toFixed(1)).join(',')).join(' ')}"/>
+    <circle cx="${peak[0].toFixed(1)}" cy="${peak[1].toFixed(1)}" r="3.5" fill="#CF102D"/></svg>`;
+}
+function countUp() {
+  document.querySelectorAll('.kpi .v[data-n]').forEach(node => {
+    const to = +node.dataset.n, suffix = node.dataset.suffix || '', t0 = performance.now();
+    const step = t => { const k = Math.min(1, (t - t0) / 500); node.firstChild.textContent = Math.round(to * (1 - Math.pow(1 - k, 3))) + suffix; if (k < 1) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  });
 }
 
 function renderKpis(s) {
@@ -261,13 +299,36 @@ function renderKpis(s) {
   const t30 = calc.sum(D, r => calc.pred(s, ['tenure'])(r) && r.tenure_bucket === '0-30 days');
   const all = calc.sum(D, calc.pred(s, ['tenure']));
   const c = calc.cohorts(D, 'all', 'All');
-  const k = (v, l, cls = '') => `<div class="kpi ${cls}"><div class="v">${v}</div><div class="l">${l}</div></div>`;
+  const k = (v, l, cls = '', extra = '') => `<div class="kpi ${cls}"><div class="v"${typeof v === 'number' ? ` data-n="${v}"` : ''}${typeof v === 'string' && /^\d+%$/.test(v) ? ` data-n="${parseInt(v, 10)}" data-suffix="%"` : ''}>${v}</div><div class="l">${l}</div>${extra}</div>`;
+  const monthly = calc.monthly(D, s).map(x => x.total);
   el('kpis').innerHTML =
-    k(y.seps, `Separations, ${s.dept}, ${monthsLabel(s)}${s.cat === 'All' ? '' : ', ' + s.cat.toLowerCase()}${s.tenure === 'All' ? '' : ', ' + s.tenure}`, 'hero') +
+    k(y.seps, `Separations, ${s.dept}, ${monthsLabel(s)}${s.cat === 'All' ? '' : ', ' + s.cat.toLowerCase()}${s.tenure === 'All' ? '' : ', ' + s.tenure}`, 'hero', monthly.length > 1 ? sparkline(monthly) + `<div class="l">By month, peak in ${full(D.meta.months[s.m0 - 1 + monthly.indexOf(Math.max(...monthly))])}</div>` : '') +
     k(all ? pct(t30 / all, 0) : na('No separations in this selection'), `Share gone within 30 days (${s.dept}, ${monthsLabel(s)})`) +
     k(y.rate == null ? na(s.dept === 'Other MFG' ? NA_DEPT : NA_HC) : pct(y.rate, 0), `Separations ÷ average headcount, ${monthsLabel(s)} (${s.dept})`) +
     k(`${c.total.still_employed} <span style="font-size:18px">(${pct(c.total.still_employed / c.total.hires, 0)})</span>`, '2026 MFG hires still employed (not filtered)') +
     k(c.total.hires, 'Hired this year, Nazdar MFG (not filtered)');
+  countUp();
+}
+
+// "The story": five computed sentences from the unfiltered data. Each one applies a view and scrolls to the evidence.
+function renderStory() {
+  const s0 = { ...DEFAULT_STATE };
+  const m = calc.monthly(D, s0), t = calc.tenure(D, s0), r = calc.reasons(D, s0), c = calc.cohorts(D, 'all', 'All'), y = calc.ytd(D, s0);
+  const peak = m.reduce((a, b) => (b.total > a.total ? b : a), m[0]), prev = m[m.indexOf(peak) - 1];
+  const st = calc.shiftTable(D, s0), top = [...st].sort((a, b) => b.ratio - a.ratio)[0];
+  const within180 = t[0].n + t[1].n + t[2].n;
+  const items = [
+    { text: `${y.seps} people left manufacturing in ${monthsLabel(s0)}, ${pct(y.rate, 0)} of average headcount.`, go: '#kpis' },
+    { text: `${full(peak.label)} was the worst month: ${peak.total} separations${prev && prev.total ? `, ${timesWord(peak.total / prev.total)} ${full(prev.label)}` : ''}.`, view: { m0: peak.month, m1: peak.month }, go: '#c11' },
+    { text: `${pct(t[0].share, 0)} of leavers were gone within 30 days, ${pct(within180 / y.seps, 0)} within 180.`, view: { tenure: '0-30 days' }, go: '#c13' },
+    { text: `Poor Attendance and Job Abandonment explain ${pct(r.attnShare, 0)} of Packaging and Processing exits (${r.attn} of ${r.total}).`, go: '#t14' },
+    { text: `${top.label} lost ${top.seps} people against an average roster of ${num(top.avg)} (${pct(top.ratio, 0)}).`, view: { dept: top.dept }, go: '#c32' },
+    { text: `${pct(c.total.r30, 0)} of 2026 hires reach 30 days, ${pct(c.total.r90, 0)} reach 90, ${pct(c.total.r180, 0)} reach 180 (${c.total.retained_180} of ${c.total.eligible_180} eligible).`, go: '#s2' },
+  ];
+  el('story').innerHTML = `<p class="kicker">The story, year to date</p><ol>` + items.map((it, i) => `<li><button type="button" data-i="${i}">${it.text}</button></li>`).join('') + `</ol><p class="caption">Click a line to see the evidence.</p>`;
+  el('story').querySelectorAll('button').forEach(b => {
+    b.onclick = () => { const it = items[+b.dataset.i]; setState({ ...DEFAULT_STATE, ...(it.view || {}) }); document.querySelector(it.go).scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+  });
 }
 
 function renderSection1(s) {
@@ -283,9 +344,11 @@ function renderSection1(s) {
   if (y.seps === 0) t11 = 'No separations match the current filter';
   figure('c11', {
     takeaway: t11 + '.',
-    caption: `Separations by month and category. ${scopeTxt}. Source: HR separations log.`,
+    caption: `Separations by month and category. ${scopeTxt}. Click a month to zoom in, click a legend entry to isolate a category.`,
     config: { type: 'bar', data: { labels, datasets: CATS.map(c => ({ label: c, data: m.map(x => x[c]), backgroundColor: catColor(c, s), stack: 'a' })) },
       options: { scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, beginAtZero: true, ticks: { precision: 0 } } }, plugins: { legend: { position: 'top' } } } },
+    onBar: i => { const mo = m[i].month; setState(s.m0 === mo && s.m1 === mo ? { m0: 1, m1: DEFAULT_STATE.m1 } : { m0: mo, m1: mo }); },
+    onLegend: c => setState({ cat: s.cat === c ? 'All' : c }),
   });
 
   // 1.2 turnover % line
@@ -308,10 +371,11 @@ function renderSection1(s) {
   const within180 = t[0].n + t[1].n + t[2].n;
   figure('c13', {
     takeaway: tot ? `${pct(within180 / tot, 0)} of ${deptName(s)} leavers were gone within 180 days (${within180} of ${tot}); ${pct(t[0].share, 0)} within 30 days.` : 'No separations match the current filter.',
-    caption: `Tenure at exit, share of separations. ${s.cat === 'All' ? 'All categories' : s.cat}, ${s.dept}, ${monthsLabel(s)}. Tenure filter does not apply here.`,
+    caption: `Tenure at exit, share of separations. ${s.cat === 'All' ? 'All categories' : s.cat}, ${s.dept}, ${monthsLabel(s)}. Click a bar to filter the page to that tenure.`,
     tall: true,
     config: { type: 'bar', data: { labels: TENURES, datasets: [{ label: 'Separations', data: t.map(x => x.n), backgroundColor: COLORS.dark, labelFmt: v => `${v} (${Math.round(v / tot * 100)}%)` }] },
       options: { indexAxis: 'y', scales: { x: { beginAtZero: true, ticks: { precision: 0 }, suggestedMax: Math.max(...t.map(x => x.n)) * 1.25 || 1 }, y: { grid: { display: false } } }, plugins: { legend: { display: false } } } },
+    onBar: i => setState({ tenure: s.tenure === TENURES[i] ? 'All' : TENURES[i] }),
   });
 
   // 1.4 reasons
@@ -383,10 +447,11 @@ function renderSection3(s) {
   });
   figure('c32', {
     takeaway: `Mid-shift teams lose more people per head: ${st.filter(x => x.shift === 'Mid-Shift').map(x => `${x.dept} ${pct(x.ratio, 0)}`).join(', ')} vs day shift ${st.filter(x => x.shift === 'Day Shift').map(x => `${x.dept} ${pct(x.ratio, 0)}`).join(', ')}.`,
-    caption: 'Separations YTD ÷ average roster headcount (Jan to Aug), by department and shift. All categories.',
+    caption: 'Separations YTD ÷ average roster headcount (Jan to Aug), by department and shift. All categories. Click a bar to filter the page to that department.',
     tall: true,
     config: { type: 'bar', data: { labels: st.map(x => x.label), datasets: [{ label: 'Separations ÷ average headcount', data: st.map(x => Math.round(x.ratio * 100)), backgroundColor: st.map(x => x.shift === 'Mid-Shift' ? COLORS.red : COLORS.dark), labelFmt: v => v + '%' }] },
       options: { indexAxis: 'y', scales: { x: { beginAtZero: true, ticks: { callback: v => v + '%' }, suggestedMax: Math.max(...st.map(x => x.ratio * 100)) * 1.2 }, y: { grid: { display: false } } }, plugins: { legend: { display: false } } } },
+    onBar: i => setState({ dept: s.dept === st[i].dept ? 'All MFG' : st[i].dept }),
   });
   const sup = D.supervisors_packaging_processing;
   el('t33').querySelector('.details-body').innerHTML = `<p class="caption">${esc(sup.note)}</p>` +
@@ -433,7 +498,21 @@ function renderSection6() {
   el('s6-body').innerHTML = `This dashboard uses Nazdar US manufacturing only, separations through 9/18. On that basis August is ${aug} ÷ ${hc} = ${pct(aug / hc)}. The Hiring &amp; Retention Snapshot dated September 19 reported ${pct(D.meta.snapshot_reported_august_rate)} (15 terminations ÷ 155, data through 9/5, UK plant administration included). Both are correct on their own definitions.`;
 }
 
+function setState(patch) {
+  state = { ...state, ...patch };
+  if (state.m0 > state.m1) [state.m0, state.m1] = [state.m1, state.m0];
+  el('f-cat').value = state.cat; el('f-dept').value = state.dept; el('f-tenure').value = state.tenure; el('f-m0').value = state.m0; el('f-m1').value = state.m1;
+  const q = new URLSearchParams();
+  if (state.cat !== 'All') q.set('cat', state.cat);
+  if (state.dept !== 'All MFG') q.set('dept', state.dept);
+  if (state.tenure !== 'All') q.set('tenure', state.tenure);
+  if (state.m0 !== 1 || state.m1 !== DEFAULT_STATE.m1) q.set('m', `${state.m0}-${state.m1}`);
+  history.replaceState(null, '', q.toString() ? '#' + q.toString() : location.pathname + location.search);
+  renderAll();
+}
+
 function renderAll() {
+  el('f-cat').value = state.cat; el('f-dept').value = state.dept; el('f-tenure').value = state.tenure; el('f-m0').value = state.m0; el('f-m1').value = state.m1;
   renderSelection(state);
   renderKpis(state);
   renderSection1(state);
@@ -446,14 +525,16 @@ function init(data) {
   D.meta.months.forEach((m, i) => { el('f-m0').add(new Option(m, i + 1)); el('f-m1').add(new Option(m, i + 1)); });
   el('f-m1').value = D.meta.months.length;
   DEFAULT_STATE.m1 = D.meta.months.length; state.m1 = DEFAULT_STATE.m1;
-  const read = () => {
-    state = { cat: el('f-cat').value, dept: el('f-dept').value, tenure: el('f-tenure').value, m0: +el('f-m0').value, m1: +el('f-m1').value };
-    if (state.m0 > state.m1) { [state.m0, state.m1] = [state.m1, state.m0]; el('f-m0').value = state.m0; el('f-m1').value = state.m1; }
-    renderAll();
-  };
+  const read = () => setState({ cat: el('f-cat').value, dept: el('f-dept').value, tenure: el('f-tenure').value, m0: +el('f-m0').value, m1: +el('f-m1').value });
   ['f-cat', 'f-dept', 'f-tenure', 'f-m0', 'f-m1'].forEach(id => el(id).addEventListener('change', read));
   ['f2-scope', 'f2-source'].forEach(id => el(id).addEventListener('change', renderSection2));
-  el('btn-reset').onclick = () => { el('f-cat').value = 'All'; el('f-dept').value = 'All MFG'; el('f-tenure').value = 'All'; el('f-m0').value = 1; el('f-m1').value = DEFAULT_STATE.m1; read(); };
+  el('btn-reset').onclick = () => setState({ ...DEFAULT_STATE });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') setState({ ...DEFAULT_STATE }); });
+  // Filters live in the URL so a view can be shared: #cat=Voluntary&dept=Processing&tenure=0-30+days&m=8-8
+  const q = new URLSearchParams(location.hash.slice(1));
+  const [qm0, qm1] = (q.get('m') || '').split('-').map(Number);
+  state = { ...state, ...(q.get('cat') && { cat: q.get('cat') }), ...(q.get('dept') && { dept: q.get('dept') }), ...(q.get('tenure') && { tenure: q.get('tenure') }), ...(qm0 && qm1 && { m0: qm0, m1: qm1 }) };
+  renderStory();
   el('btn-print').onclick = () => {
     document.querySelectorAll('details').forEach(d => { d.open = true; });
     document.querySelectorAll('.chart-table').forEach(t => t.classList.add('open'));

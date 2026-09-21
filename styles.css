@@ -65,6 +65,24 @@ a:hover { color: var(--red); }
 .kpi.hero .l { color: var(--text); font-size: 16px; }
 .kpi .l { font-size: 14px; line-height: 1.45; color: var(--muted); margin-top: 4px; }
 
+/* Story */
+.story { border-top: 1px solid var(--n200); border-bottom: 1px solid var(--n200); padding: 16px 0 8px; margin: 24px 0 8px; }
+.kicker { font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.12em; line-height: 1.2; color: var(--red); margin: 0 0 8px; }
+.story ol { list-style: none; margin: 0; padding: 0; counter-reset: story; display: grid; grid-template-columns: 1fr 1fr; gap: 4px 32px; }
+.story li { counter-increment: story; }
+.story button { font: inherit; font-size: 16px; line-height: 1.45; text-align: left; color: var(--text); background: none; border: 0; border-left: 2px solid transparent; padding: 6px 12px; width: 100%; cursor: pointer; display: flex; gap: 12px; }
+.story button::before { content: counter(story, decimal-leading-zero); font-size: 12px; font-weight: 500; letter-spacing: 0.1em; color: var(--muted); padding-top: 4px; }
+.story button:hover { border-left-color: var(--red); background: var(--n50); }
+.story button:focus-visible { outline: 2px solid var(--red-dark); outline-offset: 2px; }
+.story .caption { margin: 8px 0 0; }
+
+/* Chips */
+.selection { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.chip { font: inherit; font-size: 14px; font-weight: 500; line-height: 1.2; padding: 4px 8px; border: 1px solid var(--text); border-radius: 2px; background: #fff; color: var(--text); cursor: pointer; }
+.chip:hover { border-color: var(--red); color: var(--red-dark); }
+.chip-all { border-color: transparent; text-decoration: underline; padding-left: 0; }
+.spark { display: block; margin-top: 8px; }
+
 /* Figures */
 .scope, .caption { color: var(--muted); font-size: 14px; line-height: 1.45; margin: 4px 0 12px; }
 figure { margin: 24px 0; padding: 0; }
@@ -98,6 +116,7 @@ footer { margin: 56px auto 32px; font-size: 14px; line-height: 1.45; color: var(
 footer ul { padding-left: 20px; }
 
 @media (max-width: 900px) {
+  .story ol { grid-template-columns: 1fr; }
   .kpis { grid-template-columns: 1fr 1fr; }
   .kpi.hero { grid-column: span 2; }
 }
@@ -112,7 +131,8 @@ footer ul { padding-left: 20px; }
 
 @media print {
   .filterbar { position: static; }
-  .btn, .totop, .tbl-toggle { display: none !important; }
+  .btn, .totop, .tbl-toggle, .chip, .story .caption { display: none !important; }
+  .story button { cursor: default; }
   .chart-table { display: block !important; }
   details { border: none; padding: 0; }
   details > summary { display: none; }
