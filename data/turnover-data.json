@@ -1,28 +1,36 @@
 {
  "meta": {
-  "title": "Nazdar manufacturing turnover: 2026 year to date",
+  "title": "Nazdar manufacturing turnover: October 2025 to September 2026",
   "as_of": "2026-09-21",
+  "window_start": "2025-10-01",
   "basis": "Nazdar US manufacturing (Shawnee) only; separations through 2026-09-18; hires through 2026-09-21. Retirements shown as their own category.",
   "months": [
-   "Jan",
-   "Feb",
-   "Mar",
-   "Apr",
-   "May",
-   "Jun",
-   "Jul",
-   "Aug",
-   "Sep"
+   "Oct 2025",
+   "Nov 2025",
+   "Dec 2025",
+   "Jan 2026",
+   "Feb 2026",
+   "Mar 2026",
+   "Apr 2026",
+   "May 2026",
+   "Jun 2026",
+   "Jul 2026",
+   "Aug 2026",
+   "Sep 2026"
   ],
-  "months_elapsed_ytd": 8.7,
+  "year_start_month_index": 4,
+  "months_elapsed": 11.7,
   "notes": [
-   "Sep has no start-of-month headcount yet; show turnover % as n/a for Sep.",
+   "No start-of-month headcount is reported for Oct 2025, Nov 2025, Dec 2025, Sep 2026; turnover % shows n/a for those months.",
    "The Hiring & Retention Snapshot dated Sep 19 reported August at 9.7% (15 terminations ÷ 155, data through 9/5, UK plant administration included). On this dataset's basis August is 12 ÷ 155 = 7.7%. Both are correct on their own definitions."
   ],
   "snapshot_reported_august_rate": 0.097
  },
  "headcount_start_of_month": {
   "Nazdar MFG": [
+   null,
+   null,
+   null,
    147,
    146,
    147,
@@ -34,6 +42,9 @@
    null
   ],
   "Packaging": [
+   null,
+   null,
+   null,
    31,
    30,
    30,
@@ -45,6 +56,9 @@
    null
   ],
   "Processing": [
+   null,
+   null,
+   null,
    36,
    36,
    37,
@@ -56,6 +70,9 @@
    null
   ],
   "Nazdar SG&A": [
+   null,
+   null,
+   null,
    288,
    285,
    286,
@@ -69,6 +86,9 @@
  },
  "roster_headcount_by_dept_shift": {
   "Packaging|Day Shift": [
+   null,
+   null,
+   null,
    21,
    20,
    20,
@@ -76,9 +96,13 @@
    22,
    22,
    21,
-   20
+   20,
+   null
   ],
   "Packaging|Mid-Shift": [
+   null,
+   null,
+   null,
    10,
    10,
    10,
@@ -86,9 +110,13 @@
    9,
    13,
    15,
-   16
+   16,
+   null
   ],
   "Processing|Day Shift": [
+   null,
+   null,
+   null,
    25,
    26,
    25,
@@ -96,9 +124,13 @@
    26,
    24,
    26,
-   27
+   27,
+   null
   ],
   "Processing|Mid-Shift": [
+   null,
+   null,
+   null,
    11,
    10,
    12,
@@ -106,7 +138,8 @@
    13,
    12,
    12,
-   11
+   11,
+   null
   ]
  },
  "separations_cube": [
@@ -114,22 +147,6 @@
    "month": 1,
    "department": "Packaging",
    "shift": "Day Shift",
-   "category": "Involuntary",
-   "tenure_bucket": "0-30 days",
-   "count": 1
-  },
-  {
-   "month": 1,
-   "department": "Packaging",
-   "shift": "Day Shift",
-   "category": "Involuntary",
-   "tenure_bucket": "31-90 days",
-   "count": 1
-  },
-  {
-   "month": 1,
-   "department": "Packaging",
-   "shift": "Day Shift",
    "category": "Voluntary",
    "tenure_bucket": "Over 180 days",
    "count": 1
@@ -137,13 +154,69 @@
   {
    "month": 1,
    "department": "Processing",
-   "shift": "Mid-Shift",
+   "shift": "Day Shift",
    "category": "Involuntary",
-   "tenure_bucket": "Over 180 days",
+   "tenure_bucket": "31-90 days",
    "count": 1
   },
   {
    "month": 2,
+   "department": "Packaging",
+   "shift": "Day Shift",
+   "category": "Voluntary",
+   "tenure_bucket": "91-180 days",
+   "count": 1
+  },
+  {
+   "month": 3,
+   "department": "Processing",
+   "shift": "Day Shift",
+   "category": "Voluntary",
+   "tenure_bucket": "91-180 days",
+   "count": 1
+  },
+  {
+   "month": 3,
+   "department": "Processing",
+   "shift": "Mid-Shift",
+   "category": "Involuntary",
+   "tenure_bucket": "Over 180 days",
+   "count": 1
+  },
+  {
+   "month": 4,
+   "department": "Packaging",
+   "shift": "Day Shift",
+   "category": "Involuntary",
+   "tenure_bucket": "0-30 days",
+   "count": 1
+  },
+  {
+   "month": 4,
+   "department": "Packaging",
+   "shift": "Day Shift",
+   "category": "Involuntary",
+   "tenure_bucket": "31-90 days",
+   "count": 1
+  },
+  {
+   "month": 4,
+   "department": "Packaging",
+   "shift": "Day Shift",
+   "category": "Voluntary",
+   "tenure_bucket": "Over 180 days",
+   "count": 1
+  },
+  {
+   "month": 4,
+   "department": "Processing",
+   "shift": "Mid-Shift",
+   "category": "Involuntary",
+   "tenure_bucket": "Over 180 days",
+   "count": 1
+  },
+  {
+   "month": 5,
    "department": "Processing",
    "shift": "Mid-Shift",
    "category": "Involuntary",
@@ -151,7 +224,7 @@
    "count": 1
   },
   {
-   "month": 3,
+   "month": 6,
    "department": "Packaging",
    "shift": "Day Shift",
    "category": "Involuntary",
@@ -159,7 +232,7 @@
    "count": 1
   },
   {
-   "month": 3,
+   "month": 6,
    "department": "Processing",
    "shift": "Day Shift",
    "category": "Involuntary",
@@ -167,7 +240,7 @@
    "count": 1
   },
   {
-   "month": 3,
+   "month": 6,
    "department": "Processing",
    "shift": "Day Shift",
    "category": "Voluntary",
@@ -175,7 +248,7 @@
    "count": 1
   },
   {
-   "month": 3,
+   "month": 6,
    "department": "Processing",
    "shift": "Mid-Shift",
    "category": "Involuntary",
@@ -183,7 +256,7 @@
    "count": 1
   },
   {
-   "month": 4,
+   "month": 7,
    "department": "Other MFG",
    "shift": "Mid-Shift",
    "category": "Voluntary",
@@ -191,7 +264,7 @@
    "count": 1
   },
   {
-   "month": 4,
+   "month": 7,
    "department": "Other MFG",
    "shift": "N/A",
    "category": "Involuntary",
@@ -199,7 +272,7 @@
    "count": 1
   },
   {
-   "month": 4,
+   "month": 7,
    "department": "Packaging",
    "shift": "Day Shift",
    "category": "Involuntary",
@@ -207,7 +280,7 @@
    "count": 1
   },
   {
-   "month": 4,
+   "month": 7,
    "department": "Packaging",
    "shift": "Mid-Shift",
    "category": "Voluntary",
@@ -215,7 +288,7 @@
    "count": 1
   },
   {
-   "month": 5,
+   "month": 8,
    "department": "Other MFG",
    "shift": "N/A",
    "category": "Retirement",
@@ -223,7 +296,7 @@
    "count": 2
   },
   {
-   "month": 5,
+   "month": 8,
    "department": "Packaging",
    "shift": "Day Shift",
    "category": "Voluntary",
@@ -231,7 +304,7 @@
    "count": 1
   },
   {
-   "month": 5,
+   "month": 8,
    "department": "Packaging",
    "shift": "Mid-Shift",
    "category": "Voluntary",
@@ -239,7 +312,7 @@
    "count": 1
   },
   {
-   "month": 5,
+   "month": 8,
    "department": "Processing",
    "shift": "Day Shift",
    "category": "Voluntary",
@@ -247,7 +320,7 @@
    "count": 1
   },
   {
-   "month": 5,
+   "month": 8,
    "department": "Processing",
    "shift": "Mid-Shift",
    "category": "Involuntary",
@@ -255,7 +328,7 @@
    "count": 1
   },
   {
-   "month": 6,
+   "month": 9,
    "department": "Other MFG",
    "shift": "Day Shift",
    "category": "Voluntary",
@@ -263,7 +336,7 @@
    "count": 1
   },
   {
-   "month": 6,
+   "month": 9,
    "department": "Other MFG",
    "shift": "N/A",
    "category": "Involuntary",
@@ -271,7 +344,7 @@
    "count": 1
   },
   {
-   "month": 6,
+   "month": 9,
    "department": "Other MFG",
    "shift": "N/A",
    "category": "Voluntary",
@@ -279,7 +352,7 @@
    "count": 2
   },
   {
-   "month": 6,
+   "month": 9,
    "department": "Packaging",
    "shift": "Day Shift",
    "category": "Voluntary",
@@ -287,7 +360,7 @@
    "count": 1
   },
   {
-   "month": 6,
+   "month": 9,
    "department": "Packaging",
    "shift": "Mid-Shift",
    "category": "Voluntary",
@@ -295,7 +368,7 @@
    "count": 1
   },
   {
-   "month": 6,
+   "month": 9,
    "department": "Processing",
    "shift": "Mid-Shift",
    "category": "Voluntary",
@@ -303,7 +376,7 @@
    "count": 1
   },
   {
-   "month": 6,
+   "month": 9,
    "department": "Processing",
    "shift": "Mid-Shift",
    "category": "Voluntary",
@@ -311,7 +384,7 @@
    "count": 1
   },
   {
-   "month": 7,
+   "month": 10,
    "department": "Packaging",
    "shift": "Day Shift",
    "category": "Voluntary",
@@ -319,7 +392,7 @@
    "count": 1
   },
   {
-   "month": 7,
+   "month": 10,
    "department": "Packaging",
    "shift": "Mid-Shift",
    "category": "Voluntary",
@@ -327,7 +400,7 @@
    "count": 1
   },
   {
-   "month": 7,
+   "month": 10,
    "department": "Processing",
    "shift": "Mid-Shift",
    "category": "Voluntary",
@@ -335,7 +408,7 @@
    "count": 1
   },
   {
-   "month": 8,
+   "month": 11,
    "department": "Other MFG",
    "shift": "Mid-Shift",
    "category": "Involuntary",
@@ -343,7 +416,7 @@
    "count": 1
   },
   {
-   "month": 8,
+   "month": 11,
    "department": "Packaging",
    "shift": "Day Shift",
    "category": "Involuntary",
@@ -351,7 +424,7 @@
    "count": 1
   },
   {
-   "month": 8,
+   "month": 11,
    "department": "Packaging",
    "shift": "Day Shift",
    "category": "Voluntary",
@@ -359,7 +432,7 @@
    "count": 1
   },
   {
-   "month": 8,
+   "month": 11,
    "department": "Packaging",
    "shift": "Day Shift",
    "category": "Voluntary",
@@ -367,7 +440,7 @@
    "count": 1
   },
   {
-   "month": 8,
+   "month": 11,
    "department": "Packaging",
    "shift": "Mid-Shift",
    "category": "Involuntary",
@@ -375,7 +448,7 @@
    "count": 2
   },
   {
-   "month": 8,
+   "month": 11,
    "department": "Packaging",
    "shift": "Mid-Shift",
    "category": "Voluntary",
@@ -383,7 +456,7 @@
    "count": 1
   },
   {
-   "month": 8,
+   "month": 11,
    "department": "Processing",
    "shift": "Mid-Shift",
    "category": "Involuntary",
@@ -391,7 +464,7 @@
    "count": 1
   },
   {
-   "month": 8,
+   "month": 11,
    "department": "Processing",
    "shift": "Mid-Shift",
    "category": "Voluntary",
@@ -399,7 +472,7 @@
    "count": 2
   },
   {
-   "month": 8,
+   "month": 11,
    "department": "Processing",
    "shift": "Mid-Shift",
    "category": "Voluntary",
@@ -407,7 +480,7 @@
    "count": 1
   },
   {
-   "month": 8,
+   "month": 11,
    "department": "Processing",
    "shift": "Mid-Shift",
    "category": "Voluntary",
@@ -415,7 +488,7 @@
    "count": 1
   },
   {
-   "month": 9,
+   "month": 12,
    "department": "Packaging",
    "shift": "Day Shift",
    "category": "Involuntary",
@@ -423,7 +496,7 @@
    "count": 1
   },
   {
-   "month": 9,
+   "month": 12,
    "department": "Packaging",
    "shift": "Day Shift",
    "category": "Involuntary",
@@ -431,7 +504,7 @@
    "count": 1
   },
   {
-   "month": 9,
+   "month": 12,
    "department": "Packaging",
    "shift": "Mid-Shift",
    "category": "Retirement",
@@ -439,7 +512,7 @@
    "count": 1
   },
   {
-   "month": 9,
+   "month": 12,
    "department": "Packaging",
    "shift": "Mid-Shift",
    "category": "Voluntary",
@@ -447,7 +520,7 @@
    "count": 1
   },
   {
-   "month": 9,
+   "month": 12,
    "department": "Packaging",
    "shift": "Mid-Shift",
    "category": "Voluntary",
@@ -455,7 +528,7 @@
    "count": 1
   },
   {
-   "month": 9,
+   "month": 12,
    "department": "Processing",
    "shift": "Mid-Shift",
    "category": "Involuntary",
@@ -463,7 +536,7 @@
    "count": 2
   },
   {
-   "month": 9,
+   "month": 12,
    "department": "Processing",
    "shift": "Mid-Shift",
    "category": "Voluntary",
@@ -473,147 +546,339 @@
  ],
  "separation_reasons": [
   {
+   "month": 1,
    "department": "Packaging",
-   "reason": "Poor Attendance",
-   "category": "Involuntary",
-   "count": 7
-  },
-  {
-   "department": "Packaging",
-   "reason": "Job Abandonment",
+   "reason": "Return to School",
    "category": "Voluntary",
-   "count": 5
+   "count": 1
   },
   {
+   "month": 1,
    "department": "Processing",
    "reason": "Poor Attendance",
    "category": "Involuntary",
-   "count": 5
+   "count": 1
   },
   {
+   "month": 2,
    "department": "Packaging",
-   "reason": "Personal Reasons",
-   "category": "Voluntary",
-   "count": 4
-  },
-  {
-   "department": "Packaging",
-   "reason": "Another job",
-   "category": "Voluntary",
-   "count": 3
-  },
-  {
-   "department": "Processing",
-   "reason": "Job Abandonment",
-   "category": "Voluntary",
-   "count": 3
-  },
-  {
-   "department": "Other MFG",
-   "reason": "Another job",
-   "category": "Voluntary",
-   "count": 2
-  },
-  {
-   "department": "Other MFG",
-   "reason": "Poor Attendance",
-   "category": "Involuntary",
-   "count": 2
-  },
-  {
-   "department": "Other MFG",
-   "reason": "Retirement/Early Retire",
-   "category": "Retirement",
-   "count": 2
-  },
-  {
-   "department": "Processing",
-   "reason": "Another job",
-   "category": "Voluntary",
-   "count": 2
-  },
-  {
-   "department": "Processing",
-   "reason": "Dissatisfaction with Job",
-   "category": "Voluntary",
-   "count": 2
-  },
-  {
-   "department": "Other MFG",
-   "reason": "Dissatisfaction w/Superv",
-   "category": "Voluntary",
-   "count": 1
-  },
-  {
-   "department": "Other MFG",
-   "reason": "Dissatisfaction with Job",
-   "category": "Voluntary",
-   "count": 1
-  },
-  {
-   "department": "Other MFG",
-   "reason": "Gross Misconduct",
-   "category": "Involuntary",
-   "count": 1
-  },
-  {
-   "department": "Packaging",
-   "reason": "Job Abandonment",
-   "category": "Involuntary",
-   "count": 1
-  },
-  {
-   "department": "Packaging",
-   "reason": "Relocation",
-   "category": "Voluntary",
-   "count": 1
-  },
-  {
-   "department": "Packaging",
-   "reason": "Retirement/Early Retire",
-   "category": "Retirement",
-   "count": 1
-  },
-  {
-   "department": "Packaging",
-   "reason": "Violation of Policy",
-   "category": "Involuntary",
-   "count": 1
-  },
-  {
-   "department": "Processing",
-   "reason": "Misconduct",
-   "category": "Involuntary",
-   "count": 1
-  },
-  {
-   "department": "Processing",
    "reason": "Personal Reasons",
    "category": "Voluntary",
    "count": 1
   },
   {
+   "month": 3,
    "department": "Processing",
-   "reason": "Poor Attendance",
+   "reason": "Another job",
    "category": "Voluntary",
    "count": 1
   },
   {
+   "month": 3,
    "department": "Processing",
    "reason": "Poor Performance",
    "category": "Involuntary",
    "count": 1
   },
   {
+   "month": 4,
+   "department": "Packaging",
+   "reason": "Job Abandonment",
+   "category": "Voluntary",
+   "count": 1
+  },
+  {
+   "month": 4,
+   "department": "Packaging",
+   "reason": "Poor Attendance",
+   "category": "Involuntary",
+   "count": 2
+  },
+  {
+   "month": 4,
    "department": "Processing",
-   "reason": "Positive Drug Test Result",
+   "reason": "Poor Performance",
    "category": "Involuntary",
    "count": 1
   },
   {
+   "month": 5,
+   "department": "Processing",
+   "reason": "Misconduct",
+   "category": "Involuntary",
+   "count": 1
+  },
+  {
+   "month": 6,
+   "department": "Packaging",
+   "reason": "Poor Attendance",
+   "category": "Involuntary",
+   "count": 1
+  },
+  {
+   "month": 6,
+   "department": "Processing",
+   "reason": "Another job",
+   "category": "Voluntary",
+   "count": 1
+  },
+  {
+   "month": 6,
+   "department": "Processing",
+   "reason": "Poor Attendance",
+   "category": "Involuntary",
+   "count": 2
+  },
+  {
+   "month": 7,
+   "department": "Other MFG",
+   "reason": "Dissatisfaction with Job",
+   "category": "Voluntary",
+   "count": 1
+  },
+  {
+   "month": 7,
+   "department": "Other MFG",
+   "reason": "Gross Misconduct",
+   "category": "Involuntary",
+   "count": 1
+  },
+  {
+   "month": 7,
+   "department": "Packaging",
+   "reason": "Job Abandonment",
+   "category": "Involuntary",
+   "count": 1
+  },
+  {
+   "month": 7,
+   "department": "Packaging",
+   "reason": "Personal Reasons",
+   "category": "Voluntary",
+   "count": 1
+  },
+  {
+   "month": 8,
+   "department": "Other MFG",
+   "reason": "Retirement/Early Retire",
+   "category": "Retirement",
+   "count": 2
+  },
+  {
+   "month": 8,
+   "department": "Packaging",
+   "reason": "Another job",
+   "category": "Voluntary",
+   "count": 1
+  },
+  {
+   "month": 8,
+   "department": "Packaging",
+   "reason": "Job Abandonment",
+   "category": "Voluntary",
+   "count": 1
+  },
+  {
+   "month": 8,
+   "department": "Processing",
+   "reason": "Job Abandonment",
+   "category": "Voluntary",
+   "count": 1
+  },
+  {
+   "month": 8,
+   "department": "Processing",
+   "reason": "Poor Attendance",
+   "category": "Involuntary",
+   "count": 1
+  },
+  {
+   "month": 9,
+   "department": "Other MFG",
+   "reason": "Another job",
+   "category": "Voluntary",
+   "count": 2
+  },
+  {
+   "month": 9,
+   "department": "Other MFG",
+   "reason": "Dissatisfaction w/Superv",
+   "category": "Voluntary",
+   "count": 1
+  },
+  {
+   "month": 9,
+   "department": "Other MFG",
+   "reason": "Poor Attendance",
+   "category": "Involuntary",
+   "count": 1
+  },
+  {
+   "month": 9,
+   "department": "Packaging",
+   "reason": "Another job",
+   "category": "Voluntary",
+   "count": 1
+  },
+  {
+   "month": 9,
+   "department": "Packaging",
+   "reason": "Job Abandonment",
+   "category": "Voluntary",
+   "count": 1
+  },
+  {
+   "month": 9,
+   "department": "Processing",
+   "reason": "Dissatisfaction with Job",
+   "category": "Voluntary",
+   "count": 1
+  },
+  {
+   "month": 9,
+   "department": "Processing",
+   "reason": "Job Abandonment",
+   "category": "Voluntary",
+   "count": 1
+  },
+  {
+   "month": 10,
+   "department": "Packaging",
+   "reason": "Job Abandonment",
+   "category": "Voluntary",
+   "count": 1
+  },
+  {
+   "month": 10,
+   "department": "Packaging",
+   "reason": "Personal Reasons",
+   "category": "Voluntary",
+   "count": 1
+  },
+  {
+   "month": 10,
+   "department": "Processing",
+   "reason": "Job Abandonment",
+   "category": "Voluntary",
+   "count": 1
+  },
+  {
+   "month": 11,
+   "department": "Other MFG",
+   "reason": "Poor Attendance",
+   "category": "Involuntary",
+   "count": 1
+  },
+  {
+   "month": 11,
+   "department": "Packaging",
+   "reason": "Job Abandonment",
+   "category": "Voluntary",
+   "count": 1
+  },
+  {
+   "month": 11,
+   "department": "Packaging",
+   "reason": "Personal Reasons",
+   "category": "Voluntary",
+   "count": 2
+  },
+  {
+   "month": 11,
+   "department": "Packaging",
+   "reason": "Poor Attendance",
+   "category": "Involuntary",
+   "count": 3
+  },
+  {
+   "month": 11,
+   "department": "Processing",
+   "reason": "Another job",
+   "category": "Voluntary",
+   "count": 1
+  },
+  {
+   "month": 11,
+   "department": "Processing",
+   "reason": "Personal Reasons",
+   "category": "Voluntary",
+   "count": 1
+  },
+  {
+   "month": 11,
+   "department": "Processing",
+   "reason": "Poor Attendance",
+   "category": "Involuntary",
+   "count": 1
+  },
+  {
+   "month": 11,
+   "department": "Processing",
+   "reason": "Poor Attendance",
+   "category": "Voluntary",
+   "count": 1
+  },
+  {
+   "month": 11,
    "department": "Processing",
    "reason": "Return to School",
    "category": "Voluntary",
+   "count": 1
+  },
+  {
+   "month": 12,
+   "department": "Packaging",
+   "reason": "Another job",
+   "category": "Voluntary",
+   "count": 1
+  },
+  {
+   "month": 12,
+   "department": "Packaging",
+   "reason": "Poor Attendance",
+   "category": "Involuntary",
+   "count": 1
+  },
+  {
+   "month": 12,
+   "department": "Packaging",
+   "reason": "Relocation",
+   "category": "Voluntary",
+   "count": 1
+  },
+  {
+   "month": 12,
+   "department": "Packaging",
+   "reason": "Retirement/Early Retire",
+   "category": "Retirement",
+   "count": 1
+  },
+  {
+   "month": 12,
+   "department": "Packaging",
+   "reason": "Violation of Policy",
+   "category": "Involuntary",
+   "count": 1
+  },
+  {
+   "month": 12,
+   "department": "Processing",
+   "reason": "Dissatisfaction with Job",
+   "category": "Voluntary",
+   "count": 1
+  },
+  {
+   "month": 12,
+   "department": "Processing",
+   "reason": "Poor Attendance",
+   "category": "Involuntary",
+   "count": 1
+  },
+  {
+   "month": 12,
+   "department": "Processing",
+   "reason": "Positive Drug Test Result",
+   "category": "Involuntary",
    "count": 1
   }
  ],
@@ -621,12 +886,12 @@
   {
    "month": 1,
    "category": "Involuntary",
-   "count": 1
+   "count": 4
   },
   {
-   "month": 1,
-   "category": "Voluntary",
-   "count": 1
+   "month": 2,
+   "category": "Involuntary",
+   "count": 2
   },
   {
    "month": 2,
@@ -635,18 +900,33 @@
   },
   {
    "month": 3,
+   "category": "Involuntary",
+   "count": 1
+  },
+  {
+   "month": 3,
    "category": "Retirement",
    "count": 1
   },
   {
+   "month": 3,
+   "category": "Voluntary",
+   "count": 1
+  },
+  {
    "month": 4,
-   "category": "Retirement",
+   "category": "Involuntary",
+   "count": 1
+  },
+  {
+   "month": 4,
+   "category": "Voluntary",
    "count": 1
   },
   {
    "month": 5,
    "category": "Retirement",
-   "count": 2
+   "count": 1
   },
   {
    "month": 6,
@@ -654,49 +934,92 @@
    "count": 1
   },
   {
-   "month": 6,
+   "month": 7,
+   "category": "Retirement",
+   "count": 1
+  },
+  {
+   "month": 8,
+   "category": "Retirement",
+   "count": 2
+  },
+  {
+   "month": 9,
+   "category": "Retirement",
+   "count": 1
+  },
+  {
+   "month": 9,
    "category": "Voluntary",
    "count": 1
   },
   {
-   "month": 7,
+   "month": 10,
    "category": "Involuntary",
    "count": 1
   },
   {
-   "month": 7,
+   "month": 10,
    "category": "Retirement",
    "count": 1
   },
   {
-   "month": 7,
+   "month": 10,
    "category": "Voluntary",
    "count": 2
   },
   {
-   "month": 8,
+   "month": 11,
    "category": "Retirement",
    "count": 3
   },
   {
-   "month": 8,
+   "month": 11,
    "category": "Voluntary",
    "count": 3
   },
   {
-   "month": 9,
+   "month": 12,
    "category": "Retirement",
    "count": 1
   },
   {
-   "month": 9,
+   "month": 12,
    "category": "Voluntary",
    "count": 1
   }
  ],
  "hire_cohorts": [
   {
-   "hire_month": 1,
+   "hire_month": 2,
+   "department_group": "Frontline",
+   "source": "Not recorded",
+   "hires": 3,
+   "eligible_30": 3,
+   "retained_30": 3,
+   "eligible_90": 3,
+   "retained_90": 2,
+   "eligible_180": 3,
+   "retained_180": 2,
+   "still_employed": 2,
+   "left_within_30": 0
+  },
+  {
+   "hire_month": 3,
+   "department_group": "Frontline",
+   "source": "Not recorded",
+   "hires": 1,
+   "eligible_30": 1,
+   "retained_30": 1,
+   "eligible_90": 1,
+   "retained_90": 1,
+   "eligible_180": 1,
+   "retained_180": 1,
+   "still_employed": 1,
+   "left_within_30": 0
+  },
+  {
+   "hire_month": 4,
    "department_group": "Frontline",
    "source": "Indeed",
    "hires": 2,
@@ -710,7 +1033,7 @@
    "left_within_30": 1
   },
   {
-   "hire_month": 1,
+   "hire_month": 4,
    "department_group": "Frontline",
    "source": "Rehire",
    "hires": 1,
@@ -724,7 +1047,7 @@
    "left_within_30": 0
   },
   {
-   "hire_month": 2,
+   "hire_month": 5,
    "department_group": "Frontline",
    "source": "Referral",
    "hires": 1,
@@ -738,7 +1061,7 @@
    "left_within_30": 0
   },
   {
-   "hire_month": 3,
+   "hire_month": 6,
    "department_group": "Frontline",
    "source": "Indeed",
    "hires": 4,
@@ -752,7 +1075,7 @@
    "left_within_30": 3
   },
   {
-   "hire_month": 3,
+   "hire_month": 6,
    "department_group": "Frontline",
    "source": "Referral",
    "hires": 3,
@@ -766,7 +1089,7 @@
    "left_within_30": 1
   },
   {
-   "hire_month": 4,
+   "hire_month": 7,
    "department_group": "Frontline",
    "source": "Indeed",
    "hires": 1,
@@ -780,7 +1103,7 @@
    "left_within_30": 0
   },
   {
-   "hire_month": 4,
+   "hire_month": 7,
    "department_group": "Frontline",
    "source": "Rehire",
    "hires": 1,
@@ -794,7 +1117,7 @@
    "left_within_30": 0
   },
   {
-   "hire_month": 5,
+   "hire_month": 8,
    "department_group": "Frontline",
    "source": "Indeed",
    "hires": 4,
@@ -808,7 +1131,7 @@
    "left_within_30": 3
   },
   {
-   "hire_month": 5,
+   "hire_month": 8,
    "department_group": "Frontline",
    "source": "Rehire",
    "hires": 1,
@@ -822,7 +1145,7 @@
    "left_within_30": 0
   },
   {
-   "hire_month": 6,
+   "hire_month": 9,
    "department_group": "Frontline",
    "source": "Indeed",
    "hires": 5,
@@ -836,7 +1159,7 @@
    "left_within_30": 2
   },
   {
-   "hire_month": 6,
+   "hire_month": 9,
    "department_group": "Frontline",
    "source": "Referral",
    "hires": 4,
@@ -850,7 +1173,7 @@
    "left_within_30": 0
   },
   {
-   "hire_month": 6,
+   "hire_month": 9,
    "department_group": "Other MFG",
    "source": "Indeed",
    "hires": 2,
@@ -864,7 +1187,7 @@
    "left_within_30": 2
   },
   {
-   "hire_month": 7,
+   "hire_month": 10,
    "department_group": "Frontline",
    "source": "Indeed",
    "hires": 3,
@@ -878,7 +1201,7 @@
    "left_within_30": 0
   },
   {
-   "hire_month": 7,
+   "hire_month": 10,
    "department_group": "Frontline",
    "source": "LinkedIn",
    "hires": 1,
@@ -892,7 +1215,7 @@
    "left_within_30": 0
   },
   {
-   "hire_month": 7,
+   "hire_month": 10,
    "department_group": "Frontline",
    "source": "Referral",
    "hires": 2,
@@ -906,7 +1229,7 @@
    "left_within_30": 0
   },
   {
-   "hire_month": 7,
+   "hire_month": 10,
    "department_group": "Other MFG",
    "source": "LinkedIn",
    "hires": 1,
@@ -920,7 +1243,7 @@
    "left_within_30": 0
   },
   {
-   "hire_month": 8,
+   "hire_month": 11,
    "department_group": "Frontline",
    "source": "Hiring Event",
    "hires": 4,
@@ -934,7 +1257,7 @@
    "left_within_30": 2
   },
   {
-   "hire_month": 8,
+   "hire_month": 11,
    "department_group": "Frontline",
    "source": "Indeed",
    "hires": 4,
@@ -948,7 +1271,7 @@
    "left_within_30": 2
   },
   {
-   "hire_month": 8,
+   "hire_month": 11,
    "department_group": "Frontline",
    "source": "Referral",
    "hires": 3,
@@ -962,7 +1285,7 @@
    "left_within_30": 0
   },
   {
-   "hire_month": 8,
+   "hire_month": 11,
    "department_group": "Other MFG",
    "source": "Hiring Event",
    "hires": 1,
@@ -976,7 +1299,7 @@
    "left_within_30": 1
   },
   {
-   "hire_month": 8,
+   "hire_month": 11,
    "department_group": "Other MFG",
    "source": "Indeed",
    "hires": 1,
@@ -990,7 +1313,7 @@
    "left_within_30": 0
   },
   {
-   "hire_month": 8,
+   "hire_month": 11,
    "department_group": "Other MFG",
    "source": "Referral",
    "hires": 2,
@@ -1004,7 +1327,7 @@
    "left_within_30": 0
   },
   {
-   "hire_month": 9,
+   "hire_month": 12,
    "department_group": "Other MFG",
    "source": "Indeed",
    "hires": 1,
@@ -1019,6 +1342,8 @@
   }
  ],
  "expected_totals_for_validation": {
+  "year": 2026,
+  "year_start_month_index": 4,
   "mfg_separations_ytd": 50,
   "mfg_voluntary": 27,
   "mfg_involuntary": 20,
@@ -1049,16 +1374,19 @@
   "sga_retirements": 11
  },
  "supervisors_packaging_processing": {
-  "note": "Counts follow shift and team size; supervisors changed during the year (Logan Borders left in April, Edwin Reyes in June), so read this as a coverage view, not a performance measure.",
+  "note": "Counts follow shift and team size; supervisors changed during the year (Logan Borders left in April, Edwin Reyes in June), so read this as a coverage view, not a performance measure. Team sizes come from the months with a roster.",
   "rows": [
    {
     "supervisor": "Tim Aranda",
     "departments": "Processing / Packaging",
     "shifts": "Mid-Shift",
-    "separations": 14,
+    "separations": 15,
     "voluntary": 7,
     "left_within_90_days": 8,
     "roster_team_size_by_month": [
+     0,
+     0,
+     0,
      11,
      10,
      12,
@@ -1066,7 +1394,8 @@
      12,
      12,
      12,
-     11
+     11,
+     0
     ],
     "avg_team_size_active_months": 11.38,
     "months_on_roster": 8
@@ -1075,10 +1404,13 @@
     "supervisor": "Steve Hufft",
     "departments": "Packaging / Processing",
     "shifts": "Day Shift",
-    "separations": 9,
-    "voluntary": 5,
+    "separations": 11,
+    "voluntary": 7,
     "left_within_90_days": 5,
     "roster_team_size_by_month": [
+     0,
+     0,
+     0,
      9,
      10,
      10,
@@ -1086,7 +1418,8 @@
      16,
      16,
      16,
-     16
+     16,
+     0
     ],
     "avg_team_size_active_months": 13.12,
     "months_on_roster": 8
@@ -1103,10 +1436,14 @@
      0,
      0,
      0,
+     0,
+     0,
+     0,
      8,
      13,
      15,
-     15
+     15,
+     0
     ],
     "avg_team_size_active_months": 12.75,
     "months_on_roster": 4
@@ -1115,14 +1452,18 @@
     "supervisor": "Jayden Campbell",
     "departments": "Packaging",
     "shifts": "Day Shift",
-    "separations": 3,
-    "voluntary": 0,
+    "separations": 4,
+    "voluntary": 1,
     "left_within_90_days": 3,
     "roster_team_size_by_month": [
+     0,
+     0,
+     0,
      11,
      10,
      9,
      9,
+     0,
      0,
      0,
      0,
@@ -1132,6 +1473,30 @@
     "months_on_roster": 4
    },
    {
+    "supervisor": "Edwin Reyes",
+    "departments": "Processing",
+    "shifts": "Day Shift",
+    "separations": 3,
+    "voluntary": 1,
+    "left_within_90_days": 2,
+    "roster_team_size_by_month": [
+     0,
+     0,
+     0,
+     9,
+     9,
+     9,
+     9,
+     10,
+     0,
+     0,
+     0,
+     0
+    ],
+    "avg_team_size_active_months": 9.2,
+    "months_on_roster": 5
+   },
+   {
     "supervisor": "Logan Borders",
     "departments": "Packaging",
     "shifts": "Mid-Shift",
@@ -1139,9 +1504,13 @@
     "voluntary": 2,
     "left_within_90_days": 0,
     "roster_team_size_by_month": [
+     0,
+     0,
+     0,
      10,
      10,
      10,
+     0,
      0,
      0,
      0,
@@ -1152,26 +1521,6 @@
     "months_on_roster": 3
    },
    {
-    "supervisor": "Edwin Reyes",
-    "departments": "Processing",
-    "shifts": "Day Shift",
-    "separations": 2,
-    "voluntary": 1,
-    "left_within_90_days": 1,
-    "roster_team_size_by_month": [
-     9,
-     9,
-     9,
-     9,
-     10,
-     0,
-     0,
-     0
-    ],
-    "avg_team_size_active_months": 9.2,
-    "months_on_roster": 5
-   },
-   {
     "supervisor": "Erwin Avila",
     "departments": "Processing / Packaging",
     "shifts": "Day Shift / Mid-Shift",
@@ -1179,6 +1528,9 @@
     "voluntary": 1,
     "left_within_90_days": 1,
     "roster_team_size_by_month": [
+     0,
+     0,
+     0,
      8,
      8,
      8,
@@ -1186,7 +1538,8 @@
      9,
      17,
      18,
-     18
+     18,
+     0
     ],
     "avg_team_size_active_months": 11.75,
     "months_on_roster": 8
@@ -1199,6 +1552,9 @@
     "voluntary": 1,
     "left_within_90_days": 0,
     "roster_team_size_by_month": [
+     0,
+     0,
+     0,
      9,
      9,
      9,
@@ -1206,7 +1562,8 @@
      10,
      8,
      7,
-     7
+     7,
+     0
     ],
     "avg_team_size_active_months": 8.5,
     "months_on_roster": 8
@@ -1222,11 +1579,15 @@
      0,
      0,
      0,
+     0,
+     0,
+     0,
      9,
      0,
      0,
      0,
-     1
+     1,
+     0
     ],
     "avg_team_size_active_months": 5.0,
     "months_on_roster": 2
@@ -1243,10 +1604,14 @@
      0,
      0,
      0,
+     0,
+     0,
+     0,
      5,
      5,
      6,
-     6
+     6,
+     0
     ],
     "avg_team_size_active_months": 5.5,
     "months_on_roster": 4
@@ -1255,6 +1620,9 @@
  },
  "hires_by_month": {
   "Nazdar MFG": [
+   0,
+   3,
+   1,
    3,
    1,
    7,
@@ -1266,6 +1634,9 @@
    1
   ],
   "Packaging + Processing": [
+   0,
+   3,
+   1,
    3,
    1,
    7,

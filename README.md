@@ -1,6 +1,6 @@
 # Nazdar Manufacturing Turnover Dashboard
 
-A single-page, filterable dashboard answering Ed's six questions about 2026 production hiring and retention. Static HTML + vanilla JavaScript + a vendored copy of Chart.js. No build step, no server, no login. Opens in any browser, including as a local file.
+A single-page, filterable dashboard answering the six production hiring and retention questions from September 2026, covering October 2025 onward. Static HTML + vanilla JavaScript + a vendored copy of Chart.js. No build step, no server, no login. Opens in any browser, including as a local file.
 
 **Live:** https://charles-ehler.github.io/nazdar-turnover-dashboard/
 
@@ -30,8 +30,10 @@ The site appears at `https://<owner>.github.io/nazdar-turnover-dashboard/` withi
 
 ```bash
 pip3 install openpyxl
-python3 tools/build_data.py "/path/to/Turnover YTD_10.20.26.xlsx" --as-of 2026-10-20
+python3 tools/build_data.py "/path/to/Turnover YTD_10.20.26.xlsx" --as-of 2026-10-20 --history "/path/to/Turnover.xlsx" --from 2025-10
 ```
+
+   `--history` is the workbook with `Terms` and `Hires` tabs for the months before the main workbook's year (October to December 2025 today); rows before January of the as-of year are merged in, exact duplicates are dropped and reported. `--from` sets the first month shown. Both are optional: without them the dashboard covers January of the as-of year onward.
 
    The script writes `data/turnover-data.json` and `data/data.js`, and copies the previous JSON to `data/archive/turnover-data-<date>.json`. It exits with an error if the separations cube does not add up to the number of MFG separations, and prints a warning for any hire marked "Terminated" that has no matching separation row.
 
@@ -62,7 +64,8 @@ git add -A && git commit -m "Data refresh through 2026-10-20" && git push
 - Hire → separation match on last name + first name (case-insensitive, trimmed). If that fails for a "Terminated" hire, a unique last-name match with the same hire date is accepted and reported.
 - Coding quirks are preserved, not fixed (one Job Abandonment coded Involuntary, one Poor Attendance coded Voluntary, "Misconduct" vs "Gross Misconduct").
 - Spelling variants normalised: "Another Job" → "Another job", "indeed" → "Indeed", "Re-hire" → "Rehire", "Grayso Munson" → "Grayson Munson".
-- Headcount arrays have one slot per month Jan → as-of month; months without a reported headcount stay `null` and show as a dash.
+- Every monthly array has one slot per month of the window; months without a reported headcount or roster stay `null` and show as n/a. Headcount, rosters, hire source and hire status come only from the main workbook, so history months have no turnover % until those are supplied.
+- A hire matches a separation only if the separation is dated after the hire (rehires share a name with an earlier separation).
 
 ## Definitions used on the page
 
