@@ -16,6 +16,9 @@ Inputs:
   Rows dated before the main workbook's year are merged in; later rows are ignored (the main workbook wins).
   Exact duplicate rows are dropped and reported. Hires from history get source "Not recorded".
 - `--from YYYY-MM`: first month of the window (default: January of the as-of year).
+- Optional `data/fiscal-periods.csv` (label,start,end): when present, every date is assigned to the fiscal period whose
+  start..end range contains it, instead of the calendar month. Labels must be the same "Mon YYYY" form the dashboard
+  uses (e.g. "Oct 2025") so headcount and roster tabs still line up. Periods must be contiguous and cover the window.
 
 Rules (handover, section 8):
 - Nazdar US MFG = Company "Nazdar" and segment "MFG" (or "Manufacturing"); Packaging / Processing by Department;
@@ -124,10 +127,33 @@ def build(xlsx, as_of, history=None, start=None):
     n_months = (as_of.year - start.year) * 12 + as_of.month - start.month + 1
     ym = [((start.month - 1 + i) % 12 + 1, start.year + (start.month - 1 + i) // 12) for i in range(n_months)]
     months = [f"{MON[m - 1]} {y}" for m, y in ym]
-    idx = lambda d: (d.year - start.year) * 12 + d.month - start.month + 1  # 1-based month index in the window  # noqa: E731
-    in_window = lambda d: start <= d.date() <= as_of  # noqa: E731
+    periods = Path(__file__).resolve().parent.parent / "data" / "fiscal-periods.csv"
+    fiscal = None
+    if periods.exists():
+        import csv
+        fiscal = [(r["label"], dt.date.fromisoformat(r["start"]), dt.date.fromisoformat(r["end"])) for r in csv.DictReader(periods.open())]
+        fiscal = [f for f in fiscal if f[0] in months]
+        if [f[0] for f in fiscal] != months:
+            sys.exit(f"FATAL: data/fiscal-periods.csv must define exactly these periods in order: {months}")
+        for (_, _, e1), (_, s2, _) in zip(fiscal, fiscal[1:]):
+            if s2 != e1 + dt.timedelta(days=1):
+                sys.exit(f"FATAL: fiscal periods are not contiguous around {e1}")
+        print(f"NOTE: using fiscal periods {fiscal[0][1]} to {fiscal[-1][2]} from data/fiscal-periods.csv", file=sys.stderr)
+
+    def idx(d):  # 1-based period index in the window
+        if fiscal:
+            day = d.date() if isinstance(d, dt.datetime) else d
+            return next((i + 1 for i, (_, s0, e0) in enumerate(fiscal) if s0 <= day <= e0), None)
+        return (d.year - start.year) * 12 + d.month - start.month + 1
+
+    def in_window(d):
+        if fiscal:
+            return idx(d) is not None
+        return start <= d.date() <= as_of
     main_year_start = dt.date(as_of.year, 1, 1)
-    jan_idx = idx(main_year_start)
+    jan_idx = months.index(f"Jan {as_of.year}") + 1
+    if fiscal:
+        main_year_start = fiscal[jan_idx - 1][1]  # history rows before the first fiscal period of the year
 
     # ---- Terms and hires (main workbook, plus history before the main year) ----
     terms = [t for t in sheet_rows(wb, "2026 YTD Terms") if in_window(t["Separation Date"])]
@@ -179,8 +205,9 @@ def build(xlsx, as_of, history=None, start=None):
         import csv
         for row in csv.DictReader(extra.open()):
             d = dt.date.fromisoformat(row["month"] + "-01")
-            if row["series"] in headcount and in_window(dt.datetime(d.year, d.month, 1)) and headcount[row["series"]][idx(d) - 1] is None:
-                headcount[row["series"]][idx(d) - 1] = int(row["headcount"])
+            label = f"{MON[d.month - 1]} {d.year}"
+            if row["series"] in headcount and label in months and headcount[row["series"]][months.index(label)] is None:
+                headcount[row["series"]][months.index(label)] = int(row["headcount"])
 
     # ---- Rosters: dept|shift headcount and supervisor team sizes ----
     roster_tabs = [(i, f"{m}-{str(y)[2:]}") for i, (m, y) in enumerate(ym)]
@@ -311,10 +338,12 @@ def build(xlsx, as_of, history=None, start=None):
             "as_of": as_of.isoformat(),
             "window_start": start.isoformat(),
             "basis": f"Nazdar US manufacturing (Shawnee) only; separations through {last_sep}; hires through {as_of}. "
-                     f"Retirements shown as their own category.",
+                     f"Retirements shown as their own category."
+                     + (f" Months are fiscal periods ({fiscal[0][1]} to {fiscal[-1][2]}), matching the monthly report." if fiscal else ""),
+            "fiscal_periods": [{"label": l, "start": s0.isoformat(), "end": e0.isoformat()} for l, s0, e0 in fiscal] if fiscal else None,
             "months": months,
             "year_start_month_index": jan_idx,
-            "months_elapsed": round(n_months - 1 + as_of.day / 30, 1),
+            "months_elapsed": round((n_months - 1 + (as_of - fiscal[-1][1]).days / ((fiscal[-1][2] - fiscal[-1][1]).days + 1)) if fiscal else (n_months - 1 + as_of.day / 30), 1),
             "notes": [
                 (f"No start-of-month headcount is reported for {', '.join(no_hc)}; turnover % shows n/a there."
                  if no_hc else "Start-of-month headcount is reported for every month shown."),
