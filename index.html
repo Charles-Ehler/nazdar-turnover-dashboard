@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Manufacturing turnover: October 2025 to September 2026</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27%3E%3Cpath fill=%27%23CF102D%27 d=%27M0 0h16v12L12 16H0z%27/%3E%3C/svg%3E">
-<link rel="stylesheet" href="styles.css?v=310e048">
+<link rel="stylesheet" href="styles.css?v=131c255">
 </head>
 <body>
 <a id="top"></a>
@@ -43,9 +43,7 @@
       <label>To <select id="f-m1"></select></label>
     </fieldset>
     <div class="filter-actions">
-      <button type="button" id="btn-reset" class="btn">Reset filters</button>
-      <button type="button" id="btn-print" class="btn btn-primary">Print / Save as PDF</button>
-    </div>
+      <button type="button" id="btn-reset" class="btn">Reset filters</button>    </div>
   </div>
   <p id="selection" class="wrap selection" aria-live="polite"></p>
 </div>
@@ -78,7 +76,7 @@
 
   <section id="s2" class="panel-tab">
     <h2 data-n="02">New-hire retention by cohort</h2>
-    <p class="scope">Scope: Nazdar MFG hires in the period shown, or Nazdar SG&amp;A for comparison. Not affected by the filter bar; use the two selectors below.</p>
+    <p class="scope">Nazdar MFG hires in the From and To months above, or Nazdar SG&amp;A for comparison. Use the two selectors below to narrow it.</p>
     <div class="filters local">
       <label>Scope <select id="f2-scope"><option value="all">All MFG</option><option value="frontline">Packaging + Processing</option><option value="sga">Nazdar SG&amp;A</option></select></label>
       <label>Hire source <select id="f2-source"><option>All</option></select></label>
@@ -90,7 +88,7 @@
 
   <section id="s3" class="panel-tab">
     <h2 data-n="03">Departures against headcount, by shift and supervisor</h2>
-    <p class="scope">Scope: the whole period, all categories. Only the Department filter affects this section (the reason columns in 3.2).</p>
+    <p class="scope">All categories, in the From and To months above. The Department filter adds the reason columns in the shift table. The supervisor view always covers the whole period.</p>
     <figure id="t31"></figure>
     <figure id="t32"></figure>
     <figure id="c32"></figure>
@@ -107,7 +105,7 @@
 
   <section id="s5" class="panel-tab">
     <h2 data-n="05">Monthly bridge</h2>
-    <p class="scope">Scope: the whole period, all categories. Not affected by the filter bar. The source has no transfer records, so the last column is the gap to reconcile.</p>
+    <p class="scope">All categories, in the From and To months above. The source has no transfer records, so the last column is the gap to reconcile.</p>
     <figure id="t51a"></figure>
     <figure id="t51b"></figure>
     <figure id="c52"></figure>
@@ -126,7 +124,7 @@
 </footer>
 
 <script src="vendor/chart.umd.js"></script>
-<script src="data/data.js?v=310e048"></script>
-<script src="app.js?v=310e048"></script>
+<script src="data/data.js?v=131c255"></script>
+<script src="app.js?v=131c255"></script>
 </body>
 </html>
