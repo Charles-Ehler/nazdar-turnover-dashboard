@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Manufacturing turnover: October 2025 to September 2026</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27%3E%3Cpath fill=%27%23CF102D%27 d=%27M0 0h16v12L12 16H0z%27/%3E%3C/svg%3E">
-<link rel="stylesheet" href="styles.css?v=c969d11">
+<link rel="stylesheet" href="styles.css?v=310e048">
 </head>
 <body>
 <a id="top"></a>
@@ -19,25 +19,33 @@
 
 <div class="filterbar" role="region" aria-label="Filters">
   <div class="wrap filters">
-    <label>Category
-      <select id="f-cat">
-        <option>All</option><option>Voluntary</option><option>Involuntary</option><option>Retirement</option>
-      </select>
-    </label>
-    <label>Department
-      <select id="f-dept">
-        <option>All MFG</option><option>Packaging</option><option>Processing</option><option value="SG&amp;A">Nazdar SG&amp;A (comparison)</option>
-      </select>
-    </label>
-    <label>Tenure at exit
-      <select id="f-tenure">
-        <option>All</option><option>0-30 days</option><option>31-90 days</option><option>91-180 days</option><option>Over 180 days</option>
-      </select>
-    </label>
-    <label>From <select id="f-m0"></select></label>
-    <label>To <select id="f-m1"></select></label>
-    <button type="button" id="btn-reset" class="btn">Reset filters</button>
-    <button type="button" id="btn-print" class="btn btn-primary">Print / Save as PDF</button>
+    <fieldset class="filter-group population">
+      <legend>Who left</legend>
+      <label>Category
+        <select id="f-cat">
+          <option>All</option><option>Voluntary</option><option>Involuntary</option><option>Retirement</option>
+        </select>
+      </label>
+      <label>Department
+        <select id="f-dept">
+          <option>All MFG</option><option>Packaging</option><option>Processing</option><option value="SG&amp;A">Nazdar SG&amp;A (comparison)</option>
+        </select>
+      </label>
+      <label>Tenure at exit
+        <select id="f-tenure">
+          <option>All</option><option>0-30 days</option><option>31-90 days</option><option>91-180 days</option><option>Over 180 days</option>
+        </select>
+      </label>
+    </fieldset>
+    <fieldset class="filter-group window">
+      <legend>When</legend>
+      <label>From <select id="f-m0"></select></label>
+      <label>To <select id="f-m1"></select></label>
+    </fieldset>
+    <div class="filter-actions">
+      <button type="button" id="btn-reset" class="btn">Reset filters</button>
+      <button type="button" id="btn-print" class="btn btn-primary">Print / Save as PDF</button>
+    </div>
   </div>
   <p id="selection" class="wrap selection" aria-live="polite"></p>
 </div>
@@ -118,7 +126,7 @@
 </footer>
 
 <script src="vendor/chart.umd.js"></script>
-<script src="data/data.js?v=c969d11"></script>
-<script src="app.js?v=c969d11"></script>
+<script src="data/data.js?v=310e048"></script>
+<script src="app.js?v=310e048"></script>
 </body>
 </html>

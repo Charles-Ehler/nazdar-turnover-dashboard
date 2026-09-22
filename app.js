@@ -610,8 +610,7 @@ function renderAll() {
 
 function init(data) {
   D = data;
-  el('basis').textContent = D.meta.basis;
-  const title = D.meta.title.replace(/^Nazdar /, ''); document.title = title.charAt(0).toUpperCase() + title.slice(1); document.querySelector('h1').textContent = document.title;
+  el('basis').textContent = D.meta.basis;  const title = D.meta.title.replace(/^Nazdar /, ''); document.title = title.charAt(0).toUpperCase() + title.slice(1); document.querySelector('h1').textContent = document.title;
   el('ret-def').textContent = `Retention counts a hire as retained if they are still employed N days after hire; only hires with at least N days of service by ${full(D.meta.months[D.meta.months.length - 1]).replace(/(\w+) (\d+)/, '$1 ' + new Date(D.meta.as_of + 'T00:00:00').getDate() + ', $2')} are eligible.`;
   D.meta.months.forEach((m, i) => { el('f-m0').add(new Option(m, i + 1)); el('f-m1').add(new Option(m, i + 1)); });
   el('f-m1').value = D.meta.months.length;
