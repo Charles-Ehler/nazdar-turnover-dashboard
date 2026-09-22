@@ -89,9 +89,8 @@ const calc = {
     };
     const rate = (a, n) => a['eligible_' + n] ? a['retained_' + n] / a['eligible_' + n] : null;
     const byMonth = [...agg(r => r.hire_month)].sort((a, b) => a[0] - b[0]).map(([m, a]) => ({ label: D.meta.months[m - 1], ...a, r30: rate(a, 30), r90: rate(a, 90), r180: rate(a, 180) }));
-    const bySource = [...agg(r => r.source)].sort((a, b) => b[1].hires - a[1].hires).map(([src, a]) => ({ label: src, ...a, left30Share: a.hires ? a.left_within_30 / a.hires : 0 }));
     const tot = agg(() => 'all').get('all') || { hires: 0, still_employed: 0, eligible_30: 0, retained_30: 0, eligible_90: 0, retained_90: 0, eligible_180: 0, retained_180: 0, left_within_30: 0 };
-    return { byMonth, bySource, total: { ...tot, r30: rate(tot, 30), r90: rate(tot, 90), r180: rate(tot, 180) }, sources: [...new Set(D.hire_cohorts.map(r => r.source))].sort() };
+    return { byMonth, total: { ...tot, r30: rate(tot, 30), r90: rate(tot, 90), r180: rate(tot, 180) }, sources: [...new Set(D.hire_cohorts.map(r => r.source))].sort() };
   },
   deptTable(D) {
     const H = D.headcount_start_of_month;
@@ -476,16 +475,6 @@ function renderSection2() {
       { label: '90-day retention', data: rows.map(x => x.eligible_90 ? Math.round(x.r90 * 100) : null), backgroundColor: COLORS.dark, labelFmt: pctFmt, naWhy: NA_COHORT },
       { label: '180-day retention', data: rows.map(x => x.eligible_180 ? Math.round(x.r180 * 100) : null), backgroundColor: COLORS.red, labelFmt: pctFmt, naWhy: NA_COHORT },
     ] }, options: { scales: { y: { beginAtZero: true, max: 110, ticks: { callback: v => v > 100 ? '' : v + '%' } }, x: { grid: { display: false }, ticks: monthTicks } }, plugins: { legend: { position: 'top' } } } },
-  });
-  const bs = c.bySource, worst = bs.filter(x => x.hires >= 2).sort((a, b) => b.left30Share - a.left30Share)[0];
-  figure('c23', {
-    takeaway: worst ? `${worst.label} hires leave earliest: ${worst.left_within_30} of ${worst.hires} (${pct(worst.left30Share, 0)}) gone within 30 days.` : 'Too few hires to compare sources.',
-    caption: `${scopeTxt}, by hire source. Left axis: people. Right axis: % of that source's hires who left within 30 days. Hire source records where the candidate first applied, so "Hiring Event" understates job-fair hires: the August 4 fair produced 11 starts on August 10 to 18, coded across Indeed, Referral and Hiring Event.`,
-    config: { type: 'bar', data: { labels: bs.map(x => x.label), datasets: [
-      { label: 'Hires', data: bs.map(x => x.hires), backgroundColor: COLORS.dark, yAxisID: 'y' },
-      { label: 'Still employed', data: bs.map(x => x.still_employed), backgroundColor: COLORS.light, yAxisID: 'y' },
-      { label: '% left within 30 days', data: bs.map(x => Math.round(x.left30Share * 100)), backgroundColor: COLORS.red, yAxisID: 'y2', labelFmt: pctFmt },
-    ] }, options: { scales: { y: { beginAtZero: true, ticks: { precision: 0 }, title: { display: true, text: 'People' } }, y2: { beginAtZero: true, max: 100, position: 'right', grid: { drawOnChartArea: false }, ticks: { callback: v => v + '%' } }, x: { grid: { display: false } } }, plugins: { legend: { position: 'top' } } } },
   });
 }
 
