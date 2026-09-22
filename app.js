@@ -663,6 +663,7 @@ function init(data) {
 }
 
 // Prefer the JSON file (GitHub Pages); fall back to the inlined copy when fetch is blocked (file://).
-fetch('data/turnover-data.json').then(r => (r.ok ? r.json() : Promise.reject(r.status))).then(init).catch(() => init(window.TURNOVER_DATA));
+// no-cache: always ask the server whether the data changed, so a refresh never shows yesterday's numbers.
+fetch('data/turnover-data.json', { cache: 'no-cache' }).then(r => (r.ok ? r.json() : Promise.reject(r.status))).then(init).catch(() => init(window.TURNOVER_DATA));
 }
 if (typeof document !== 'undefined') ui();
