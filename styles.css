@@ -43,6 +43,10 @@ a:hover { color: var(--red); }
 .page-header h1 { margin: 0 0 10px; font-size: clamp(26px, 3vw, 34px); letter-spacing: -0.025em; }
 .cut { width: 96px; height: 4px; background: var(--red); margin: 0 0 12px; clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 100%, 0 100%); }
 .basis { max-width: 860px; color: var(--muted); font-size: 14px; line-height: 1.45; margin: 0; }
+/* Version stamp: written by tools/bump.sh on every push, so viewers can tell which build they are looking at. */
+.stamp { margin: 14px 0 0 17px; color: var(--muted); font-size: 12px; line-height: 1.5; }
+.stamp strong { color: var(--text); }
+.stamp-footer { display: none; margin: 8px 0 0; }
 
 /* Filter bar */
 .filterbar {
@@ -202,6 +206,8 @@ footer ul { padding-left: 20px; }
   .tabs { position: static; flex-direction: row; overflow-x: auto; border-top: 0; border-bottom: 1px solid var(--n200); margin: 8px 0 0; }
   .tabs a { flex: 0 0 auto; border-left: 0; border-bottom: 3px solid transparent; margin: 0; padding: 8px 12px; }
   .tabs a[aria-current="page"] { border-bottom-color: var(--red); }
+  .tabs .stamp { display: none; }
+  .stamp-footer { display: block; }
   .story ol { grid-template-columns: 1fr; }
   .kpis { grid-template-columns: 1fr 1fr; }
   .kpi.hero { grid-column: span 2; grid-row: auto; }

@@ -53,6 +53,7 @@ NORMALISE = {
     "indeed": "Indeed",
     "Re-hire": "Rehire",
     "Grayso Munson": "Grayson Munson",
+    "Grason Munson": "Grayson Munson",
     "Manufacturing": "MFG",
 }
 FRONTLINE = ("Packaging", "Processing")
@@ -273,6 +274,14 @@ def build(xlsx, as_of, history=None, start=None, rosters=None, previous=None):
         if not any(last == n.split()[-1].lower() for n in sup):
             l, f = [x.strip() for x in full.split(",")]
             sup[f"{f.split()[0]} {l}"] = Counter()
+    # Keyed by supervisor, then frontline (Packaging / Processing) or not, so a Processing supervisor with a stray
+    # Plant Administration report still reads as Processing (Taylor, Sep 22: Tim Aranda is just Processing).
+    sup_seen = defaultdict(lambda: {True: {"dept": Counter(), "shift": Counter()}, False: {"dept": Counter(), "shift": Counter()}})
+    for r in mfg_terms + mfg_hires:
+        who = sup_seen[norm(r.get("Supervisor"))][norm(r["Department"]) in FRONTLINE]
+        who["dept"][norm(r["Department"])] += 1
+        if norm(r.get("Shift")) not in ("", "N/A"):
+            who["shift"][norm(r["Shift"])] += 1
     sup_rows = []
     for name, s in sup.items():
         last = name.split()[-1].lower()  # ponytail: match terms to roster on last name; unique for this plant
@@ -289,6 +298,15 @@ def build(xlsx, as_of, history=None, start=None, rosters=None, previous=None):
         }
         if last in prev_sup:
             row.update({k: prev_sup[last][k] for k in ("departments", "shifts", "roster_team_size_by_month", "avg_team_size_active_months", "months_on_roster")})
+        # Department(s) and shift(s) come from HR's own Terms and Hires rows for this supervisor, most common first:
+        # the Packaging / Processing rows when there are any, otherwise the rest. The roster tabs mislabelled
+        # supervisors (Taylor, Sep 22: Erwin Avila is Processing day shift; Jesse Mullins is Plant Administration).
+        # Rosters still supply team size, and the labels for a supervisor with no Terms or Hires rows.
+        seen = sup_seen.get(name)
+        if seen:
+            use = seen[True] if seen[True]["dept"] else seen[False]
+            row["departments"] = " / ".join(k for k, _ in use["dept"].most_common())
+            row["shifts"] = " / ".join(k for k, _ in use["shift"].most_common()) or row["shifts"]
         sup_rows.append(row)
     sup_rows.sort(key=lambda r: (-r["separations"], -r["voluntary"], r["supervisor"]))
 

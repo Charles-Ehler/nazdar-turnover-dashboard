@@ -2018,7 +2018,7 @@
   "rows": [
    {
     "supervisor": "Tim Aranda",
-    "departments": "Processing / Packaging",
+    "departments": "Processing",
     "shifts": "Mid-Shift",
     "separations": 16,
     "voluntary": 8,
@@ -2066,7 +2066,7 @@
    },
    {
     "supervisor": "Grayson Munson",
-    "departments": "Packaging",
+    "departments": "Packaging / Processing",
     "shifts": "Mid-Shift",
     "separations": 9,
     "voluntary": 6,
@@ -2139,7 +2139,7 @@
    {
     "supervisor": "Logan Borders",
     "departments": "Packaging",
-    "shifts": "Mid-Shift",
+    "shifts": "Mid-Shift / Day Shift",
     "separations": 2,
     "voluntary": 2,
     "left_within_90_days": 0,
@@ -2162,8 +2162,8 @@
    },
    {
     "supervisor": "Jeremy Harper",
-    "departments": "Packaging / Processing",
-    "shifts": "Day Shift / Mid-Shift",
+    "departments": "Packaging",
+    "shifts": "Day Shift",
     "separations": 1,
     "voluntary": 1,
     "left_within_90_days": 0,
@@ -2186,8 +2186,8 @@
    },
    {
     "supervisor": "Erwin Avila",
-    "departments": "Processing / Packaging",
-    "shifts": "Day Shift / Mid-Shift",
+    "departments": "Processing",
+    "shifts": "Day Shift",
     "separations": 0,
     "voluntary": 0,
     "left_within_90_days": 0,
@@ -2210,8 +2210,8 @@
    },
    {
     "supervisor": "Jesse Mullins",
-    "departments": "Packaging / Processing",
-    "shifts": "Mid-Shift",
+    "departments": "Plant Administration",
+    "shifts": "Mid-Shift / Day Shift",
     "separations": 0,
     "voluntary": 0,
     "left_within_90_days": 0,

@@ -49,7 +49,7 @@ node tools/check.js
 
    Update the expected values inside `calc.selfCheck` in `app.js` if the month has genuinely changed them (they are the September 22 reload's acceptance figures).
 
-4. Stamp the asset URLs so browsers pick up the new files (GitHub Pages caches for 10 minutes), then open `index.html` locally to eyeball it, commit and push:
+4. Stamp the asset URLs so browsers pick up the new files (GitHub Pages caches for 10 minutes) and bump the version stamp under the section menu (version number and publish time), then open `index.html` locally to eyeball it, commit and push. Run it before every push:
 
 ```bash
 sh tools/bump.sh
