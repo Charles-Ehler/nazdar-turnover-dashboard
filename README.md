@@ -27,17 +27,19 @@ The site appears at `https://<owner>.github.io/nazdar-turnover-dashboard/` withi
 
 ## Monthly refresh
 
-1. Get the updated workbook from Taylor (tabs `2026 YTD Terms`, `2026 YTD Hires`, `2026 Headcount`, and the monthly roster tabs `1-26`, `2-26`, …).
+1. Get the updated workbook from Taylor. Since September 22, 2026 it is the cleaned `MFG Turnover_<date>.xlsx` with tabs `Terms`, `Hires`, `Headcount` and `Reference`, covering October 2025 onward in one file. The older layout (`2026 YTD Terms`, `2026 YTD Hires`, `2026 Headcount`, roster tabs `1-26`, …) still works.
 2. Run the build script with the as-of date of the data:
 
 ```bash
 pip3 install openpyxl
-python3 tools/build_data.py "/path/to/Turnover YTD_10.20.26.xlsx" --as-of 2026-10-20 --history "/path/to/Turnover.xlsx" --from 2025-10
+python3 tools/build_data.py "/path/to/MFG Turnover_10.20.26.xlsx" --as-of 2026-10-20 --from 2025-10
 ```
 
-   `--history` is the workbook with `Terms` and `Hires` tabs for the months before the main workbook's year (October to December 2025 today); rows before January of the as-of year are merged in, exact duplicates are dropped and reported. `--from` sets the first month shown. Both are optional: without them the dashboard covers January of the as-of year onward.
+   `--from` sets the first month shown (default: January of the as-of year). Tenure at exit is Separation Date minus Hire Date when the workbook has no `Tenure - Days` column. Exact duplicate rows are dropped and reported. Rows with no date (leftover dropdown cells) are skipped.
 
-   The script writes `data/turnover-data.json` and `data/data.js`, and copies the previous JSON to `data/archive/turnover-data-<date>.json`. It exits with an error if the separations cube does not add up to the number of MFG separations, and prints a warning for any hire marked "Terminated" that has no matching separation row.
+   Optional: `--history` merges an older workbook's `Terms` and `Hires` for months before the as-of year. `--rosters` names a workbook with the monthly roster tabs. The cleaned workbook has no roster tabs, so without `--rosters` the roster headcount by shift and the supervisor team sizes are carried forward from the previous JSON (Jan to Aug 2026 today), and the page says so.
+
+   The script writes `data/turnover-data.json` and `data/data.js`, and copies the previous JSON to `data/archive/turnover-data-<previous as-of>.json`. It exits with an error if the separations cube does not add up to the number of MFG plus SG&A separations, and prints a warning for any hire marked "Terminated" that has no matching separation row.
 
 3. Check the numbers:
 
@@ -45,7 +47,7 @@ python3 tools/build_data.py "/path/to/Turnover YTD_10.20.26.xlsx" --as-of 2026-1
 node tools/check.js
 ```
 
-   Update the expected values inside `calc.selfCheck` in `app.js` if the month has genuinely changed them (they are the handover's September 21 acceptance figures).
+   Update the expected values inside `calc.selfCheck` in `app.js` if the month has genuinely changed them (they are the September 22 reload's acceptance figures).
 
 4. Stamp the asset URLs so browsers pick up the new files (GitHub Pages caches for 10 minutes), then open `index.html` locally to eyeball it, commit and push:
 
@@ -60,9 +62,10 @@ git add -A && git commit -m "Data refresh through 2026-10-20" && git push
 
 ### Rules the build script applies
 
-- Nazdar US MFG = Company "Nazdar" and segment "MFG". Packaging and Processing by Department; everything else is "Other MFG".
+- Nazdar US MFG = Company "Nazdar" and segment "MFG". Packaging and Processing by Department; everything else is "Other MFG", which counts inside All MFG but is not offered as a filter.
+- Nazdar SG&A = Company "Nazdar" and segment "SG&A". Its separations sit in the same cube with department "SG&A" and shift "N/A", and its hires in the cohorts with group "SG&A", so the Department filter can flip to SG&A for comparison. Every MFG total leaves them out.
 - Category: a reason starting with "Retire" is Retirement; otherwise the Voluntary/Involuntary column.
-- Tenure bucket from "Tenure - Days": 0-30, 31-90, 91-180, over 180.
+- Tenure bucket from "Tenure - Days", or Separation Date minus Hire Date when that column is absent: 0-30, 31-90, 91-180, over 180.
 - Hire → separation match on last name + first name (case-insensitive, trimmed). If that fails for a "Terminated" hire, a unique last-name match with the same hire date is accepted and reported.
 - Coding quirks are preserved, not fixed (one Job Abandonment coded Involuntary, one Poor Attendance coded Voluntary, "Misconduct" vs "Gross Misconduct").
 - Spelling variants normalised: "Another Job" → "Another job", "indeed" → "Indeed", "Re-hire" → "Rehire", "Grayso Munson" → "Grayson Munson".

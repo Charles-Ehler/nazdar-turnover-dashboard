@@ -6,7 +6,9 @@
 const COLORS = { Voluntary: '#CF102D', Involuntary: '#323E48', Retirement: '#B9C1C9', red: '#CF102D', dark: '#323E48', gray: '#666666', light: '#B9C1C9', text: '#323E48', muted: '#666666' };
 const CATS = ['Voluntary', 'Involuntary', 'Retirement'];
 const TENURES = ['0-30 days', '31-90 days', '91-180 days', 'Over 180 days'];
-const HC_KEY = { 'All MFG': 'Nazdar MFG', Packaging: 'Packaging', Processing: 'Processing' };
+const HC_KEY = { 'All MFG': 'Nazdar MFG', Packaging: 'Packaging', Processing: 'Processing', 'SG&A': 'Nazdar SG&A' };
+// SG&A rows share the cube for the comparison view; every MFG total must leave them out.
+const isMfg = r => r.department !== 'SG&A';
 const DEFAULT_STATE = { cat: 'All', dept: 'All MFG', tenure: 'All', m0: 1, m1: 9 };
 
 // ---------- pure calculations ----------
@@ -16,7 +18,7 @@ const calc = {
     const ig = new Set(ignore);
     return r =>
       (ig.has('cat') || s.cat === 'All' || r.category === s.cat) &&
-      (ig.has('dept') || s.dept === 'All MFG' || r.department === s.dept) &&
+      (ig.has('dept') || (s.dept === 'All MFG' ? isMfg(r) : r.department === s.dept)) &&
       (ig.has('tenure') || s.tenure === 'All' || r.tenure_bucket === s.tenure) &&
       (ig.has('months') || (r.month >= s.m0 && r.month <= s.m1));
   },
@@ -40,16 +42,20 @@ const calc = {
     }
     return out;
   },
-  // Month x department x category matrix (Ed's Q1 in one view). Respects Tenure and Months, not Category or Department.
+  // Month x department x category matrix (Ed's Q1 in one view). Respects Tenure and Months, not Category.
+  // MFG view: Packaging, Processing, All MFG (the other MFG departments sit inside All MFG). SG&A view: SG&A alone.
   matrix(D, s) {
-    const depts = ['Packaging', 'Processing', 'Other MFG'];
+    const sga = s.dept === 'SG&A';
+    const depts = sga ? ['SG&A'] : ['Packaging', 'Processing', 'All MFG'];
+    const H = D.headcount_start_of_month[sga ? 'Nazdar SG&A' : 'Nazdar MFG'];
     const f = calc.pred(s, ['cat', 'dept', 'months']);
-    const cell = (m, dept, cat) => calc.sum(D, r => f(r) && (m == null || r.month === m) && (dept == null || r.department === dept) && (cat == null || r.category === cat));
-    const row = m => ({ label: m == null ? 'Total' : D.meta.months[m - 1], cols: depts.concat([null]).map(d => CATS.map(c => cell(m, d, c)).concat([cell(m, d, null)])), hc: m == null ? calc.avgHeadcount(D.headcount_start_of_month['Nazdar MFG'], s.m0, s.m1) : D.headcount_start_of_month['Nazdar MFG'][m - 1] });
+    const inDept = (r, d) => (d === 'All MFG' ? isMfg(r) : r.department === d);
+    const cell = (m, dept, cat) => calc.sum(D, r => f(r) && (m == null || r.month === m) && inDept(r, dept) && (cat == null || r.category === cat));
+    const row = m => ({ label: m == null ? 'Total' : D.meta.months[m - 1], cols: depts.map(d => CATS.map(c => cell(m, d, c)).concat([cell(m, d, null)])), hc: m == null ? calc.avgHeadcount(H, s.m0, s.m1) : H[m - 1] });
     const rows = []; for (let m = s.m0; m <= s.m1; m++) rows.push(row(m));
     rows.push(row(null));
-    rows.forEach(r => { r.rate = r.hc ? r.cols[3][3] / r.hc : null; });
-    return { depts: depts.concat(['All MFG']), rows };
+    rows.forEach(r => { r.rate = r.hc ? r.cols[r.cols.length - 1][3] / r.hc : null; });
+    return { depts, rows, sga };
   },
   ytd(D, s) {
     const seps = calc.sum(D, calc.pred(s));
@@ -71,7 +77,8 @@ const calc = {
     return { list, total, attn, attnShare: total ? attn / total : 0, depts };
   },
   cohorts(D, scope, source, fromMonth = 1) {
-    const rows = D.hire_cohorts.filter(r => r.hire_month >= fromMonth && (scope === 'all' || r.department_group === 'Frontline') && (source === 'All' || r.source === source));
+    const inScope = r => (scope === 'sga' ? r.department_group === 'SG&A' : scope === 'frontline' ? r.department_group === 'Frontline' : r.department_group !== 'SG&A');
+    const rows = D.hire_cohorts.filter(r => r.hire_month >= fromMonth && inScope(r) && (source === 'All' || r.source === source));
     const agg = keyFn => {
       const m = new Map();
       rows.forEach(r => {
@@ -89,17 +96,21 @@ const calc = {
   deptTable(D) {
     const H = D.headcount_start_of_month;
     const pp = H.Packaging.map((v, i) => v == null || H.Processing[i] == null ? null : v + H.Processing[i]);
-    const sga = D.sga_separations_by_month;
-    const mk = (name, seps, ret, hc) => { const avg = calc.avgHeadcount(hc); return { name, seps, ret, avg, ratio: avg ? seps / avg : null, monthly: avg ? seps / D.meta.months_elapsed / avg : null }; };
+    const mk = (name, seps, ret, hc) => { const avg = calc.avgHeadcount(hc); return { name, seps, ret, avg, ratio: avg ? seps / avg : null, exRet: avg ? (seps - ret) / avg : null, monthly: avg ? seps / D.meta.months_elapsed / avg : null }; };
     const d = dept => calc.sum(D, r => r.department === dept);
     const dr = dept => calc.sum(D, r => r.department === dept && r.category === 'Retirement');
     return [
       mk('Packaging', d('Packaging'), dr('Packaging'), H.Packaging),
       mk('Processing', d('Processing'), dr('Processing'), H.Processing),
       mk('Packaging + Processing', d('Packaging') + d('Processing'), dr('Packaging') + dr('Processing'), pp),
-      mk('All Nazdar MFG', calc.sum(D, () => true), calc.sum(D, r => r.category === 'Retirement'), H['Nazdar MFG']),
-      mk('Nazdar SG&A (contrast)', sga.reduce((a, r) => a + r.count, 0), sga.filter(r => r.category === 'Retirement').reduce((a, r) => a + r.count, 0), H['Nazdar SG&A']),
+      mk('All Nazdar MFG', calc.sum(D, isMfg), calc.sum(D, r => isMfg(r) && r.category === 'Retirement'), H['Nazdar MFG']),
+      mk('Nazdar SG&A (contrast)', d('SG&A'), dr('SG&A'), H['Nazdar SG&A']),
     ];
+  },
+  // MFG against SG&A over the whole window, retirements left out (SG&A exits are mostly retirements).
+  compare(D) {
+    const t = calc.deptTable(D), mfg = t[3], sga = t[4];
+    return { mfg, sga, times: mfg.exRet && sga.exRet ? mfg.exRet / sga.exRet : null };
   },
   shiftTable(D, s) {
     const R = D.roster_headcount_by_dept_shift;
@@ -119,7 +130,7 @@ const calc = {
   bridge(D, key) {
     const hc = key === 'Nazdar MFG' ? D.headcount_start_of_month['Nazdar MFG'] : D.headcount_start_of_month.Packaging.map((v, i) => v == null ? null : v + D.headcount_start_of_month.Processing[i]);
     const hires = D.hires_by_month[key];
-    const inDept = key === 'Nazdar MFG' ? () => true : r => r.department === 'Packaging' || r.department === 'Processing';
+    const inDept = key === 'Nazdar MFG' ? isMfg : r => r.department === 'Packaging' || r.department === 'Processing';
     return D.meta.months.map((label, i) => {
       const seps = calc.sum(D, r => inDept(r) && r.month === i + 1);
       const start = hc[i], next = hc[i + 1] ?? null, net = hires[i] - seps;
@@ -131,7 +142,7 @@ const calc = {
   selfCheck(D) {
     const E = D.expected_totals_for_validation, out = [];
     const jan = E.year_start_month_index, s = { ...DEFAULT_STATE, m0: jan, m1: D.meta.months.length };
-    const inYear = x => x.month >= jan;
+    const inYear = x => x.month >= jan && isMfg(x);
     const eq = (name, got, want) => out.push({ name, got, want, ok: JSON.stringify(got) === JSON.stringify(want) });
     const m = calc.monthly(D, s), y = calc.ytd(D, s), t = calc.tenure(D, s), r = calc.reasons(D, s), c = calc.cohorts(D, 'all', 'All', jan);
     eq('MFG separations YTD', y.seps, E.mfg_separations_ytd);
@@ -149,15 +160,21 @@ const calc = {
     eq('Attendance + abandonment share', Math.round(r.attnShare * 100), 54);
     eq('2026 MFG hires', c.total.hires, E.mfg_hires_2026);
     eq('Still employed', c.total.still_employed, E.mfg_hires_still_employed);
-    eq('Still employed share', Math.round(c.total.still_employed / c.total.hires * 100), 46);
+    eq('Still employed share', Math.round(c.total.still_employed / c.total.hires * 100), 47);
+    eq('MFG hires by month (Sep 22 reload)', D.hires_by_month['Nazdar MFG'], [0, 3, 1, 3, 1, 7, 2, 7, 9, 7, 15, 2]);
     eq('Retention 30', [c.total.retained_30, c.total.eligible_30], E.retention_30);
     eq('Retention 90', [c.total.retained_90, c.total.eligible_90], E.retention_90);
     eq('Retention 180', [c.total.retained_180, c.total.eligible_180], E.retention_180);
     eq('Retention rates %', [c.total.r30, c.total.r90, c.total.r180].map(v => Math.round(v * 100)), [65, 52, 22]);
     eq('Processing mid-shift', calc.sum(D, x => inYear(x) && x.department === 'Processing' && x.shift === 'Mid-Shift'), E.processing_mid_shift_separations);
-    const sga = D.sga_separations_by_month.filter(inYear);
-    eq('SG&A separations', sga.reduce((a, x) => a + x.count, 0), E.sga_separations_ytd);
-    eq('SG&A retirements', sga.filter(x => x.category === 'Retirement').reduce((a, x) => a + x.count, 0), E.sga_retirements);
+    const sg = { ...s, dept: 'SG&A' }, sy = calc.ytd(D, sg);
+    eq('SG&A separations', sy.seps, E.sga_separations_ytd);
+    eq('SG&A retirements', calc.sum(D, x => calc.pred(sg)(x) && x.category === 'Retirement'), E.sga_retirements);
+    eq('SG&A YTD rate % / avg headcount', [Math.round(sy.rate * 100), sy.avg], [7, 285.5]);
+    eq('SG&A by period, whole window', calc.monthly(D, { ...DEFAULT_STATE, m1: D.meta.months.length, dept: 'SG&A' }).map(x => x.total), [4, 3, 3, 2, 1, 2, 1, 2, 2, 3, 7, 1]);
+    eq('SG&A whole window seps / retirements', [calc.sum(D, x => x.department === 'SG&A'), calc.sum(D, x => x.department === 'SG&A' && x.category === 'Retirement')], [31, 13]);
+    eq('Oct to Dec 2025 headcount (Packaging, Processing, SG&A)', ['Packaging', 'Processing', 'Nazdar SG&A'].map(k => D.headcount_start_of_month[k].slice(0, 3)), [[31, 32, 32], [36, 37, 36], [285, 284, 286]]);
+    eq('Supervisor separations', D.supervisors_packaging_processing.rows.map(x => [x.supervisor, x.separations]), [['Tim Aranda', 16], ['Steve Hufft', 11], ['Grayson Munson', 9], ['Jayden Campbell', 4], ['Edwin Reyes', 3], ['Logan Borders', 2], ['Jeremy Harper', 1], ['Erwin Avila', 0], ['Jesse Mullins', 0], ['Joseph Nippert', 0]]);
     eq('Monthly MFG turnover % (fiscal periods)', m.map(x => x.rate == null ? 'n/a' : +(x.rate * 100).toFixed(1)), [2.7, 0.7, 3.4, 2.1, 4.7, 4.7, 2.0, 8.4, 'n/a']);
     eq('YTD rate % / avg headcount', [Math.round(y.rate * 100), y.avg], [34, 148.75]);
     const ft = { ...s, dept: 'Processing', tenure: '0-30 days' };
@@ -178,7 +195,6 @@ const full = m => { const [mo, yr] = String(m).split(' '); return (FULL[mo] || m
 const na = why => `<span class="na" title="${why}" aria-label="not available: ${why}">n/a</span>`;
 const NA_HC = 'No start-of-month headcount reported for this month yet';
 const NA_COHORT = 'Cohort too recent: no hires have reached this many days of service';
-const NA_DEPT = 'No headcount is reported for Other MFG (Plant Admin, Warehouse, QC)';
 const cell = (v, why) => v == null ? na(why) : v;
 const WORDS = ['', '', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
 const timesWord = r => WORDS[Math.round(r)] ? `${WORDS[Math.round(r)]} times` : `${Math.round(r)} times`;
@@ -282,6 +298,11 @@ const catColor = (cat, s) => s.cat === 'All' || s.cat === cat ? COLORS[cat] : CO
 let D, state = { ...DEFAULT_STATE };
 
 function deptName(s) { return s.dept === 'All MFG' ? 'manufacturing' : s.dept; }
+// One line, computed: how MFG turnover compares with SG&A once retirements are taken out.
+function compareLine() {
+  const c = calc.compare(D);
+  return c.times ? `MFG turnover runs ${c.times.toFixed(1)} times SG&A once retirements are excluded (${pct(c.mfg.exRet, 0)} vs ${pct(c.sga.exRet, 0)} of average headcount, ${windowLabel()})` : '';
+}
 function monthsLabel(s) { return s.m0 === s.m1 ? D.meta.months[s.m0 - 1] : `${D.meta.months[s.m0 - 1]} to ${D.meta.months[s.m1 - 1]}`; }
 function windowLabel() { return monthsLabel(DEFAULT_STATE); }
 
@@ -331,7 +352,7 @@ function renderKpis(s) {
   el('kpis').innerHTML =
     k(y.seps, `Separations, ${s.dept}, ${monthsLabel(s)}${s.cat === 'All' ? '' : ', ' + s.cat.toLowerCase()}${s.tenure === 'All' ? '' : ', ' + s.tenure}`, 'hero', monthly.length > 1 ? sparkline(monthly) + `<div class="l">By month, peak in ${full(D.meta.months[s.m0 - 1 + monthly.indexOf(Math.max(...monthly))])}</div>` : '') +
     k(all ? pct(t30 / all, 0) : na('No separations in this selection'), `Share gone within 30 days (${s.dept}, ${monthsLabel(s)})`) +
-    k(y.rate == null ? na(s.dept === 'Other MFG' ? NA_DEPT : NA_HC) : pct(y.rate, 0), `Separations ÷ average reported headcount, ${monthsLabel(s)} (${s.dept})`) +
+    k(y.rate == null ? na(NA_HC) : pct(y.rate, 0), `Separations ÷ average reported headcount, ${monthsLabel(s)} (${s.dept})`) +
     k(`${c.total.still_employed} <span style="font-size:18px">(${pct(c.total.still_employed / c.total.hires, 0)})</span>`, `MFG hires ${windowLabel()} still employed (not filtered)`) +
     k(c.total.hires, `Hired ${windowLabel()}, Nazdar MFG (not filtered)`);
   countUp();
@@ -382,8 +403,7 @@ function renderSection1(s) {
   const rated = m.filter(x => x.rate != null);
   const avgMonthly = rated.length ? rated.reduce((a, x) => a + x.rate, 0) / rated.length : null;
   const peakR = rated.length ? rated.reduce((a, b) => (b.rate > a.rate ? b : a)) : null;
-  const t12 = s.dept === 'Other MFG' ? 'Turnover % is not available for Other MFG (no headcount reported)'
-    : peakR ? `Turnover peaked at ${pct(peakR.rate)} in ${full(peakR.label)}; ${monthsLabel(s)} total is ${pct(y.rate, 0)} of average headcount (${num(y.avg)}), an average of ${pct(avgMonthly)} a month` : 'No turnover % available for this selection';
+  const t12 = (peakR ? `Turnover peaked at ${pct(peakR.rate)} in ${full(peakR.label)}; ${monthsLabel(s)} total is ${pct(y.rate, 0)} of average headcount (${num(y.avg)}), an average of ${pct(avgMonthly)} a month` : 'No turnover % available for this selection') + (s.dept === 'SG&A' ? `. ${compareLine()}` : '');
   figure('c12', {
     takeaway: t12 + '.',
     caption: `Monthly turnover % = separations ÷ start-of-month headcount (${HC_KEY[s.dept] || 'n/a'}). ${scopeTxt}. Gaps = no headcount reported. Dashed line = average monthly rate for ${monthsLabel(s)}; the period total (${pct(y.rate, 0)}) is in the title.`,
@@ -417,13 +437,16 @@ function renderSection1(s) {
 
   // 1.5 month x department matrix
   const mx = calc.matrix(D, s);
-  const head1 = `<tr><th scope="col" rowspan="2">Month</th>${mx.depts.map(d => `<th scope="colgroup" colspan="4" class="grp">${d === 'Other MFG' ? 'Other MFG (Plant Admin, Warehouse, QC)' : d}</th>`).join('')}<th scope="col" rowspan="2">MFG turnover %</th></tr>`;
+  const head1 = `<tr><th scope="col" rowspan="2">Month</th>${mx.depts.map(d => `<th scope="colgroup" colspan="4" class="grp">${d === 'All MFG' ? 'All MFG*' : d}</th>`).join('')}<th scope="col" rowspan="2">${mx.sga ? 'SG&amp;A' : 'MFG'} turnover %</th></tr>`;
   const head2 = `<tr>${mx.depts.map(() => '<th scope="col">Vol</th><th scope="col">Invol</th><th scope="col">Ret</th><th scope="col">Total</th>').join('')}</tr>`;
   const body = mx.rows.map((r, i) => `<tr${i === mx.rows.length - 1 ? ' class="total"' : ''}><th scope="row">${r.label}</th>${r.cols.map(c => c.map((v, j) => `<td class="${j === 3 ? 'tot' : ''}">${v || (j === 3 ? 0 : '')}</td>`).join('')).join('')}<td>${r.rate == null ? na(NA_HC) : pct(r.rate)}</td></tr>`).join('');
-  const mt = mx.rows[mx.rows.length - 1].cols;
+  const mt = mx.rows[mx.rows.length - 1].cols, all = mt[mt.length - 1];
+  const split = `${all[3]} (${all[0]} voluntary, ${all[1]} involuntary, ${all[2]} retirements)`;
   tableFigure('t15', {
-    takeaway: `By department: Packaging ${mt[0][3]}, Processing ${mt[1][3]}, Other MFG ${mt[2][3]}, all manufacturing ${mt[3][3]} (${mt[3][0]} voluntary, ${mt[3][1]} involuntary, ${mt[3][2]} retirements).`,
-    caption: `Every department and category by month, ${monthsLabel(s)}${s.tenure === 'All' ? '' : ', tenure ' + s.tenure}. Category and Department filters do not apply to this table. Turnover % = all MFG separations ÷ start-of-month MFG headcount.`,
+    takeaway: mx.sga ? `SG&A: ${split}.` : `By department: Packaging ${mt[0][3]}, Processing ${mt[1][3]}, all manufacturing ${split}.`,
+    caption: mx.sga
+      ? `SG&A separations by month and category, ${monthsLabel(s)}${s.tenure === 'All' ? '' : ', tenure ' + s.tenure}. The Category filter does not apply to this table. Turnover % = SG&A separations ÷ start-of-month SG&A headcount.`
+      : `Every department and category by month, ${monthsLabel(s)}${s.tenure === 'All' ? '' : ', tenure ' + s.tenure}. Category and Department filters do not apply to this table. Turnover % = all MFG separations ÷ start-of-month MFG headcount. *All MFG also includes the manufacturing departments outside Packaging and Processing (Plant Administration, Warehouse MFG, Quality Control MFG): ${all[3] - mt[0][3] - mt[1][3]} of the ${all[3]} here.`,
     html: `<div class="table-scroll"><table class="matrix"><thead>${head1}${head2}</thead><tbody>${body}</tbody></table></div>`,
   });
 }
@@ -432,7 +455,7 @@ function renderSection2() {
   const scope = el('f2-scope').value, source = el('f2-source').value;
   const c = calc.cohorts(D, scope, source);
   if (el('f2-source').options.length === 1) c.sources.forEach(src => el('f2-source').add(new Option(src)));
-  const scopeTxt = `${scope === 'all' ? 'All Nazdar MFG' : 'Packaging + Processing'} hires ${windowLabel()}${source === 'All' ? '' : ', source: ' + source}`;
+  const scopeTxt = `${{ all: 'All Nazdar MFG', frontline: 'Packaging + Processing', sga: 'Nazdar SG&A' }[scope]} hires ${windowLabel()}${source === 'All' ? '' : ', source: ' + source}`;
   const rateCell = (v, elig) => elig ? pct(v) : na(NA_COHORT);
   const T = c.total;
   tableFigure('t21', {
@@ -466,22 +489,33 @@ function renderSection2() {
   });
 }
 
+function rosterSpan() {
+  const R = Object.values(D.roster_headcount_by_dept_shift), have = D.meta.months.map((m, i) => R.some(v => v[i])).flatMap((ok, i) => (ok ? [i] : []));
+  return have.length ? `${D.meta.months[have[0]].slice(0, 3)} to ${D.meta.months[have[have.length - 1]]}` : 'none reported';
+}
 function renderSection3(s) {
   const dt = calc.deptTable(D);
   const pp = dt[2], mfg = dt[3];
   tableFigure('t31', {
-    takeaway: `Packaging + Processing account for ${pp.seps} of ${mfg.seps} MFG separations (${pct(pp.seps / mfg.seps, 0)}) with ${pct(pp.avg / mfg.avg, 0)} of the headcount.`,
+    takeaway: `Packaging + Processing account for ${pp.seps} of ${mfg.seps} MFG separations (${pct(pp.seps / mfg.seps, 0)}) with ${pct(pp.avg / mfg.avg, 0)} of the headcount. ${compareLine()}.`,
     caption: `${windowLabel()}, all categories. Average headcount = mean of the reported start-of-month headcounts. Average monthly rate = separations ÷ ${D.meta.months_elapsed} months elapsed ÷ average headcount.`,
     html: table(['Department', 'Separations', 'of which retirements', 'Average headcount', 'Separations ÷ avg headcount', 'Average monthly rate'],
       dt.map(x => [x.name, x.seps, x.ret, num(x.avg), cell(pct(x.ratio), NA_HC), cell(pct(x.monthly), NA_HC)])),
   });
+  el('t33').hidden = s.dept === 'SG&A';
+  if (s.dept === 'SG&A') {
+    tableFigure('t32', { takeaway: 'Shift is not recorded for SG&A.', caption: 'Set the Department filter to All MFG, Packaging or Processing to see separations by shift and supervisor.', html: '' });
+    if (charts.c32) { charts.c32.destroy(); delete charts.c32; }
+    el('c32').innerHTML = '';
+    return;
+  }
   const st = calc.shiftTable(D, s);
   const showReasons = st.some(x => x.attendance != null);
   const top = [...st].sort((a, b) => b.ratio - a.ratio)[0];
   const hdr = ['Department / shift', 'Separations', 'Voluntary', 'Avg roster headcount (reported months)', 'Separations ÷ headcount', 'Left within 90 days'].concat(showReasons ? ['Poor Attendance*', 'Job Abandonment*'] : []);
   tableFigure('t32', {
     takeaway: `${top.label} has the highest separations relative to team size: ${top.seps} separations against an average roster of ${num(top.avg)} (${pct(top.ratio, 0)}).`,
-    caption: `${windowLabel()}, all categories. Roster headcount = average of the months with a roster. ${showReasons ? `*Reason counts are ${s.dept} department totals, not by shift (the log does not code reasons by shift).` : 'Set the Department filter to Packaging or Processing to add attendance / abandonment counts (department totals; the log does not code reasons by shift).'}`,
+    caption: `${windowLabel()}, all categories. Roster headcount by shift from the monthly roster tabs, ${rosterSpan()}; average of the months with a roster. ${showReasons ? `*Reason counts are ${s.dept} department totals, not by shift (the log does not code reasons by shift).` : 'Set the Department filter to Packaging or Processing to add attendance / abandonment counts (department totals; the log does not code reasons by shift).'}`,
     html: table(hdr, st.map(x => [x.label, x.seps, x.vol, num(x.avg), pct(x.ratio), x.left90].concat(showReasons ? [x.attendance ?? '', x.abandon ?? ''] : []))),
   });
   figure('c32', {
@@ -533,7 +567,7 @@ function renderSection5() {
 }
 
 function renderSection6() {
-  const ai = calc.mi(D, 'Aug'), aug = calc.sum(D, r => r.month === ai), hc = D.headcount_start_of_month['Nazdar MFG'][ai - 1];
+  const ai = calc.mi(D, 'Aug'), aug = calc.sum(D, r => isMfg(r) && r.month === ai), hc = D.headcount_start_of_month['Nazdar MFG'][ai - 1];
   const ytdState = { ...DEFAULT_STATE, m0: D.meta.year_start_month_index };
   const m = calc.monthly(D, DEFAULT_STATE).filter(x => x.rate != null && x.month !== ai), prior = m.reduce((a, b) => (b.rate > a.rate ? b : a)), y = calc.ytd(D, ytdState);
   el('s6-body').innerHTML = `This dashboard uses Nazdar US manufacturing only, separations through 9/18, on the fiscal calendar the monthly report uses (August = ${D.meta.fiscal_periods ? D.meta.fiscal_periods[ai - 1].start.slice(5).replace('-', '/') + ' to ' + D.meta.fiscal_periods[ai - 1].end.slice(5).replace('-', '/') : 'calendar month'}). On that basis August is ${aug} ÷ ${hc} = ${pct(aug / hc)}, and the prior monthly high is ${full(prior.label)} at ${pct(prior.rate)}. The Hiring &amp; Retention Snapshot dated September 19 reported August at ${pct(D.meta.snapshot_reported_august_rate)}: the same ${aug} US separations plus 2 in UK plant administration, 15 ÷ 155, against the same prior high of 4.7%. For ${D.meta.months[D.meta.year_start_month_index - 1].slice(-4)} year to date, the snapshot's 29.7% divides 46 separations (43 US + 3 UK, through the August close on 9/5) by the August headcount of 155; this dashboard's ${pct(y.rate, 0)} divides ${y.seps} (${monthsLabel(ytdState)}) by the January to August average of ${num(y.avg)}. All of these are correct on their own definitions.`;
@@ -600,7 +634,8 @@ function init(data) {
   // Filters live in the URL so a view can be shared: #cat=Voluntary&dept=Processing&tenure=0-30+days&m=8-8
   const q = new URLSearchParams(location.hash.slice(1));
   const [qm0, qm1] = (q.get('m') || '').split('-').map(Number);
-  state = { ...state, ...(q.get('cat') && { cat: q.get('cat') }), ...(q.get('dept') && { dept: q.get('dept') }), ...(q.get('tenure') && { tenure: q.get('tenure') }), ...(qm0 && qm1 && { m0: qm0, m1: qm1 }) };
+  // An old link may still carry dept=Other MFG, which is no longer offered: fall back to All MFG.
+  state = { ...state, ...(q.get('cat') && { cat: q.get('cat') }), ...(HC_KEY[q.get('dept')] && { dept: q.get('dept') }), ...(q.get('tenure') && { tenure: q.get('tenure') }), ...(qm0 && qm1 && { m0: qm0, m1: qm1 }) };
   renderStory();
   pagers();
   // The filter bar wraps at narrower widths; keep the tab rail parked just below it.

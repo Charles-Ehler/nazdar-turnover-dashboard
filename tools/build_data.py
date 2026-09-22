@@ -2,14 +2,15 @@
 """Regenerate data/turnover-data.json from Taylor's workbook(s).
 
 Usage:
-    python3 tools/build_data.py "Turnover YTD_9.21.26.xlsx" --as-of 2026-09-21 \
-        --history "Turnover.xlsx" --from 2025-10
+    python3 tools/build_data.py "MFG Turnover_9.22.26.xlsx" --as-of 2026-09-22 --from 2025-10
 
 Requires: pip install openpyxl
 
 Inputs:
-- The main workbook (tabs `2026 YTD Terms`, `2026 YTD Hires`, `2026 Headcount`, roster tabs `1-26`, `2-26`, ...).
-  It is the only source of headcount, rosters, hire source and hire status.
+- The main workbook: tabs `Terms`, `Hires`, `Headcount` (Taylor's cleaned file, Oct 2025 onward in one place).
+  The older layout (`2026 YTD Terms`, `2026 YTD Hires`, `2026 Headcount`, roster tabs `1-26`, ...) still works.
+- Rosters: roster tabs from the main workbook, else from `--rosters`, else the roster values already in the
+  previous data/turnover-data.json (the cleaned workbook has no roster tabs).
 - Optional `data/headcount-history.csv` (series,month,headcount): start-of-month headcounts for months the main workbook
   lacks. Fills gaps only; the workbook always wins.
 - Optional `--history`: a workbook with `Terms` and `Hires` tabs reaching back before the main workbook's year.
@@ -24,7 +25,8 @@ Rules (handover, section 8):
 - Nazdar US MFG = Company "Nazdar" and segment "MFG" (or "Manufacturing"); Packaging / Processing by Department;
   everything else "Other MFG".
 - Category: reason starting with "Retire" -> Retirement; otherwise the Voluntary/Involuntary column.
-- Tenure bucket from "Tenure - Days": <=30, 31-90, 91-180, >180.
+- Tenure bucket from "Tenure - Days", or Separation Date - Hire Date when that column is absent: <=30, 31-90, 91-180, >180.
+- Nazdar SG&A separations go into the same cube with department "SG&A" and shift "N/A", for the comparison view.
 - Hire -> separation match on last name + first name (case-insensitive, trimmed); a "Terminated" hire with no exact
   match is accepted on a unique last-name + hire-date match, and reported; anything still unmatched is warned about.
 - Coding quirks are preserved, not fixed. Spelling variants normalised (NORMALISE).
@@ -96,6 +98,16 @@ def tenure_bucket(days):
     return "0-30 days" if days <= 30 else "31-90 days" if days <= 90 else "91-180 days" if days <= 180 else "Over 180 days"
 
 
+def tenure_days(t):
+    if t.get("Tenure - Days") is not None:
+        return int(t["Tenure - Days"])
+    return (t["Separation Date"] - t["Hire Date"]).days
+
+
+def pick(wb, *names):
+    return next(n for n in names if n in wb.sheetnames)
+
+
 def category(reason, vol_invol):
     return "Retirement" if norm(reason).startswith("Retire") else norm(vol_invol)
 
@@ -121,7 +133,7 @@ def dedupe(rows, key, what):
     return out
 
 
-def build(xlsx, as_of, history=None, start=None):
+def build(xlsx, as_of, history=None, start=None, rosters=None, previous=None):
     wb = openpyxl.load_workbook(xlsx, read_only=True, data_only=True)
     start = start or dt.date(as_of.year, 1, 1)
     n_months = (as_of.year - start.year) * 12 + as_of.month - start.month + 1
@@ -156,8 +168,8 @@ def build(xlsx, as_of, history=None, start=None):
         main_year_start = fiscal[jan_idx - 1][1]  # history rows before the first fiscal period of the year
 
     # ---- Terms and hires (main workbook, plus history before the main year) ----
-    terms = [t for t in sheet_rows(wb, "2026 YTD Terms") if in_window(t["Separation Date"])]
-    hires = [h for h in sheet_rows(wb, "2026 YTD Hires") if in_window(h["Hire Date"])]
+    terms = [t for t in sheet_rows(wb, pick(wb, "Terms", "2026 YTD Terms")) if t.get("Separation Date") and in_window(t["Separation Date"])]
+    hires = [h for h in sheet_rows(wb, pick(wb, "Hires", "2026 YTD Hires")) if h.get("Hire Date") and in_window(h["Hire Date"])]
     if history:
         hb = openpyxl.load_workbook(history, read_only=True, data_only=True)
         ht = [t for t in sheet_rows(hb, "Terms") if t["Separation Date"].date() < main_year_start and in_window(t["Separation Date"])]
@@ -169,28 +181,32 @@ def build(xlsx, as_of, history=None, start=None):
         terms = ht + terms
         hires = hh + hires
     terms = dedupe(terms, lambda t: (key_name(t["Last Name"], t["First Name"]), t["Separation Date"]), "separation")
+    hires = dedupe(hires, lambda h: (key_name(h["Last Name"], h["First Name"]), h["Hire Date"]), "hire")
     mfg_terms = [t for t in terms if is_us(t, "MFG")]
     sga_terms = [t for t in terms if is_us(t, "SG&A")]
     mfg_hires = [h for h in hires if is_us(h, "MFG")]
+    sga_hires = [h for h in hires if is_us(h, "SG&A")]
 
     cube, reasons = Counter(), Counter()
-    for t in mfg_terms:
-        m, dep = idx(t["Separation Date"]), department(t["Department"])
-        cat = category(t["Separation Reason"], t["Voluntary/ Involuntary"])
-        cube[(m, dep, norm(t.get("Shift")) or "N/A", cat, tenure_bucket(t["Tenure - Days"]))] += 1
-        reasons[(m, dep, norm(t["Separation Reason"]), cat)] += 1
+    for sga, rows in ((False, mfg_terms), (True, sga_terms)):
+        for t in rows:
+            m = idx(t["Separation Date"])
+            dep = "SG&A" if sga else department(t["Department"])
+            cat = category(t["Separation Reason"], t["Voluntary/ Involuntary"])
+            shift = "N/A" if sga else norm(t.get("Shift")) or "N/A"
+            cube[(m, dep, shift, cat, tenure_bucket(tenure_days(t)))] += 1
+            reasons[(m, dep, norm(t["Separation Reason"]), cat)] += 1
     cube_rows = [{"month": k[0], "department": k[1], "shift": k[2], "category": k[3], "tenure_bucket": k[4], "count": v} for k, v in sorted(cube.items())]
-    if sum(cube.values()) != len(mfg_terms):
-        sys.exit(f"FATAL: cube total {sum(cube.values())} != MFG terms {len(mfg_terms)}")
+    if sum(cube.values()) != len(mfg_terms) + len(sga_terms):
+        sys.exit(f"FATAL: cube total {sum(cube.values())} != MFG + SG&A terms {len(mfg_terms) + len(sga_terms)}")
     reason_rows = [{"month": k[0], "department": k[1], "reason": k[2], "category": k[3], "count": v} for k, v in sorted(reasons.items())]
-    sga = Counter((idx(t["Separation Date"]), category(t["Separation Reason"], t["Voluntary/ Involuntary"])) for t in sga_terms)
-    sga_rows = [{"month": k[0], "category": k[1], "count": v} for k, v in sorted(sga.items())]
 
     # ---- Headcount (main workbook only; other months stay null) ----
-    hc_names = {"Nazdar MFG": "Nazdar MFG", "Packaging Headcount": "Packaging", "Processing Headcount": "Processing", "Nazdar SG&A": "Nazdar SG&A"}
+    hc_names = {"Nazdar MFG": "Nazdar MFG", "Packaging Headcount": "Packaging", "Processing Headcount": "Processing", "Nazdar SG&A": "Nazdar SG&A",
+                "Packaging": "Packaging", "Processing": "Processing"}
     headcount = {v: [None] * n_months for v in hc_names.values()}
     month_cols = {}
-    for r in wb["2026 Headcount"].iter_rows(values_only=True):
+    for r in wb[pick(wb, "Headcount", "2026 Headcount")].iter_rows(values_only=True):
         for i, v in enumerate(r):
             # column headers are first-of-month dates used as month labels, so map by label (a fiscal period can start in the prior month)
             if isinstance(v, dt.datetime) and f"{MON[v.month - 1]} {v.year}" in months:
@@ -211,14 +227,17 @@ def build(xlsx, as_of, history=None, start=None):
                 headcount[row["series"]][months.index(label)] = int(row["headcount"])
 
     # ---- Rosters: dept|shift headcount and supervisor team sizes ----
+    rwb = wb
+    if rosters and not any(f"{m}-{str(y)[2:]}" in wb.sheetnames for m, y in ym):
+        rwb = openpyxl.load_workbook(rosters, read_only=True, data_only=True)
     roster_tabs = [(i, f"{m}-{str(y)[2:]}") for i, (m, y) in enumerate(ym)]
-    roster_tabs = [(i, t) for i, t in roster_tabs if t in wb.sheetnames]
+    roster_tabs = [(i, t) for i, t in roster_tabs if t in rwb.sheetnames]
     dept_shift = {f"{d}|{s}": [None] * n_months for d in FRONTLINE for s in SHIFTS}
     sup_team = defaultdict(lambda: [0] * n_months)  # keyed by supervisor last name
     sup_roster_name, sup_depts, sup_shifts = {}, defaultdict(Counter), defaultdict(Counter)
     for i, tab in roster_tabs:
         c = Counter()
-        for r in roster_rows(wb, tab):
+        for r in roster_rows(rwb, tab):
             if norm(r["Company"]) != "Nazdar" or norm(r["Department"]) not in FRONTLINE:
                 continue
             c[f"{norm(r['Department'])}|{norm(r['Shift'])}"] += 1
@@ -229,6 +248,14 @@ def build(xlsx, as_of, history=None, start=None):
             sup_shifts[last][norm(r["Shift"])] += 1
         for k in dept_shift:
             dept_shift[k][i] = c[k]
+    prev_sup = {}
+    if not roster_tabs and previous is not None:
+        # No roster tabs anywhere: carry the last known roster values forward rather than showing nothing.
+        if previous["meta"]["months"] != months:
+            sys.exit("FATAL: no roster tabs, and the previous JSON covers different months; pass --rosters")
+        dept_shift = previous["roster_headcount_by_dept_shift"]
+        prev_sup = {r["supervisor"].split()[-1].lower(): r for r in previous["supervisors_packaging_processing"]["rows"]}
+        print("NOTE: no roster tabs; roster headcount and supervisor team sizes kept from the previous JSON", file=sys.stderr)
 
     # ---- Supervisor view (Packaging + Processing terms, whole window) ----
     sup = {}
@@ -238,7 +265,10 @@ def build(xlsx, as_of, history=None, start=None):
         s = sup.setdefault(norm(t["Supervisor"]), Counter())
         s["separations"] += 1
         s["voluntary"] += category(t["Separation Reason"], t["Voluntary/ Involuntary"]) == "Voluntary"
-        s["left_within_90_days"] += int(t["Tenure - Days"]) <= 90
+        s["left_within_90_days"] += tenure_days(t) <= 90
+    for last, r in prev_sup.items():  # carried-forward supervisors with zero separations still appear
+        if not any(last == n.split()[-1].lower() for n in sup):
+            sup[r["supervisor"]] = Counter()
     for last, full in sup_roster_name.items():  # supervisors on the roster with zero separations still appear
         if not any(last == n.split()[-1].lower() for n in sup):
             l, f = [x.strip() for x in full.split(",")]
@@ -248,7 +278,7 @@ def build(xlsx, as_of, history=None, start=None):
         last = name.split()[-1].lower()  # ponytail: match terms to roster on last name; unique for this plant
         team = sup_team.get(last, [0] * n_months)
         active = [x for x in team if x]
-        sup_rows.append({
+        row = {
             "supervisor": name,
             "departments": " / ".join(k for k, _ in sup_depts[last].most_common()),
             "shifts": " / ".join(k for k, _ in sup_shifts[last].most_common()),
@@ -256,7 +286,10 @@ def build(xlsx, as_of, history=None, start=None):
             "roster_team_size_by_month": team,
             "avg_team_size_active_months": round(sum(active) / len(active), 2) if active else 0,
             "months_on_roster": len(active),
-        })
+        }
+        if last in prev_sup:
+            row.update({k: prev_sup[last][k] for k in ("departments", "shifts", "roster_team_size_by_month", "avg_team_size_active_months", "months_on_roster")})
+        sup_rows.append(row)
     sup_rows.sort(key=lambda r: (-r["separations"], -r["voluntary"], r["supervisor"]))
 
     # ---- Hires and cohorts ----
@@ -278,13 +311,13 @@ def build(xlsx, as_of, history=None, start=None):
 
     cohorts = {}
     hires_by_month = {"Nazdar MFG": [0] * n_months, "Packaging + Processing": [0] * n_months}
-    for h in mfg_hires:
+    for h in mfg_hires + sga_hires:
         hd = h["Hire Date"]
         t = find_term(h)
         if norm(h.get("Status")) == "Terminated" and t is None:
             print(f"WARNING: hire {h['First Name']} {h['Last Name']} is Terminated but has no matching separation row", file=sys.stderr)
         days_to_sep = (t["Separation Date"] - hd).days if t else None
-        grp = "Frontline" if norm(h["Department"]) in FRONTLINE else "Other MFG"
+        grp = "SG&A" if is_us(h, "SG&A") else "Frontline" if norm(h["Department"]) in FRONTLINE else "Other MFG"
         c = cohorts.setdefault((idx(hd), grp, norm(h.get("Hire Source")) or "Not recorded"), Counter())
         c["hires"] += 1
         c["still_employed"] += t is None
@@ -293,6 +326,8 @@ def build(xlsx, as_of, history=None, start=None):
             if (as_of - hd.date()).days >= n:
                 c[f"eligible_{n}"] += 1
                 c[f"retained_{n}"] += days_to_sep is None or days_to_sep > n
+        if grp == "SG&A":  # the bridge and hire counts stay MFG only
+            continue
         hires_by_month["Nazdar MFG"][idx(hd) - 1] += 1
         if grp == "Frontline":
             hires_by_month["Packaging + Processing"][idx(hd) - 1] += 1
@@ -303,8 +338,9 @@ def build(xlsx, as_of, history=None, start=None):
 
     # ---- Validation totals: the as-of year only (the handover's acceptance figures) ----
     Y = lambda r: r["month"] >= jan_idx  # noqa: E731
-    S = lambda f: sum(r["count"] for r in cube_rows if Y(r) and f(r))  # noqa: E731
-    yc = [r for r in cohort_rows if r["hire_month"] >= jan_idx]
+    S = lambda f: sum(r["count"] for r in cube_rows if Y(r) and r["department"] != "SG&A" and f(r))  # noqa: E731
+    G = lambda f: sum(r["count"] for r in cube_rows if Y(r) and r["department"] == "SG&A" and f(r))  # noqa: E731
+    yc = [r for r in cohort_rows if r["hire_month"] >= jan_idx and r["department_group"] != "SG&A"]
     R = lambda n: [sum(r[f"retained_{n}"] for r in yc), sum(r[f"eligible_{n}"] for r in yc)]  # noqa: E731
     fr = [r for r in reason_rows if Y(r) and r["department"] in FRONTLINE]
     expected = {
@@ -324,13 +360,13 @@ def build(xlsx, as_of, history=None, start=None):
         "mfg_hires_still_employed": sum(r["still_employed"] for r in yc),
         "retention_30": R(30), "retention_90": R(90), "retention_180": R(180),
         "processing_mid_shift_separations": S(lambda r: r["department"] == "Processing" and r["shift"] == "Mid-Shift"),
-        "sga_separations_ytd": sum(r["count"] for r in sga_rows if Y(r)),
-        "sga_retirements": sum(r["count"] for r in sga_rows if Y(r) and r["category"] == "Retirement"),
+        "sga_separations_ytd": G(lambda r: True),
+        "sga_retirements": G(lambda r: r["category"] == "Retirement"),
     }
 
     last_sep = max(t["Separation Date"] for t in mfg_terms).date()
     aug_i = next(i for i, l in enumerate(months) if l == f"Aug {as_of.year}")
-    aug = sum(r["count"] for r in cube_rows if r["month"] == aug_i + 1)
+    aug = sum(r["count"] for r in cube_rows if r["month"] == aug_i + 1 and r["department"] != "SG&A")
     aug_hc = headcount["Nazdar MFG"][aug_i]
     no_hc = [months[i] for i, v in enumerate(headcount["Nazdar MFG"]) if v is None]
     return {
@@ -358,16 +394,21 @@ def build(xlsx, as_of, history=None, start=None):
         "roster_headcount_by_dept_shift": dept_shift,
         "separations_cube": cube_rows,
         "separation_reasons": reason_rows,
-        "sga_separations_by_month": sga_rows,
         "hire_cohorts": cohort_rows,
         "expected_totals_for_validation": expected,
         "supervisors_packaging_processing": {
             "note": "Counts follow shift and team size; supervisors changed during the year (Logan Borders left in April, Edwin Reyes in June), "
-                    "so read this as a coverage view, not a performance measure. Team sizes come from the months with a roster.",
+                    "so read this as a coverage view, not a performance measure. Team sizes come from the monthly roster tabs, "
+                    f"{roster_span(dept_shift, months)}.",
             "rows": sup_rows,
         },
         "hires_by_month": hires_by_month,
     }
+
+
+def roster_span(dept_shift, months):
+    have = [i for i in range(len(months)) if any(v[i] for v in dept_shift.values())]
+    return f"{months[have[0]][:3]} to {months[have[-1]]}" if have else "none reported"
 
 
 def main():
@@ -375,22 +416,26 @@ def main():
     ap.add_argument("xlsx")
     ap.add_argument("--as-of", default=dt.date.today().isoformat())
     ap.add_argument("--history", help="workbook with Terms and Hires tabs for earlier months")
+    ap.add_argument("--rosters", help="workbook with the monthly roster tabs, when the main workbook has none")
     ap.add_argument("--from", dest="start", help="first month of the window, YYYY-MM (default: January of the as-of year)")
     ap.add_argument("--out", default=Path(__file__).resolve().parent.parent / "data" / "turnover-data.json")
     a = ap.parse_args()
     as_of = dt.date.fromisoformat(a.as_of)
     start = dt.date.fromisoformat(a.start + "-01") if a.start else None
-    data = build(a.xlsx, as_of, a.history, start)
     out = Path(a.out)
-    if out.exists():
-        archive = out.parent / "archive" / f"turnover-data-{as_of}.json"
+    previous = json.loads(out.read_text(encoding="utf-8")) if out.exists() else None
+    data = build(a.xlsx, as_of, a.history, start, a.rosters, previous)
+    if previous:
+        archive = out.parent / "archive" / f"turnover-data-{previous['meta']['as_of']}.json"
         archive.parent.mkdir(exist_ok=True)
         shutil.copy(out, archive)
-    out.write_text(json.dumps(data, indent=1, ensure_ascii=False) + "\n")
-    (out.parent / "data.js").write_text("window.TURNOVER_DATA = " + json.dumps(data, ensure_ascii=False) + ";\n")
+    out.write_text(json.dumps(data, indent=1, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
+    (out.parent / "data.js").write_text("window.TURNOVER_DATA = " + json.dumps(data, ensure_ascii=False) + ";\n", encoding="utf-8", newline="\n")
     e = data["expected_totals_for_validation"]
-    print(f"wrote {out} and data.js: {len(data['meta']['months'])} months, {sum(r['count'] for r in data['separations_cube'])} MFG separations "
-          f"({e['mfg_separations_ytd']} in {e['year']}), {sum(r['hires'] for r in data['hire_cohorts'])} MFG hires ({e['mfg_hires_2026']} in {e['year']})")
+    seps = sum(r["count"] for r in data["separations_cube"] if r["department"] != "SG&A")
+    hires = sum(r["hires"] for r in data["hire_cohorts"] if r["department_group"] != "SG&A")
+    print(f"wrote {out} and data.js: {len(data['meta']['months'])} months, {seps} MFG separations ({e['mfg_separations_ytd']} in {e['year']}), "
+          f"{hires} MFG hires ({e['mfg_hires_2026']} in {e['year']}), {e['sga_separations_ytd']} SG&A separations in {e['year']}")
 
 
 if __name__ == "__main__":
