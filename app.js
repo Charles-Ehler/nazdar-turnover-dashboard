@@ -453,7 +453,8 @@ function renderSection1(s) {
 function renderSection2() {
   const scope = el('f2-scope').value, source = el('f2-source').value;
   const c = calc.cohorts(D, scope, source);
-  if (el('f2-source').options.length === 1) c.sources.forEach(src => el('f2-source').add(new Option(src)));
+  // Hiring Event is left out of the picker on purpose (the job fair was already covered with Ed); those hires still count under All.
+  if (el('f2-source').options.length === 1) c.sources.filter(src => src !== 'Hiring Event').forEach(src => el('f2-source').add(new Option(src)));
   const scopeTxt = `${{ all: 'All Nazdar MFG', frontline: 'Packaging + Processing', sga: 'Nazdar SG&A' }[scope]} hires ${windowLabel()}${source === 'All' ? '' : ', source: ' + source}`;
   const rateCell = (v, elig) => elig ? pct(v) : na(NA_COHORT);
   const T = c.total;
