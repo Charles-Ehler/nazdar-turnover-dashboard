@@ -84,6 +84,10 @@ git add -A && git commit -m "Data refresh through 2026-10-20" && git push
 - The correlation is Pearson r between monthly MFG separations and monthly MFG injuries, over the selected periods that have both, reported only from 8 months up. The page also shows r with the month of most separations left out, so one month cannot carry the result unseen.
 - Injuries chart and separations chart share the month axis but not a y-axis: two scales on one chart would make any two series look related.
 
+## Sharing a view
+
+The address bar carries the section and the filters, so a link opens the same view: `#injuries&dept=SG%26A&m=4-12`. Section names: `overview`, `turnover`, `retention`, `shifts`, `injuries`, `bridge`, `voice`, `basis`. Older links in the `#tab=s2` form still open the right section.
+
 ## Definitions used on the page
 
 - Turnover % (month) = separations in the month ÷ start-of-month headcount for the selected department.

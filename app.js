@@ -704,6 +704,10 @@ function renderSection7(s) {
 }
 
 const TABS = ['s0', 's1', 's2', 's3', 's7', 's5', 's4', 's6'];
+// Readable names in the address bar (#injuries, #retention&dept=Packaging). Section ids stay fixed inside the page,
+// and old links (#tab=s2) still resolve.
+const SLUG = { s0: 'overview', s1: 'turnover', s2: 'retention', s3: 'shifts', s7: 'injuries', s5: 'bridge', s4: 'voice', s6: 'basis' };
+const tabFrom = x => (TABS.includes(x) ? x : Object.keys(SLUG).find(k => SLUG[k] === x));
 let tab = 's0';
 function showTab(id, scrollTop = true) {
   if (!TABS.includes(id)) id = 's0';
@@ -721,17 +725,17 @@ function pagers() {
     const sec = el(id); let p = sec.querySelector('.pager');
     if (!p) { p = document.createElement('nav'); p.className = 'pager'; p.setAttribute('aria-label', 'Previous and next section'); sec.appendChild(p); }
     const name = t => document.querySelector(`.tabs a[data-tab="${t}"] span`).textContent;
-    p.innerHTML = (i > 0 ? `<a href="#tab=${TABS[i - 1]}" class="prev"><span>Previous</span>${name(TABS[i - 1])}</a>` : '') + (i < TABS.length - 1 ? `<a href="#tab=${TABS[i + 1]}" class="next"><span>Next</span>${name(TABS[i + 1])}</a>` : '');
+    p.innerHTML = (i > 0 ? `<a href="#${SLUG[TABS[i - 1]]}" class="prev"><span>Previous</span>${name(TABS[i - 1])}</a>` : '') + (i < TABS.length - 1 ? `<a href="#${SLUG[TABS[i + 1]]}" class="next"><span>Next</span>${name(TABS[i + 1])}</a>` : '');
   });
 }
 function writeHash() {
   const q = new URLSearchParams();
-  if (tab !== 's0') q.set('tab', tab);
   if (state.cat !== 'All') q.set('cat', state.cat);
   if (state.dept !== 'All MFG') q.set('dept', state.dept);
   if (state.tenure !== 'All') q.set('tenure', state.tenure);
   if (state.m0 !== DEFAULT_STATE.m0 || state.m1 !== DEFAULT_STATE.m1) q.set('m', `${state.m0}-${state.m1}`);
-  history.replaceState(null, '', q.toString() ? '#' + q.toString() : location.pathname + location.search);
+  const h = [tab !== 's0' ? SLUG[tab] : '', q.toString()].filter(Boolean).join('&');
+  history.replaceState(null, '', h ? '#' + h : location.pathname + location.search);
 }
 
 function setState(patch) {
@@ -766,7 +770,7 @@ function init(data) {
   ['f2-scope', 'f2-source'].forEach(id => el(id).addEventListener('change', renderSection2));
   el('btn-reset').onclick = () => setState({ ...DEFAULT_STATE });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') setState({ ...DEFAULT_STATE }); });
-  // Filters live in the URL so a view can be shared: #cat=Voluntary&dept=Processing&tenure=0-30+days&m=8-8
+  // The section and filters live in the URL so a view can be shared: #turnover&cat=Voluntary&dept=Processing&tenure=0-30+days&m=8-8
   const q = new URLSearchParams(location.hash.slice(1));
   const [qm0, qm1] = (q.get('m') || '').split('-').map(Number);
   // An old link may still carry dept=Other MFG, which is no longer offered: fall back to All MFG.
@@ -776,10 +780,11 @@ function init(data) {
   // The filter bar wraps at narrower widths; keep the tab rail parked just below it.
   new ResizeObserver(() => document.documentElement.style.setProperty('--fb', document.querySelector('.filterbar').offsetHeight + 'px')).observe(document.querySelector('.filterbar'));
   document.addEventListener('click', e => {
-    const a = e.target.closest('a[href^="#tab="]');
-    if (a) { e.preventDefault(); showTab(a.getAttribute('href').slice(5)); }
+    const a = e.target.closest('a[href^="#"]'), t = a && tabFrom(a.getAttribute('href').slice(1).replace(/^tab=/, ''));
+    if (t) { e.preventDefault(); showTab(t); }
   });
-  showTab(q.get('tab') || 's0', false);
+  // #injuries&dept=SG%26A, or the old #tab=s7 form
+  showTab(tabFrom(q.get('tab')) || [...q.keys()].map(tabFrom).find(Boolean) || 's0', false);
   el('notes').innerHTML = D.meta.notes.map(n => `<li>${esc(n)}</li>`).join('');
   el('footer-line').textContent = `As of ${D.meta.as_of}. Source: HR separations and hires log, aggregated ${D.meta.as_of}.`;
   renderAll();
