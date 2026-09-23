@@ -194,9 +194,9 @@ const calc = {
     eq('August MFG', m[calc.mi(D, 'Aug') - jan].total, E.august_mfg);
     eq('July MFG', m[calc.mi(D, 'Jul') - jan].total, 3);
     eq('Left within 30 days', t[0].n, E.left_within_30_days);
-    eq('Left within 30 days share', Math.round(t[0].share * 100), 38);
+    eq('Left within 30 days share', Math.round(t[0].share * 100), 36);
     eq('Left within 180 days', t[0].n + t[1].n + t[2].n, E.left_within_180_days);
-    eq('Left within 180 days share', Math.round((t[0].n + t[1].n + t[2].n) / y.seps * 100), 64);
+    eq('Left within 180 days share', Math.round((t[0].n + t[1].n + t[2].n) / y.seps * 100), 62);
     eq('Packaging + Processing exits', r.total, E.frontline_total);
     eq('Poor Attendance + Job Abandonment', r.attn, E.frontline_attendance_plus_abandonment);
     eq('Attendance + abandonment share', Math.round(r.attnShare * 100), 54);
@@ -227,7 +227,7 @@ const calc = {
       }));
       const whole = { ...DEFAULT_STATE, m0: 1, m1: D.meta.months.length }, w = calc.wc(D, whole), c = calc.wcCorrelation(D, whole);
       eq('WC MFG Oct 2025 to Aug 2026: injuries, lost, restricted', [w.injuries, w.lost, w.restricted], [7, 6, 206]);
-      eq('WC MFG injuries by tenure (0-30, 31-90, 91-180, over 180) + unknown', [...w.byTenure, w.unknown], [1, 1, 1, 3, 1]);
+      eq('WC MFG injuries by tenure (0-30, 31-90, 91-180, over 180) + unknown', [...w.byTenure, w.unknown], [1, 1, 1, 4, 0]);
       eq('WC MFG injuries per 100 avg headcount', +w.per100.toFixed(2), 4.71);
       eq('WC MFG separations vs injuries r, months, r without Aug 2026', [+c.r.toFixed(2), c.n, +c.without.r.toFixed(2)], [0.71, 11, 0.1]);
     }

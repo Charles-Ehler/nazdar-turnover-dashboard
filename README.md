@@ -14,6 +14,7 @@ A single-page, filterable dashboard answering the six production hiring and rete
 | `data/data.js` | The same JSON inlined, used automatically when the page is opened from `file://` and `fetch` is blocked |
 | `data/archive/` | One dated copy of the JSON per refresh, so month-over-month changes are traceable |
 | `data/fiscal-periods.csv` | Optional. `label,start,end` for each fiscal period; when present, dates are bucketed by fiscal period instead of calendar month, to match the monthly report. Built from the US close dates in Accounting's "Closing Dates / Billing Days" workbooks; add next year's periods when they are published. Starts at Jan 2025 so the workers' comp data can be checked back to its first month; the dashboard window itself starts at `--from`. |
+| `data/hire-date-corrections.csv` | HR-confirmed hire dates (`last_name,first_name,hire_date,source`) that replace a wrong Hire Date on a Terms row, for tenure at exit and at injury. The build reports each one it applies. Delete a line once Taylor's workbook carries the right date. |
 | `data/headcount-history.csv` | Start-of-month headcounts for months the workbook lacks (Oct to Dec 2025 today). Fills gaps only. |
 | `tools/build_data.py` | Regenerates `data/turnover-data.json` and `data/data.js` from Taylor's workbook |
 | `tools/check.js` | Runs the acceptance checks against the JSON without a browser |

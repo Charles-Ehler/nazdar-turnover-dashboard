@@ -459,7 +459,7 @@
    "department": "Packaging",
    "shift": "Mid-Shift",
    "category": "Voluntary",
-   "tenure_bucket": "0-30 days",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -1992,8 +1992,8 @@
   "packaging": 23,
   "processing": 18,
   "august_mfg": 13,
-  "left_within_30_days": 19,
-  "left_within_180_days": 32,
+  "left_within_30_days": 18,
+  "left_within_180_days": 31,
   "frontline_attendance_plus_abandonment": 22,
   "frontline_total": 41,
   "mfg_hires_2026": 53,
@@ -2071,7 +2071,7 @@
     "shifts": "Mid-Shift",
     "separations": 9,
     "voluntary": 6,
-    "left_within_90_days": 7,
+    "left_within_90_days": 6,
     "roster_team_size_by_month": [
      0,
      0,
@@ -2650,12 +2650,12 @@
    "lost_time_days": 0,
    "restricted_duty_days": 35,
    "injuries_first_180_days": 0,
-   "injuries_tenure_unknown": 1,
+   "injuries_tenure_unknown": 0,
    "injuries_by_tenure": {
     "0-30 days": 0,
     "31-90 days": 0,
     "91-180 days": 0,
-    "Over 180 days": 0
+    "Over 180 days": 1
    }
   },
   {

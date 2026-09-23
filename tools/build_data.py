@@ -183,6 +183,20 @@ def build(xlsx, as_of, history=None, start=None, rosters=None, previous=None, wc
         hires = hh + hires
     terms = dedupe(terms, lambda t: (key_name(t["Last Name"], t["First Name"]), t["Separation Date"]), "separation")
     hires = dedupe(hires, lambda h: (key_name(h["Last Name"], h["First Name"]), h["Hire Date"]), "hire")
+    # HR-confirmed hire dates that replace a wrong Hire Date on a Terms row (tenure at exit and at injury).
+    # Remove a line from data/hire-date-corrections.csv once Taylor's workbook carries the right date.
+    fixes = Path(__file__).resolve().parent.parent / "data" / "hire-date-corrections.csv"
+    if fixes.exists():
+        import csv
+        for fx in csv.DictReader(fixes.open(encoding="utf-8")):
+            hit = [t for t in terms if key_name(t["Last Name"], t["First Name"]) == key_name(fx["last_name"], fx["first_name"])]
+            if not hit:
+                print(f"WARNING: hire-date correction for {fx['first_name']} {fx['last_name']} matches no Terms row", file=sys.stderr)
+            for t in hit:
+                new = dt.datetime.fromisoformat(fx["hire_date"])
+                if t["Hire Date"] != new:
+                    print(f"NOTE: hire date for {fx['first_name']} {fx['last_name']} corrected {t['Hire Date'].date()} -> {new.date()} (data/hire-date-corrections.csv)", file=sys.stderr)
+                    t["Hire Date"] = new
     mfg_terms = [t for t in terms if is_us(t, "MFG")]
     sga_terms = [t for t in terms if is_us(t, "SG&A")]
     mfg_hires = [h for h in hires if is_us(h, "MFG")]
