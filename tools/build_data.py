@@ -503,7 +503,8 @@ def read_wc(path, months, people):
         for r in roster.iter_rows(min_row=2, values_only=True):
             if r[ci["Employee Name"]] and "," in str(r[ci["Employee Name"]]) and isinstance(r[ci["Seniority Date"]], dt.datetime):
                 last, first = [x.strip().lower() for x in str(r[ci["Employee Name"]]).split(",", 1)]
-                people.append((last, first, norm(r[ci["Cost Center"]]), r[ci["Seniority Date"]]))
+                cc = norm(r[ci["Cost Center"]])
+                people.append((last, first, "SG&A" if cc == "SGA" else cc, r[ci["Seniority Date"]]))  # the roster spells it SGA
     injuries = []
     for name, when, y in listed:
         if isinstance(when, str):  # typed dates; a mistyped year (e.g. 8/24/20206) takes its block's year
