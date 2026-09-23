@@ -803,4 +803,5 @@ function init(data) {
 // no-cache: always ask the server whether the data changed, so a refresh never shows yesterday's numbers.
 fetch('data/turnover-data.json', { cache: 'no-cache' }).then(r => (r.ok ? r.json() : Promise.reject(r.status))).then(init).catch(() => init(window.TURNOVER_DATA));
 }
-if (typeof document !== 'undefined') ui();
+// The concept page (concept/index.html) sets TURNOVER_NO_UI and draws its own screen from the same calc and data.
+if (typeof document !== 'undefined' && !(typeof window !== 'undefined' && window.TURNOVER_NO_UI)) ui();

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manufacturing turnover briefing (concept)</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27%3E%3Crect width=%2716%27 height=%2716%27 fill=%27%23CF102D%27/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="concept.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap topbar-in">
+    <img class="logo" src="nazdar-reversed.png" alt="Nazdar" width="1790" height="330">
+    <span class="topbar-title">Manufacturing turnover</span>
+    <span class="topbar-meta" id="asof"></span>
+  </div>
+</header>
+
+<section class="controls" aria-label="Filters">
+  <div class="wrap">
+    <div class="timeline" id="timeline" role="group" aria-label="Months: click one, or drag across several"></div>
+    <div class="pillrows">
+      <div class="pillrow" id="p-dept" role="group" aria-label="Department"></div>
+      <div class="pillrow" id="p-cat" role="group" aria-label="Category"></div>
+      <div class="pillrow" id="p-tenure" role="group" aria-label="Time on the job at exit"></div>
+      <button type="button" class="reset" id="reset">Reset</button>
+    </div>
+  </div>
+</section>
+
+<main class="wrap">
+  <p class="lede" id="lede" aria-live="polite"></p>
+
+  <div class="grid">
+    <article class="tile span-8" id="t-month">
+      <header><h2 id="t-month-h"></h2><button type="button" class="more" data-detail="month">Details</button></header>
+      <p class="hint">Separations by fiscal month and category. Click a month to focus on it.</p>
+      <div class="plot tall"><canvas id="c-month"></canvas></div>
+    </article>
+
+    <article class="tile span-4 stats" id="t-stats" aria-label="Key figures"></article>
+
+    <article class="tile span-4" id="t-tenure">
+      <header><h2 id="t-tenure-h"></h2><button type="button" class="more" data-detail="tenure">Details</button></header>
+      <p class="hint">Time on the job when they left. Click a bar to filter.</p>
+      <div class="bars" id="b-tenure"></div>
+    </article>
+
+    <article class="tile span-4" id="t-reasons">
+      <header><h2 id="t-reasons-h"></h2><button type="button" class="more" data-detail="reasons">Details</button></header>
+      <p class="hint" id="t-reasons-hint"></p>
+      <div class="bars" id="b-reasons"></div>
+    </article>
+
+    <article class="tile span-4" id="t-shift">
+      <header><h2 id="t-shift-h"></h2><button type="button" class="more" data-detail="shift">Details</button></header>
+      <p class="hint">Separations ÷ average roster, by shift. Click a cell to filter the department.</p>
+      <div class="heat" id="h-shift"></div>
+    </article>
+
+    <article class="tile span-6" id="t-retention">
+      <header><h2 id="t-retention-h"></h2><button type="button" class="more" data-detail="retention">Details</button></header>
+      <p class="hint">Hires in the selected months, and how many stayed each milestone (of those employed long enough to count).</p>
+      <div class="funnel" id="f-retention"></div>
+    </article>
+
+    <article class="tile span-6" id="t-injury">
+      <header><h2 id="t-injury-h"></h2><button type="button" class="more" data-detail="injury">Details</button></header>
+      <p class="hint" id="t-injury-hint"></p>
+      <div class="twin">
+        <div><span class="twin-l">Injuries</span><div class="plot short"><canvas id="c-inj"></canvas></div></div>
+        <div><span class="twin-l">Separations</span><div class="plot short"><canvas id="c-sep"></canvas></div></div>
+      </div>
+      <p class="note" id="t-injury-r"></p>
+    </article>
+
+    <article class="tile span-12" id="t-bridge">
+      <header><h2 id="t-bridge-h"></h2><button type="button" class="more" data-detail="bridge">Details</button></header>
+      <p class="hint">Reported start-of-month headcount.</p>
+      <div class="plot mid"><canvas id="c-hc"></canvas></div>
+    </article>
+  </div>
+
+  <details class="about">
+    <summary>About this data</summary>
+    <p id="about-basis"></p>
+    <ul id="about-notes"></ul>
+  </details>
+</main>
+
+<div class="scrim" id="scrim" hidden></div>
+<aside class="drawer" id="drawer" aria-hidden="true" aria-labelledby="drawer-h" role="dialog">
+  <header><h2 id="drawer-h"></h2><button type="button" class="close" id="drawer-close" aria-label="Close details">Close</button></header>
+  <div id="drawer-body"></div>
+</aside>
+
+<script>window.TURNOVER_NO_UI = true;</script>
+<script src="../vendor/chart.umd.js"></script>
+<script src="../data/data.js"></script>
+<script src="../app.js"></script>
+<script src="concept.js"></script>
+</body>
+</html>
