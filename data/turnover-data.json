@@ -773,6 +773,7 @@
    "department": "Packaging",
    "reason": "Return to School",
    "category": "Voluntary",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -780,6 +781,7 @@
    "department": "Processing",
    "reason": "Poor Attendance",
    "category": "Involuntary",
+   "tenure_bucket": "31-90 days",
    "count": 1
   },
   {
@@ -787,6 +789,7 @@
    "department": "SG&A",
    "reason": "Position Elimination",
    "category": "Involuntary",
+   "tenure_bucket": "Over 180 days",
    "count": 4
   },
   {
@@ -794,6 +797,7 @@
    "department": "Packaging",
    "reason": "Personal Reasons",
    "category": "Voluntary",
+   "tenure_bucket": "91-180 days",
    "count": 1
   },
   {
@@ -801,6 +805,7 @@
    "department": "SG&A",
    "reason": "Position Elimination",
    "category": "Involuntary",
+   "tenure_bucket": "Over 180 days",
    "count": 2
   },
   {
@@ -808,6 +813,7 @@
    "department": "SG&A",
    "reason": "Retirement",
    "category": "Retirement",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -815,6 +821,7 @@
    "department": "Processing",
    "reason": "Another job",
    "category": "Voluntary",
+   "tenure_bucket": "91-180 days",
    "count": 1
   },
   {
@@ -822,6 +829,7 @@
    "department": "Processing",
    "reason": "Poor Performance",
    "category": "Involuntary",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -829,6 +837,7 @@
    "department": "SG&A",
    "reason": "Dissatisfaction with Job",
    "category": "Voluntary",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -836,6 +845,7 @@
    "department": "SG&A",
    "reason": "Poor Performance",
    "category": "Involuntary",
+   "tenure_bucket": "31-90 days",
    "count": 1
   },
   {
@@ -843,6 +853,7 @@
    "department": "SG&A",
    "reason": "Retirement",
    "category": "Retirement",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -850,6 +861,7 @@
    "department": "Packaging",
    "reason": "Job Abandonment",
    "category": "Voluntary",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -857,13 +869,23 @@
    "department": "Packaging",
    "reason": "Poor Attendance",
    "category": "Involuntary",
-   "count": 2
+   "tenure_bucket": "0-30 days",
+   "count": 1
+  },
+  {
+   "month": 4,
+   "department": "Packaging",
+   "reason": "Poor Attendance",
+   "category": "Involuntary",
+   "tenure_bucket": "31-90 days",
+   "count": 1
   },
   {
    "month": 4,
    "department": "Processing",
    "reason": "Poor Performance",
    "category": "Involuntary",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -871,6 +893,7 @@
    "department": "SG&A",
    "reason": "Another job",
    "category": "Voluntary",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -878,6 +901,7 @@
    "department": "SG&A",
    "reason": "Poor Performance",
    "category": "Involuntary",
+   "tenure_bucket": "91-180 days",
    "count": 1
   },
   {
@@ -885,6 +909,7 @@
    "department": "Processing",
    "reason": "Misconduct",
    "category": "Involuntary",
+   "tenure_bucket": "91-180 days",
    "count": 1
   },
   {
@@ -892,6 +917,7 @@
    "department": "SG&A",
    "reason": "Retirement/Early Retire",
    "category": "Retirement",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -899,6 +925,7 @@
    "department": "Packaging",
    "reason": "Job Abandonment",
    "category": "Involuntary",
+   "tenure_bucket": "0-30 days",
    "count": 1
   },
   {
@@ -906,6 +933,7 @@
    "department": "Packaging",
    "reason": "Poor Attendance",
    "category": "Involuntary",
+   "tenure_bucket": "0-30 days",
    "count": 1
   },
   {
@@ -913,6 +941,7 @@
    "department": "Processing",
    "reason": "Another job",
    "category": "Voluntary",
+   "tenure_bucket": "31-90 days",
    "count": 1
   },
   {
@@ -920,6 +949,7 @@
    "department": "Processing",
    "reason": "Poor Attendance",
    "category": "Involuntary",
+   "tenure_bucket": "0-30 days",
    "count": 2
   },
   {
@@ -927,6 +957,7 @@
    "department": "SG&A",
    "reason": "Retirement/Early Retire",
    "category": "Retirement",
+   "tenure_bucket": "Over 180 days",
    "count": 2
   },
   {
@@ -934,6 +965,7 @@
    "department": "Other MFG",
    "reason": "Dissatisfaction with Job",
    "category": "Voluntary",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -941,6 +973,7 @@
    "department": "Other MFG",
    "reason": "Gross Misconduct",
    "category": "Involuntary",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -948,6 +981,7 @@
    "department": "Packaging",
    "reason": "Personal Reasons",
    "category": "Voluntary",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -955,6 +989,7 @@
    "department": "SG&A",
    "reason": "Retirement/Early Retire",
    "category": "Retirement",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -962,6 +997,7 @@
    "department": "Other MFG",
    "reason": "Another job",
    "category": "Voluntary",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -969,6 +1005,7 @@
    "department": "Other MFG",
    "reason": "Retirement/Early Retire",
    "category": "Retirement",
+   "tenure_bucket": "Over 180 days",
    "count": 2
   },
   {
@@ -976,6 +1013,7 @@
    "department": "Packaging",
    "reason": "Another job",
    "category": "Voluntary",
+   "tenure_bucket": "0-30 days",
    "count": 1
   },
   {
@@ -983,6 +1021,7 @@
    "department": "Packaging",
    "reason": "Job Abandonment",
    "category": "Voluntary",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -990,6 +1029,7 @@
    "department": "Processing",
    "reason": "Job Abandonment",
    "category": "Voluntary",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -997,6 +1037,7 @@
    "department": "Processing",
    "reason": "Poor Attendance",
    "category": "Involuntary",
+   "tenure_bucket": "0-30 days",
    "count": 1
   },
   {
@@ -1004,6 +1045,7 @@
    "department": "SG&A",
    "reason": "Personal Reasons",
    "category": "Voluntary",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -1011,6 +1053,7 @@
    "department": "SG&A",
    "reason": "Retirement/Early Retire",
    "category": "Retirement",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -1018,6 +1061,7 @@
    "department": "Other MFG",
    "reason": "Another job",
    "category": "Voluntary",
+   "tenure_bucket": "0-30 days",
    "count": 1
   },
   {
@@ -1025,6 +1069,7 @@
    "department": "Other MFG",
    "reason": "Dissatisfaction w/Superv",
    "category": "Voluntary",
+   "tenure_bucket": "0-30 days",
    "count": 1
   },
   {
@@ -1032,6 +1077,7 @@
    "department": "Other MFG",
    "reason": "Poor Attendance",
    "category": "Involuntary",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -1039,6 +1085,7 @@
    "department": "Packaging",
    "reason": "Another job",
    "category": "Voluntary",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -1046,6 +1093,7 @@
    "department": "Packaging",
    "reason": "Job Abandonment",
    "category": "Voluntary",
+   "tenure_bucket": "0-30 days",
    "count": 1
   },
   {
@@ -1053,6 +1101,7 @@
    "department": "Processing",
    "reason": "Dissatisfaction with Job",
    "category": "Voluntary",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -1060,6 +1109,7 @@
    "department": "Processing",
    "reason": "Job Abandonment",
    "category": "Voluntary",
+   "tenure_bucket": "0-30 days",
    "count": 1
   },
   {
@@ -1067,6 +1117,7 @@
    "department": "SG&A",
    "reason": "Retirement/Early Retire",
    "category": "Retirement",
+   "tenure_bucket": "Over 180 days",
    "count": 2
   },
   {
@@ -1074,6 +1125,7 @@
    "department": "Packaging",
    "reason": "Job Abandonment",
    "category": "Voluntary",
+   "tenure_bucket": "0-30 days",
    "count": 1
   },
   {
@@ -1081,6 +1133,7 @@
    "department": "Packaging",
    "reason": "Personal Reasons",
    "category": "Voluntary",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -1088,6 +1141,7 @@
    "department": "Processing",
    "reason": "Job Abandonment",
    "category": "Voluntary",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -1095,6 +1149,7 @@
    "department": "SG&A",
    "reason": "Personal Reasons",
    "category": "Voluntary",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -1102,6 +1157,7 @@
    "department": "SG&A",
    "reason": "Poor Performance",
    "category": "Involuntary",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -1109,6 +1165,7 @@
    "department": "SG&A",
    "reason": "Temp Assignment Ended",
    "category": "Voluntary",
+   "tenure_bucket": "31-90 days",
    "count": 1
   },
   {
@@ -1116,6 +1173,7 @@
    "department": "Other MFG",
    "reason": "Poor Attendance",
    "category": "Involuntary",
+   "tenure_bucket": "0-30 days",
    "count": 1
   },
   {
@@ -1123,6 +1181,7 @@
    "department": "Packaging",
    "reason": "Job Abandonment",
    "category": "Voluntary",
+   "tenure_bucket": "0-30 days",
    "count": 1
   },
   {
@@ -1130,6 +1189,23 @@
    "department": "Packaging",
    "reason": "Personal Reasons",
    "category": "Voluntary",
+   "tenure_bucket": "0-30 days",
+   "count": 1
+  },
+  {
+   "month": 11,
+   "department": "Packaging",
+   "reason": "Personal Reasons",
+   "category": "Voluntary",
+   "tenure_bucket": "31-90 days",
+   "count": 1
+  },
+  {
+   "month": 11,
+   "department": "Packaging",
+   "reason": "Poor Attendance",
+   "category": "Involuntary",
+   "tenure_bucket": "31-90 days",
    "count": 2
   },
   {
@@ -1137,13 +1213,15 @@
    "department": "Packaging",
    "reason": "Poor Attendance",
    "category": "Involuntary",
-   "count": 3
+   "tenure_bucket": "91-180 days",
+   "count": 1
   },
   {
    "month": 11,
    "department": "Processing",
    "reason": "Another job",
    "category": "Voluntary",
+   "tenure_bucket": "0-30 days",
    "count": 1
   },
   {
@@ -1151,6 +1229,7 @@
    "department": "Processing",
    "reason": "Dissatisfaction with Job",
    "category": "Voluntary",
+   "tenure_bucket": "31-90 days",
    "count": 1
   },
   {
@@ -1158,6 +1237,7 @@
    "department": "Processing",
    "reason": "Personal Reasons",
    "category": "Voluntary",
+   "tenure_bucket": "0-30 days",
    "count": 1
   },
   {
@@ -1165,6 +1245,7 @@
    "department": "Processing",
    "reason": "Poor Attendance",
    "category": "Involuntary",
+   "tenure_bucket": "0-30 days",
    "count": 1
   },
   {
@@ -1172,6 +1253,7 @@
    "department": "Processing",
    "reason": "Poor Attendance",
    "category": "Voluntary",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -1179,6 +1261,7 @@
    "department": "Processing",
    "reason": "Return to School",
    "category": "Voluntary",
+   "tenure_bucket": "91-180 days",
    "count": 1
   },
   {
@@ -1186,6 +1269,7 @@
    "department": "SG&A",
    "reason": "Another job",
    "category": "Voluntary",
+   "tenure_bucket": "Over 180 days",
    "count": 2
   },
   {
@@ -1193,6 +1277,7 @@
    "department": "SG&A",
    "reason": "Personal Reasons",
    "category": "Voluntary",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -1200,6 +1285,7 @@
    "department": "SG&A",
    "reason": "Retirement/Early Retire",
    "category": "Retirement",
+   "tenure_bucket": "Over 180 days",
    "count": 3
   },
   {
@@ -1207,6 +1293,7 @@
    "department": "SG&A",
    "reason": "Temp Assignment Ended",
    "category": "Voluntary",
+   "tenure_bucket": "31-90 days",
    "count": 1
   },
   {
@@ -1214,6 +1301,7 @@
    "department": "Packaging",
    "reason": "Another job",
    "category": "Voluntary",
+   "tenure_bucket": "31-90 days",
    "count": 1
   },
   {
@@ -1221,6 +1309,7 @@
    "department": "Packaging",
    "reason": "Poor Attendance",
    "category": "Involuntary",
+   "tenure_bucket": "91-180 days",
    "count": 1
   },
   {
@@ -1228,6 +1317,7 @@
    "department": "Packaging",
    "reason": "Relocation",
    "category": "Voluntary",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -1235,6 +1325,7 @@
    "department": "Packaging",
    "reason": "Retirement/Early Retire",
    "category": "Retirement",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -1242,6 +1333,7 @@
    "department": "Packaging",
    "reason": "Violation of Policy",
    "category": "Involuntary",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -1249,6 +1341,7 @@
    "department": "Processing",
    "reason": "Poor Attendance",
    "category": "Involuntary",
+   "tenure_bucket": "31-90 days",
    "count": 1
   },
   {
@@ -1256,6 +1349,7 @@
    "department": "Processing",
    "reason": "Positive Drug Test Result",
    "category": "Involuntary",
+   "tenure_bucket": "31-90 days",
    "count": 1
   },
   {
@@ -1263,6 +1357,7 @@
    "department": "SG&A",
    "reason": "Retirement/Early Retire",
    "category": "Retirement",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   }
  ],

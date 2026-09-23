@@ -210,11 +210,12 @@ def build(xlsx, as_of, history=None, start=None, rosters=None, previous=None, wc
             cat = category(t["Separation Reason"], t["Voluntary/ Involuntary"])
             shift = "N/A" if sga else norm(t.get("Shift")) or "N/A"
             cube[(m, dep, shift, cat, tenure_bucket(tenure_days(t)))] += 1
-            reasons[(m, dep, norm(t["Separation Reason"]), cat)] += 1
+            # tenure bucket too, so the reasons table can follow the Tenure filter like every other chart
+            reasons[(m, dep, norm(t["Separation Reason"]), cat, tenure_bucket(tenure_days(t)))] += 1
     cube_rows = [{"month": k[0], "department": k[1], "shift": k[2], "category": k[3], "tenure_bucket": k[4], "count": v} for k, v in sorted(cube.items())]
     if sum(cube.values()) != len(mfg_terms) + len(sga_terms):
         sys.exit(f"FATAL: cube total {sum(cube.values())} != MFG + SG&A terms {len(mfg_terms) + len(sga_terms)}")
-    reason_rows = [{"month": k[0], "department": k[1], "reason": k[2], "category": k[3], "count": v} for k, v in sorted(reasons.items())]
+    reason_rows = [{"month": k[0], "department": k[1], "reason": k[2], "category": k[3], "tenure_bucket": k[4], "count": v} for k, v in sorted(reasons.items())]
 
     # ---- Headcount (main workbook only; other months stay null) ----
     hc_names = {"Nazdar MFG": "Nazdar MFG", "Packaging Headcount": "Packaging", "Processing Headcount": "Processing", "Nazdar SG&A": "Nazdar SG&A",

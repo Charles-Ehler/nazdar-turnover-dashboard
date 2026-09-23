@@ -69,7 +69,9 @@ const calc = {
   },
   reasons(D, s) {
     const depts = s.dept === 'All MFG' ? ['Packaging', 'Processing'] : [s.dept];
-    const rows = D.separation_reasons.filter(r => depts.includes(r.department) && r.month >= s.m0 && r.month <= s.m1);
+    // Follows Department, months, Category and Tenure (older data files without tenure_bucket ignore the Tenure filter).
+    const rows = D.separation_reasons.filter(r => depts.includes(r.department) && r.month >= s.m0 && r.month <= s.m1 &&
+      (s.cat === 'All' || r.category === s.cat) && (s.tenure === 'All' || !r.tenure_bucket || r.tenure_bucket === s.tenure));
     const map = new Map();
     rows.forEach(r => { const k = r.reason + '|' + r.category; map.set(k, (map.get(k) || 0) + r.count); });
     const total = rows.reduce((a, r) => a + r.count, 0);
@@ -231,6 +233,15 @@ const calc = {
       eq('WC MFG injuries per 100 avg headcount', +w.per100.toFixed(2), 4.71);
       eq('WC MFG separations vs injuries r, months, r without Aug 2026', [+c.r.toFixed(2), c.n, +c.without.r.toFixed(2)], [0.71, 11, 0.1]);
     }
+    // The reasons table must total the same as the charts for every Category x Tenure choice (Taylor and Blanca, Sep 23).
+    const mism = [];
+    ['All', ...CATS].forEach(cat => ['All', ...TENURES].forEach(tenure => {
+      const st = { ...DEFAULT_STATE, m0: 1, m1: D.meta.months.length, cat, tenure };
+      const want = calc.sum(D, x => calc.pred(st)(x) && (x.department === 'Packaging' || x.department === 'Processing'));
+      if (calc.reasons(D, st).total !== want) mism.push(`${cat}/${tenure}`);
+    }));
+    eq('Reasons table follows Category and Tenure (20 combinations)', mism, []);
+    eq('Packaging + Processing reasons, 0-30 days, whole window', calc.reasons(D, { ...DEFAULT_STATE, m0: 1, m1: D.meta.months.length, tenure: '0-30 days' }).total, 15);
     const ft = { ...s, dept: 'Processing', tenure: '0-30 days' };
     eq('Filter test Processing 0-30', [calc.sum(D, calc.pred(ft)), calc.sum(D, x => calc.pred(ft)(x) && x.category === 'Voluntary'), calc.sum(D, x => calc.pred(ft)(x) && x.category === 'Involuntary')], [7, 3, 4]);
     return out;
@@ -490,7 +501,7 @@ function renderSection1(s) {
   const scopeR = r.depts.join(' + ');
   tableFigure('t14', {
     takeaway: r.total ? `${r.list[0].reason} is the most common coded reason in ${scopeR} (${r.list[0].n} of ${r.total}).` : `No separation reasons recorded for ${scopeR}.`,
-    caption: `Separation reasons as coded in the HR log, ${scopeR}, ${monthsLabel(s)}. Not affected by the Category or Tenure filters. Coding quirks (e.g. one Job Abandonment coded Involuntary) are preserved as recorded.`,
+    caption: `Separation reasons as coded in the HR log, ${scopeR}, ${monthsLabel(s)}${s.cat === 'All' ? '' : ', ' + s.cat.toLowerCase()}${s.tenure === 'All' ? '' : ', tenure ' + s.tenure}. Coding quirks (e.g. one Job Abandonment coded Involuntary) are preserved as recorded.`,
     html: table(['Reason', 'Count', 'Share', 'Coded as'], r.list.map(x => [x.reason, x.n, pct(x.share), `<span class="swatch" style="background:${COLORS[x.category]}"></span>${x.category}`]).concat([['Total', r.total, '100.0%', '']]), { totalLast: true }),
     callout: `Poor Attendance + Job Abandonment: ${r.attn} of ${r.total} ${scopeR} exits (${pct(r.attnShare, 0)}).`,
   });

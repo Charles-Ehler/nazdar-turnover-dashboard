@@ -141,7 +141,7 @@
   function renderReasons() {
     const r = calc.reasons(D, S), top = r.list.slice(0, 5), frontline = r.depts.includes('Packaging') || r.depts.includes('Processing');
     $('#t-reasons-h').textContent = !r.total ? 'No coded reasons for these filters.' : frontline ? `Attendance and abandonment: ${pct(r.attnShare)} of exits (${r.attn} of ${r.total}).` : `${r.list[0].reason} is the top reason (${r.list[0].n} of ${r.total}).`;
-    $('#t-reasons-hint').textContent = `Coded exit reasons, ${r.depts.join(' + ')}${r.list.length > 5 ? `, top 5 of ${r.list.length}` : ''}. Category and time filters do not apply.`;
+    $('#t-reasons-hint').textContent = `Coded exit reasons, ${r.depts.join(' + ')}${r.list.length > 5 ? `, top 5 of ${r.list.length}` : ''}${S.cat === 'All' ? '' : ', ' + S.cat.toLowerCase()}${S.tenure === 'All' ? '' : ', ' + S.tenure}.`;
     // one row per reason name (the log codes a few reasons both ways; Details shows the split)
     const merged = [...top.reduce((m, x) => m.set(x.reason, (m.get(x.reason) || 0) + x.n), new Map())].map(([label, n]) => ({ label, n, share: r.total ? n / r.total : 0, hot: label === 'Poor Attendance' || label === 'Job Abandonment' }));
     hbars('#b-reasons', merged);
