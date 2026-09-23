@@ -404,14 +404,17 @@ function renderKpis(s) {
   const t30 = calc.sum(D, r => calc.pred(s, ['tenure'])(r) && r.tenure_bucket === '0-30 days');
   const all = calc.sum(D, calc.pred(s, ['tenure']));
   const c = calc.cohorts(D, 'all', 'All', s.m0, s.m1);
-  const k = (v, l, cls = '', extra = '') => `<div class="kpi ${cls}"><div class="v"${typeof v === 'number' ? ` data-n="${v}"` : ''}${typeof v === 'string' && /^\d+%$/.test(v) ? ` data-n="${parseInt(v, 10)}" data-suffix="%"` : ''}>${v}</div><div class="l">${l}</div>${extra}</div>`;
-  const monthly = calc.monthly(D, s).map(x => x.total);
+  // Tile = big number, a two-to-four word label, one line of context. Scope (department, months) is stated once,
+  // in the filter summary above, not in every tile.
+  const k = (v, l, sub, cls = '', extra = '') => `<div class="kpi ${cls}"><div class="v"${typeof v === 'number' ? ` data-n="${v}"` : ''}${typeof v === 'string' && /^\d+%$/.test(v) ? ` data-n="${parseInt(v, 10)}" data-suffix="%"` : ''}>${v}</div><div class="l">${l}</div>${sub ? `<div class="sub">${sub}</div>` : ''}${extra}</div>`;
+  const monthly = calc.monthly(D, s).map(x => x.total), peakAt = monthly.indexOf(Math.max(...monthly));
   el('kpis').innerHTML =
-    k(y.seps, `Separations, ${s.dept}, ${monthsLabel(s)}${s.cat === 'All' ? '' : ', ' + s.cat.toLowerCase()}${s.tenure === 'All' ? '' : ', ' + s.tenure}`, 'hero', monthly.length > 1 ? sparkline(monthly) + `<div class="l">By month, peak in ${full(D.meta.months[s.m0 - 1 + monthly.indexOf(Math.max(...monthly))])}</div>` : '') +
-    k(all ? pct(t30 / all, 0) : na('No separations in this selection'), `Share gone within 30 days (${s.dept}, ${monthsLabel(s)})`) +
-    k(y.rate == null ? na(NA_HC) : pct(y.rate, 0), `Separations ÷ average reported headcount, ${monthsLabel(s)} (${s.dept})`) +
-    k(`${c.total.still_employed} <span style="font-size:18px">(${pct(c.total.still_employed / c.total.hires, 0)})</span>`, `Nazdar MFG hires ${monthsLabel(s)} still employed (months only)`) +
-    k(c.total.hires, `Hired ${monthsLabel(s)}, Nazdar MFG (months only)`);
+    k(y.seps, 'Separations', s.cat === 'All' && s.tenure === 'All' ? '' : [s.cat === 'All' ? '' : s.cat, s.tenure === 'All' ? '' : s.tenure].filter(Boolean).join(', '), 'hero',
+      monthly.length > 1 ? sparkline(monthly) + `<div class="sub">Peak: ${full(D.meta.months[s.m0 - 1 + peakAt])} (${monthly[peakAt]})</div>` : '') +
+    k(all ? pct(t30 / all, 0) : na('No separations in this selection'), 'Gone within 30 days', all ? `${t30} of ${all} leavers` : '') +
+    k(y.rate == null ? na(NA_HC) : pct(y.rate, 0), 'Turnover rate', y.avg ? `of average headcount (${num(y.avg)})` : '') +
+    k(c.total.hires ? pct(c.total.still_employed / c.total.hires, 0) : na('No hires'), 'Hires still employed', `${c.total.still_employed} of ${c.total.hires} MFG hires`) +
+    k(c.total.hires, 'MFG hires', 'hired in these months');
   countUp();
 }
 
@@ -514,14 +517,15 @@ function renderSection2() {
   // Hiring Event is left out of the picker on purpose (the job fair was already covered with Ed); those hires still count under All.
   if (el('f2-source').options.length === 1) c.sources.filter(src => src !== 'Hiring Event').forEach(src => el('f2-source').add(new Option(src)));
   const scopeTxt = `${{ all: 'All Nazdar MFG', frontline: 'Packaging + Processing', sga: 'Nazdar SG&A' }[scope]} hires ${monthsLabel(state)}${source === 'All' ? '' : ', source: ' + source}`;
-  const rateCell = (v, elig) => elig ? pct(v) : na(NA_COHORT);
+  const rc = (x, n) => (x['eligible_' + n] ? `${pct(x['retained_' + n] / x['eligible_' + n], 0)} <span class="cnt">(${x['retained_' + n]} of ${x['eligible_' + n]})</span>` : na(NA_COHORT));
   const T = c.total;
   tableFigure('t21', {
     takeaway: T.hires ? `${T.still_employed} of ${T.hires} hires (${pct(T.still_employed / T.hires, 0)}) are still employed; 30-day retention ${T.eligible_30 ? pct(T.r30, 0) : 'n/a'}, 90-day ${T.eligible_90 ? pct(T.r90, 0) : 'n/a'}, 180-day ${T.eligible_180 ? pct(T.r180, 0) : 'n/a'}.` : 'No hires match this selection.',
-    caption: `${scopeTxt}, by hire month. Rate = retained ÷ eligible; n/a means no hire in that cohort has reached that many days yet.`,
-    html: table(['Hire month', 'Hires', 'Eligible 30', 'Retained 30', 'Rate 30', 'Eligible 90', 'Retained 90', 'Rate 90', 'Eligible 180', 'Retained 180', 'Rate 180', 'Still employed', '% still employed'],
-      c.byMonth.map(x => [x.label, x.hires, x.eligible_30, x.retained_30, rateCell(x.r30, x.eligible_30), x.eligible_90, x.retained_90, rateCell(x.r90, x.eligible_90), x.eligible_180, x.retained_180, rateCell(x.r180, x.eligible_180), x.still_employed, pct(x.still_employed / x.hires)])
-        .concat([['Total', T.hires, T.eligible_30, T.retained_30, rateCell(T.r30, T.eligible_30), T.eligible_90, T.retained_90, rateCell(T.r90, T.eligible_90), T.eligible_180, T.retained_180, rateCell(T.r180, T.eligible_180), T.still_employed, T.hires ? pct(T.still_employed / T.hires) : na('No hires')]]), { totalLast: true }),
+    caption: `${scopeTxt}, by hire month. Each milestone shows retained ÷ eligible, with the counts in brackets; n/a means no hire in that month has been with us that long yet.`,
+    // One cell per milestone: the rate with its counts, so the table fits without scrolling.
+    html: table(['Hire month', 'Hires', 'Reached 30 days', 'Reached 90 days', 'Reached 180 days', 'Still employed'],
+      c.byMonth.map(x => [x.label, x.hires, rc(x, 30), rc(x, 90), rc(x, 180), `${pct(x.still_employed / x.hires, 0)} <span class="cnt">(${x.still_employed})</span>`])
+        .concat([['Total', T.hires, rc(T, 30), rc(T, 90), rc(T, 180), T.hires ? `${pct(T.still_employed / T.hires, 0)} <span class="cnt">(${T.still_employed})</span>` : na('No hires')]]), { totalLast: true }),
   });
   const rows = c.byMonth.filter(x => x.eligible_30);
   const pctFmt = v => Math.round(v) + '%';
@@ -530,9 +534,9 @@ function renderSection2() {
     takeaway: best ? `${full(best.label)} hires have the strongest 90-day retention so far (${pct(best.r90, 0)}); cohorts with no eligible hires are omitted.` : 'No cohort has reached 30 days yet.',
     caption: `${scopeTxt}. Retention rate at 30, 90 and 180 days by hire month; bars missing = cohort too recent.`,
     config: { type: 'bar', data: { labels: rows.map(x => x.label), datasets: [
-      { label: '30-day retention', data: rows.map(x => x.eligible_30 ? Math.round(x.r30 * 100) : null), backgroundColor: COLORS.light, labelFmt: pctFmt, naWhy: NA_COHORT },
-      { label: '90-day retention', data: rows.map(x => x.eligible_90 ? Math.round(x.r90 * 100) : null), backgroundColor: COLORS.dark, labelFmt: pctFmt, naWhy: NA_COHORT },
-      { label: '180-day retention', data: rows.map(x => x.eligible_180 ? Math.round(x.r180 * 100) : null), backgroundColor: COLORS.red, labelFmt: pctFmt, naWhy: NA_COHORT },
+      { label: '30-day retention', data: rows.map(x => x.eligible_30 ? Math.round(x.r30 * 100) : null), backgroundColor: COLORS.light, labelFmt: pctFmt, naWhy: NA_COHORT, noLabels: true },
+      { label: '90-day retention', data: rows.map(x => x.eligible_90 ? Math.round(x.r90 * 100) : null), backgroundColor: COLORS.dark, labelFmt: pctFmt, naWhy: NA_COHORT, noLabels: true },
+      { label: '180-day retention', data: rows.map(x => x.eligible_180 ? Math.round(x.r180 * 100) : null), backgroundColor: COLORS.red, labelFmt: pctFmt, naWhy: NA_COHORT, noLabels: true },
     ] }, options: { scales: { y: { beginAtZero: true, max: 110, ticks: { callback: v => v > 100 ? '' : v + '%' } }, x: { grid: { display: false }, ticks: monthTicks } }, plugins: { legend: { position: 'top' } } } },
   });
 }
@@ -547,8 +551,8 @@ function renderSection3(s) {
   const cmp = compareLine(s);
   tableFigure('t31', {
     takeaway: mfg.seps ? `Packaging + Processing account for ${pp.seps} of ${mfg.seps} MFG separations (${pct(pp.seps / mfg.seps, 0)}) with ${pct(pp.avg / mfg.avg, 0)} of the headcount.${cmp ? ' ' + cmp + '.' : ''}` : `No MFG separations in ${monthsLabel(s)}.`,
-    caption: `${monthsLabel(s)}, all categories. Average headcount = mean of the reported start-of-month headcounts. Average monthly rate = separations ÷ ${+calc.elapsed(D, s.m0, s.m1).toFixed(1)} months elapsed ÷ average headcount.`,
-    html: table(['Department', 'Separations', 'of which retirements', 'Average headcount', 'Separations ÷ avg headcount', 'Average monthly rate'],
+    caption: `${monthsLabel(s)}, all categories. Average headcount = mean of the reported start-of-month headcounts. Turnover = separations ÷ average headcount. Per month = separations ÷ ${+calc.elapsed(D, s.m0, s.m1).toFixed(1)} months elapsed ÷ average headcount.`,
+    html: table(['Department', 'Separations', 'Retirements', 'Average headcount', 'Turnover', 'Per month'],
       dt.map(x => [x.name, x.seps, x.ret, num(x.avg), cell(pct(x.ratio), NA_HC), cell(pct(x.monthly), NA_HC)])),
   });
   el('t33').hidden = s.dept === 'SG&A';
@@ -561,7 +565,7 @@ function renderSection3(s) {
   const st = calc.shiftTable(D, s);
   const showReasons = st.some(x => x.attendance != null);
   const top = [...st].sort((a, b) => b.ratio - a.ratio)[0];
-  const hdr = ['Department / shift', 'Separations', 'Voluntary', 'Avg roster headcount (reported months)', 'Separations ÷ headcount', 'Left within 90 days'].concat(showReasons ? ['Poor Attendance*', 'Job Abandonment*'] : []);
+  const hdr = ['Department / shift', 'Separations', 'Voluntary', 'Average roster', 'Separations ÷ roster', 'Left within 90 days'].concat(showReasons ? ['Poor Attendance*', 'Job Abandonment*'] : []);
   tableFigure('t32', {
     takeaway: `${top.label} has the highest separations relative to team size: ${top.seps} separations against an average roster of ${num(top.avg)} (${pct(top.ratio, 0)}).`,
     caption: `${monthsLabel(s)}, all categories. Roster headcount by shift from the monthly roster tabs, ${rosterSpan()}; average of the months with a roster. ${showReasons ? `*Reason counts are ${s.dept} department totals, not by shift (the log does not code reasons by shift).` : 'Set the Department filter to Packaging or Processing to add attendance / abandonment counts (department totals; the log does not code reasons by shift).'}`,
@@ -594,9 +598,9 @@ function renderSection5(s) {
     const b = calc.bridge(D, key, s);
     const gap = b.filter(x => x.diff != null && x.diff !== 0);
     tableFigure(id, {
-      takeaway: `${title}: ${b.reduce((a, x) => a + x.hires, 0)} hires and ${b.reduce((a, x) => a + x.seps, 0)} separations ${monthsLabel(s)}; ${gap.length ? `${gap.length} month${gap.length > 1 ? 's' : ''} do not reconcile to the reported headcount (transfers / timing)` : 'every month reconciles to the reported headcount'}.`,
-      caption: `${title}. Implied end = start-of-month headcount + hires − separations. "Transfers / timing to reconcile" = next month's reported headcount − implied end.`,
-      html: table(['Month', 'Start-of-month headcount (reported)', 'Hires', 'Separations', 'Net', 'Implied end', 'Next month reported', 'Transfers / timing to reconcile'],
+      takeaway: `${title}: ${b.reduce((a, x) => a + x.hires, 0)} hires and ${b.reduce((a, x) => a + x.seps, 0)} separations ${monthsLabel(s)}; ${gap.length ? `${gap.length} month${gap.length > 1 ? 's' : ''} do not reconcile to the reported headcount, likely transfers or timing` : 'every month reconciles to the reported headcount'}.`,
+      caption: `${title}. Implied end = start-of-month headcount + hires − separations. Gap to reconcile = next month's reported headcount − implied end.`,
+      html: table(['Month', 'Start headcount', 'Hires', 'Separations', 'Net', 'Implied end', 'Next start', 'Gap to reconcile'],
         b.map(x => [x.label, cell(x.start, NA_HC), x.hires, x.seps, x.net > 0 ? '+' + x.net : x.net, cell(x.implied, NA_HC), cell(x.next, NA_HC), x.diff == null ? na(NA_HC) : (x.diff > 0 ? '+' + x.diff : x.diff)])),
     });
     return b;
@@ -606,12 +610,11 @@ function renderSection5(s) {
   const peak = b.reduce((a, x) => (x.hires > a.hires ? x : a), b[0]);
   figure('c52', {
     takeaway: (() => { const f = b.find(x => x.start != null), l = [...b].reverse().find(x => x.start != null); if (!f) return `${peak.hires} hires and ${peak.seps} separations in ${full(peak.label)}; no headcount is reported for it yet.`; return `Hiring peaked in ${full(peak.label)} (${peak.hires} hires) while ${peak.seps} people left; reported headcount went from ${f.start} in ${full(f.label)} to ${l.start} in ${full(l.label)}.`; })(),
-    caption: 'Nazdar MFG. Left axis: hires and separations per month. Right axis: reported start-of-month headcount (gap = not yet reported).',
+    caption: 'Nazdar MFG hires and separations per fiscal period. Headcount is in the table above.',
     config: { type: 'bar', data: { labels: b.map(x => x.label), datasets: [
       { label: 'Hires', data: b.map(x => x.hires), backgroundColor: COLORS.light, yAxisID: 'y' },
       { label: 'Separations', data: b.map(x => x.seps), backgroundColor: COLORS.red, yAxisID: 'y' },
-      { label: 'Start-of-month headcount', type: 'line', data: b.map(x => x.start), borderColor: COLORS.dark, backgroundColor: COLORS.dark, yAxisID: 'y2', pointRadius: 4, spanGaps: false, noLabels: true, naWhy: NA_HC },
-    ] }, options: { scales: { y: { beginAtZero: true, ticks: { precision: 0 }, title: { display: true, text: 'People per month' } }, y2: { position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: 'Headcount' } }, x: { grid: { display: false }, ticks: monthTicks } }, plugins: { legend: { position: 'top' } } } },
+    ] }, options: { scales: { y: { beginAtZero: true, ticks: { precision: 0 } }, x: { grid: { display: false }, ticks: monthTicks } }, plugins: { legend: { position: 'top' } } } },
   });
 }
 
