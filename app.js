@@ -739,6 +739,7 @@ function writeHash() {
   if (state.m0 !== DEFAULT_STATE.m0 || state.m1 !== DEFAULT_STATE.m1) q.set('m', `${state.m0}-${state.m1}`);
   const h = [tab !== 's0' ? SLUG[tab] : '', q.toString()].filter(Boolean).join('&');
   history.replaceState(null, '', h ? '#' + h : location.pathname + location.search);
+  const sw = el('to-concept'); if (sw) sw.href = 'concept/' + (q.toString() ? '#' + q : ''); // same filters in the briefing view
 }
 
 function setState(patch) {

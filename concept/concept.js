@@ -57,6 +57,7 @@
     if (S.tenure !== 'All') q.set('tenure', S.tenure);
     if (S.m0 !== 1 || S.m1 !== last()) q.set('m', `${S.m0}-${S.m1}`);
     history.replaceState(null, '', q.toString() ? '#' + q : location.pathname);
+    $('#to-classic').href = '../' + (q.toString() ? '#' + q : ''); // same filters in the classic view
     render();
   };
 
@@ -232,6 +233,7 @@
     D = data;
     const q = new URLSearchParams(location.hash.slice(1)), [a, b] = (q.get('m') || '').split('-').map(Number);
     S = { cat: q.get('cat') || 'All', dept: HC_KEY[q.get('dept')] ? q.get('dept') : 'All MFG', tenure: q.get('tenure') || 'All', m0: a || 1, m1: b || last() };
+    $('#to-classic').href = '../' + location.hash;
     $('#asof').textContent = `Data as of ${new Date(D.meta.as_of + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
     $('#about-basis').textContent = D.meta.basis; $('#about-notes').innerHTML = D.meta.notes.map(n => `<li>${n.replace(/</g, '&lt;')}</li>`).join('');
     document.addEventListener('click', e => {

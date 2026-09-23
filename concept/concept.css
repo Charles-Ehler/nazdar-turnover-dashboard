@@ -162,3 +162,8 @@ tbody tr.total td { font-weight: 700; border-top: 2px solid var(--ink); }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 @media print { .controls, .more, .reset { display: none; } .tile { break-inside: avoid; } body { background: #fff; } }
+
+/* Link back to the classic dashboard, same filters */
+.view-switch { margin-left: 8px; padding: 6px 14px; border: 1px solid rgba(255, 255, 255, .35); border-radius: 999px; color: var(--on-ink); font-size: 13px; font-weight: 600; text-decoration: none; }
+.view-switch:hover { background: rgba(255, 255, 255, .12); }
+@media (max-width: 720px) { .topbar-meta { display: none; } .view-switch { margin-left: auto; } }
