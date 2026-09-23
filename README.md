@@ -13,7 +13,7 @@ A single-page, filterable dashboard answering the six production hiring and rete
 | `data/turnover-data.json` | The only source of every number shown |
 | `data/data.js` | The same JSON inlined, used automatically when the page is opened from `file://` and `fetch` is blocked |
 | `data/archive/` | One dated copy of the JSON per refresh, so month-over-month changes are traceable |
-| `data/fiscal-periods.csv` | Optional. `label,start,end` for each fiscal period; when present, dates are bucketed by fiscal period instead of calendar month, to match the monthly report. Built from the US close dates in Accounting's "Closing Dates / Billing Days" workbooks; add next year's periods when they are published. |
+| `data/fiscal-periods.csv` | Optional. `label,start,end` for each fiscal period; when present, dates are bucketed by fiscal period instead of calendar month, to match the monthly report. Built from the US close dates in Accounting's "Closing Dates / Billing Days" workbooks; add next year's periods when they are published. Starts at Jan 2025 so the workers' comp data can be checked back to its first month; the dashboard window itself starts at `--from`. |
 | `data/headcount-history.csv` | Start-of-month headcounts for months the workbook lacks (Oct to Dec 2025 today). Fills gaps only. |
 | `tools/build_data.py` | Regenerates `data/turnover-data.json` and `data/data.js` from Taylor's workbook |
 | `tools/check.js` | Runs the acceptance checks against the JSON without a browser |
@@ -32,8 +32,10 @@ The site appears at `https://<owner>.github.io/nazdar-turnover-dashboard/` withi
 
 ```bash
 pip3 install openpyxl
-python3 tools/build_data.py "/path/to/MFG Turnover_10.20.26.xlsx" --as-of 2026-10-20 --from 2025-10
+python3 tools/build_data.py "/path/to/MFG Turnover_10.20.26.xlsx" --as-of 2026-10-20 --from 2025-10 --wc "/path/to/9-MOREPORT_9-26.xlsx"
 ```
+
+   `--wc` is HR's monthly report workbook (the one with the `Mo WC Loss Days` tab). It feeds Section 04, injuries and lost days against turnover. Leave it off and the section is hidden. The script reads the tab's year blocks (month columns, a year-total column, MFG / SG&A / TOTALS rows, and the list of injured employees), writes one row per fiscal period per segment to `workers_comp`, and writes the sheet's own year totals to `wc_expected_totals`. It stops with an error if the months do not add up to the sheet's year totals, if TOTALS is not MFG + SG&A, or if the injury list does not match the monthly injury counts. A blank month is left out, never read as zero. Tenure at injury comes from the report's roster tab (Seniority Date), or from the Terms and Hires hire date for people who have left. Employee names are used only for that match and are never written to the data, because the site is public.
 
    `--from` sets the first month shown (default: January of the as-of year). Tenure at exit is Separation Date minus Hire Date when the workbook has no `Tenure - Days` column. Exact duplicate rows are dropped and reported. Rows with no date (leftover dropdown cells) are skipped.
 
@@ -71,6 +73,15 @@ git add -A && git commit -m "Data refresh through 2026-10-20" && git push
 - Spelling variants normalised: "Another Job" → "Another job", "indeed" → "Indeed", "Re-hire" → "Rehire", "Grayso Munson" → "Grayson Munson".
 - Every monthly array has one slot per month of the window; months without a reported headcount or roster stay `null` and show as n/a. Headcount, rosters, hire source and hire status come only from the main workbook, so history months have no turnover % until those are supplied.
 - A hire matches a separation only if the separation is dated after the hire (rehires share a name with an earlier separation).
+
+### Workers' comp rules (Section 04)
+
+- The `Mo WC Loss Days` month columns are fiscal periods: each listed injury date falls in the period it is counted in (Sep 23, 2026 check: all 16 do). If that ever stops being true, the build stops.
+- Lost and restricted days are the days recorded in each period. An injury keeps adding days in later months, so days can appear in a month with no new injury.
+- WC data is by MFG and SG&A only. The Department filter picks MFG or SG&A; Packaging and Processing show all of MFG. Category and Tenure do not apply.
+- Injuries per 100 average headcount = injuries ÷ average reported start-of-month headcount × 100, the same headcount series as the turnover rate.
+- The correlation is Pearson r between monthly MFG separations and monthly MFG injuries, over the selected periods that have both, reported only from 8 months up. The page also shows r with the month of most separations left out, so one month cannot carry the result unseen.
+- Injuries chart and separations chart share the month axis but not a y-axis: two scales on one chart would make any two series look related.
 
 ## Definitions used on the page
 

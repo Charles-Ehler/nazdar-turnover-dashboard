@@ -134,7 +134,7 @@ def dedupe(rows, key, what):
     return out
 
 
-def build(xlsx, as_of, history=None, start=None, rosters=None, previous=None):
+def build(xlsx, as_of, history=None, start=None, rosters=None, previous=None, wc=None):
     wb = openpyxl.load_workbook(xlsx, read_only=True, data_only=True)
     start = start or dt.date(as_of.year, 1, 1)
     n_months = (as_of.year - start.year) * 12 + as_of.month - start.month + 1
@@ -387,7 +387,7 @@ def build(xlsx, as_of, history=None, start=None, rosters=None, previous=None):
     aug = sum(r["count"] for r in cube_rows if r["month"] == aug_i + 1 and r["department"] != "SG&A")
     aug_hc = headcount["Nazdar MFG"][aug_i]
     no_hc = [months[i] for i, v in enumerate(headcount["Nazdar MFG"]) if v is None]
-    return {
+    data = {
         "meta": {
             "title": f"Nazdar manufacturing turnover: {FULL[start.month - 1]} {start.year} to {FULL[as_of.month - 1]} {as_of.year}",
             "as_of": as_of.isoformat(),
@@ -422,6 +422,141 @@ def build(xlsx, as_of, history=None, start=None, rosters=None, previous=None):
         },
         "hires_by_month": hires_by_month,
     }
+    if wc:
+        # People in Taylor's file (anyone who left or was hired in the window), for tenure at injury.
+        people = [(norm(r["Last Name"]).lower(), norm(r["First Name"]).lower(), norm(r.get(seg_col(r))), d)
+                  for r in terms + hires for d in [r.get("Hire Date")] if isinstance(d, dt.datetime)]
+        data["workers_comp"], data["wc_expected_totals"] = read_wc(wc, months, people)
+        data["meta"]["notes"].append(
+            "Workers' comp figures come from the Mo WC Loss Days tab of HR's monthly report. Its month columns are fiscal periods "
+            "(each listed injury date falls in the period it is counted in). Lost and restricted days are the days recorded in each "
+            "period, so an injury keeps adding days in later months. Tenure at injury uses the report's roster Seniority Date, or the "
+            "hire date in the Terms and Hires tabs for people who have left; injuries with no hire date before the injury date count as unknown.")
+    return data
+
+
+WC_TAB = "Mo WC Loss Days"
+WC_METRICS = {"Injuries": "injuries", "Lost Days": "lost_time_days", "Restricted Days": "restricted_duty_days", "Restricted": "restricted_duty_days"}
+
+
+def read_wc(path, months, people):
+    """Read HR's Mo WC Loss Days tab: one year block per year (month columns, YTD total column), MFG / SG&A / TOTALS row
+    groups, and a list of injured employees with the date of injury beside each block.
+
+    Returns (rows, expected): rows = one per fiscal period per segment (MFG, SG&A), for every month the sheet fills in;
+    expected = the sheet's own year totals. Fails if the months do not add up to the year totals, if TOTALS is not MFG + SG&A,
+    or if the injury list does not match the monthly injury counts. Names never leave this function (the site is public).
+    """
+    wb = openpyxl.load_workbook(path, data_only=True)
+    grid = list(wb[WC_TAB].iter_rows(values_only=True))
+    periods = Path(__file__).resolve().parent.parent / "data" / "fiscal-periods.csv"
+    import csv
+    fiscal_all = [(r["label"], dt.date.fromisoformat(r["start"]), dt.date.fromisoformat(r["end"])) for r in csv.DictReader(periods.open())]
+    period_of = lambda d: next((l for l, s0, e0 in fiscal_all if s0 <= d <= e0), None)  # noqa: E731
+
+    monthly = defaultdict(dict)        # (label, seg) -> metric -> value
+    expected = defaultdict(dict)       # (year, seg) -> metric -> sheet total
+    listed = []                        # (name, date of injury, block year)
+    labels, seg, year, tot_col, emp_col, date_col, list_year = {}, None, None, None, None, None, None
+    for r in grid:
+        if len(r) > 1 and isinstance(r[1], dt.datetime):  # the month header row of a year block
+            labels = {c: f"{MON[v.month - 1]} {v.year}" for c, v in enumerate(r) if isinstance(v, dt.datetime)}
+            year = r[1].year
+            tot_col = next(c for c, v in enumerate(r) if isinstance(v, str) and "Total" in v)
+        for c, v in enumerate(r):
+            if norm(v) == "Employee":
+                emp_col, list_year = c, year
+            elif norm(v) == "Date of Injury":
+                date_col = c
+        if emp_col is not None and isinstance(r[emp_col], str) and norm(r[emp_col]) != "Employee" and r[date_col] is not None:
+            listed.append((norm(r[emp_col]), r[date_col], list_year))
+        a = norm(r[0])
+        if a in ("MFG", "SG&A", "TOTALS"):
+            seg = a
+        elif not a:
+            seg = None
+        elif seg and a in WC_METRICS:
+            k = WC_METRICS[a]
+            for c, label in labels.items():
+                if r[c] is not None:  # a blank month is "not reported yet", never zero
+                    monthly[(label, seg)][k] = int(r[c])
+            expected[(year, seg)][k] = int(r[tot_col])
+
+    # The sheet must agree with itself before anything is published.
+    for (y, sg), tots in expected.items():
+        for k, v in tots.items():
+            got = sum(m.get(k, 0) for (label, s), m in monthly.items() if s == sg and label.endswith(str(y)))
+            if got != v:
+                sys.exit(f"FATAL: {WC_TAB} {y} {sg} {k}: months add to {got}, the sheet's total says {v}")
+    for (label, sg), m in monthly.items():
+        if sg == "TOTALS":
+            for k, v in m.items():
+                parts = monthly.get((label, "MFG"), {}).get(k, 0) + monthly.get((label, "SG&A"), {}).get(k, 0)
+                if parts != v:
+                    sys.exit(f"FATAL: {WC_TAB} {label} {k}: TOTALS is {v}, MFG + SG&A is {parts}")
+
+    # Tenure at injury: roster seniority date in the same workbook, else a hire date from Taylor's Terms / Hires.
+    roster = next((wb[n] for n in wb.sheetnames if "Seniority Date" in [c.value for c in next(wb[n].iter_rows(max_row=1))]), None)
+    if roster is not None:
+        hdr = [c.value for c in next(roster.iter_rows(max_row=1))]
+        ci = {h: hdr.index(h) for h in ("Employee Name", "Seniority Date", "Cost Center")}
+        for r in roster.iter_rows(min_row=2, values_only=True):
+            if r[ci["Employee Name"]] and "," in str(r[ci["Employee Name"]]) and isinstance(r[ci["Seniority Date"]], dt.datetime):
+                last, first = [x.strip().lower() for x in str(r[ci["Employee Name"]]).split(",", 1)]
+                people.append((last, first, norm(r[ci["Cost Center"]]), r[ci["Seniority Date"]]))
+    injuries = []
+    for name, when, y in listed:
+        if isinstance(when, str):  # typed dates; a mistyped year (e.g. 8/24/20206) takes its block's year
+            mo, dy, yr = (int(x) for x in when.split("/"))
+            if not 1900 < yr < 2100:
+                print(f"WARNING: {WC_TAB}: injury date '{when}' has a mistyped year; read as {mo}/{dy}/{y}", file=sys.stderr)
+                yr = y
+            when = dt.datetime(yr, mo, dy)
+        d = when.date()
+        first, last = name.lower().split(" ", 1)[0], name.lower().split(" ")[-1]
+        cand = [p for p in people if p[0] == last and p[1].startswith(first[:4]) and p[3].date() <= d]
+        who = max(cand, key=lambda p: p[3]) if cand else None
+        sg = who[2] if who and who[2] in ("MFG", "SG&A") else None
+        injuries.append({"period": period_of(d), "segment": sg, "days": (d - who[3].date()).days if who else None})
+
+    # Each listed injury must land in a period and segment the monthly counts agree with.
+    seen = Counter((i["period"], i["segment"]) for i in injuries)
+    for (label, sg), m in monthly.items():
+        if sg in ("MFG", "SG&A") and m.get("injuries", 0) != seen.get((label, sg), 0):
+            unplaced = sum(1 for i in injuries if i["period"] == label and i["segment"] is None)
+            if m["injuries"] != seen.get((label, sg), 0) + unplaced:
+                sys.exit(f"FATAL: {WC_TAB} {label} {sg}: {m['injuries']} injuries counted, the injury list has {seen.get((label, sg), 0)}")
+    for i in injuries:  # an injury we could not place in a segment takes the only segment with a count that month
+        if i["segment"] is None:
+            i["segment"] = next(sg for sg in ("MFG", "SG&A") if monthly.get((i["period"], sg), {}).get("injuries", 0) > seen.get((i["period"], sg), 0))
+            seen[(i["period"], i["segment"])] += 1
+
+    rows = []
+    for (label, sg), m in sorted(monthly.items(), key=lambda kv: ([l for l, _, _ in fiscal_all].index(kv[0][0]), kv[0][1])):
+        if sg == "TOTALS":
+            continue
+        mine = [i for i in injuries if i["period"] == label and i["segment"] == sg]
+        rows.append({
+            "period": label, "month": months.index(label) + 1 if label in months else None, "segment": sg,
+            "injuries": m["injuries"], "lost_time_days": m["lost_time_days"], "restricted_duty_days": m["restricted_duty_days"],
+            "injuries_first_180_days": sum(1 for i in mine if i["days"] is not None and i["days"] <= 180),
+            "injuries_tenure_unknown": sum(1 for i in mine if i["days"] is None),
+            "injuries_by_tenure": {b: sum(1 for i in mine if i["days"] is not None and tenure_bucket(i["days"]) == b)
+                                   for b in ("0-30 days", "31-90 days", "91-180 days", "Over 180 days")},
+        })
+    exp = {str(y): {} for y, _ in expected}
+    for (y, sg), tots in expected.items():
+        if sg != "TOTALS":
+            exp[str(y)][sg] = tots
+    for y, segs in exp.items():  # the JSON must reproduce the sheet's year totals exactly
+        for sg, tots in segs.items():
+            for k, v in tots.items():
+                got = sum(r[k] for r in rows if r["segment"] == sg and r["period"].endswith(y))
+                if got != v:
+                    sys.exit(f"FATAL: workers_comp {y} {sg} {k} = {got}, sheet says {v}")
+    unknown = sum(1 for i in injuries if i["days"] is None)
+    print(f"NOTE: {WC_TAB}: {len(rows)} period rows, {len(injuries)} listed injuries, {unknown} with unknown tenure", file=sys.stderr)
+    return rows, exp
 
 
 def roster_span(dept_shift, months):
@@ -435,6 +570,7 @@ def main():
     ap.add_argument("--as-of", default=dt.date.today().isoformat())
     ap.add_argument("--history", help="workbook with Terms and Hires tabs for earlier months")
     ap.add_argument("--rosters", help="workbook with the monthly roster tabs, when the main workbook has none")
+    ap.add_argument("--wc", help="HR monthly report workbook with the Mo WC Loss Days tab (workers' comp, Section 04)")
     ap.add_argument("--from", dest="start", help="first month of the window, YYYY-MM (default: January of the as-of year)")
     ap.add_argument("--out", default=Path(__file__).resolve().parent.parent / "data" / "turnover-data.json")
     a = ap.parse_args()
@@ -442,7 +578,7 @@ def main():
     start = dt.date.fromisoformat(a.start + "-01") if a.start else None
     out = Path(a.out)
     previous = json.loads(out.read_text(encoding="utf-8")) if out.exists() else None
-    data = build(a.xlsx, as_of, a.history, start, a.rosters, previous)
+    data = build(a.xlsx, as_of, a.history, start, a.rosters, previous, a.wc)
     if previous:
         archive = out.parent / "archive" / f"turnover-data-{previous['meta']['as_of']}.json"
         archive.parent.mkdir(exist_ok=True)

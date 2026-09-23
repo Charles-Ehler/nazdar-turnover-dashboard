@@ -247,3 +247,8 @@ footer ul { padding-left: 20px; }
   body { font-size: 12.5px; }
   h2 { break-after: avoid; }
 }
+
+/* Section 04 key figures: four equal tiles, no hero. */
+.kpis.four { grid-template-columns: repeat(4, 1fr); margin-top: 20px; }
+.kpis.four .kpi .v { font-size: 32px; }
+@media (max-width: 900px) { .kpis.four { grid-template-columns: 1fr 1fr; } }

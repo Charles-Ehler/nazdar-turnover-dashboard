@@ -3,7 +3,8 @@
 'use strict';
 
 // Nazdar brand palette: red is the series that raises its voice, grays carry the rest.
-const COLORS = { Voluntary: '#CF102D', Involuntary: '#323E48', Retirement: '#B9C1C9', red: '#CF102D', dark: '#323E48', gray: '#666666', light: '#B9C1C9', text: '#323E48', muted: '#666666' };
+// teal: SG&A beside MFG navy in the injury chart only (extended layer, not a brand color; fill with direct labels).
+const COLORS = { teal: '#1F8A8A', Voluntary: '#CF102D', Involuntary: '#323E48', Retirement: '#B9C1C9', red: '#CF102D', dark: '#323E48', gray: '#666666', light: '#B9C1C9', text: '#323E48', muted: '#666666' };
 const CATS = ['Voluntary', 'Involuntary', 'Retirement'];
 const TENURES = ['0-30 days', '31-90 days', '91-180 days', 'Over 180 days'];
 const HC_KEY = { 'All MFG': 'Nazdar MFG', Packaging: 'Packaging', Processing: 'Processing', 'SG&A': 'Nazdar SG&A' };
@@ -134,6 +135,40 @@ const calc = {
       return row;
     });
   },
+  // ---------- workers' comp (Section 04) ----------
+  // HR records injuries by MFG / SG&A only, so Packaging and Processing read as all of MFG. Category and Tenure do not apply.
+  wcSeg(s) { return s.dept === 'SG&A' ? 'SG&A' : 'MFG'; },
+  wcRows(D, seg, m0, m1) { return (D.workers_comp || []).filter(r => r.segment === seg && r.month != null && r.month >= m0 && r.month <= m1); },
+  wc(D, s) {
+    const seg = calc.wcSeg(s), rows = calc.wcRows(D, seg, s.m0, s.m1);
+    const hc = D.headcount_start_of_month[seg === 'SG&A' ? 'Nazdar SG&A' : 'Nazdar MFG'];
+    const inSeg = seg === 'SG&A' ? r => r.department === 'SG&A' : isMfg;
+    const t = k => rows.reduce((a, r) => a + r[k], 0);
+    const avg = calc.avgHeadcount(hc, s.m0, s.m1), injuries = t('injuries');
+    const periods = [];
+    for (let m = s.m0; m <= s.m1; m++) {
+      const r = rows.find(x => x.month === m), seps = calc.sum(D, x => inSeg(x) && x.month === m), h = hc[m - 1];
+      periods.push({ month: m, label: D.meta.months[m - 1], wc: r || null, seps, hc: h, rate: h ? seps / h : null, per100: r && h ? r.injuries / h * 100 : null });
+    }
+    return { seg, rows, periods, injuries, lost: t('lost_time_days'), restricted: t('restricted_duty_days'), first180: t('injuries_first_180_days'),
+      unknown: t('injuries_tenure_unknown'), byTenure: TENURES.map(b => rows.reduce((a, r) => a + r.injuries_by_tenure[b], 0)),
+      avg, per100: avg ? injuries / avg * 100 : null };
+  },
+  pearson(xs, ys) {
+    const n = xs.length, mx = xs.reduce((a, b) => a + b, 0) / n, my = ys.reduce((a, b) => a + b, 0) / n;
+    let sxy = 0, sxx = 0, syy = 0;
+    xs.forEach((x, i) => { sxy += (x - mx) * (ys[i] - my); sxx += (x - mx) ** 2; syy += (ys[i] - my) ** 2; });
+    return sxx && syy ? sxy / Math.sqrt(sxx * syy) : null;
+  },
+  // Monthly MFG separations against monthly MFG injuries, over the selected periods that have both. r only from 8 months up.
+  wcCorrelation(D, s) {
+    const rows = calc.wcRows(D, 'MFG', s.m0, s.m1);
+    const seps = rows.map(r => calc.sum(D, x => isMfg(x) && x.month === r.month)), inj = rows.map(r => r.injuries);
+    // Leave out the month with the most separations: if r collapses, one month is carrying the whole relationship.
+    const top = seps.indexOf(Math.max(...seps)), drop = (a) => a.filter((_, i) => i !== top);
+    return { n: rows.length, r: rows.length >= 8 ? calc.pearson(seps, inj) : null,
+      without: rows.length >= 9 ? { label: D.meta.months[rows[top].month - 1], r: calc.pearson(drop(seps), drop(inj)) } : null };
+  },
   bridge(D, key, s) {
     const hc = key === 'Nazdar MFG' ? D.headcount_start_of_month['Nazdar MFG'] : D.headcount_start_of_month.Packaging.map((v, i) => v == null ? null : v + D.headcount_start_of_month.Processing[i]);
     const hires = D.hires_by_month[key];
@@ -184,6 +219,18 @@ const calc = {
     eq('Supervisor separations', D.supervisors_packaging_processing.rows.map(x => [x.supervisor, x.separations]), [['Tim Aranda', 16], ['Steve Hufft', 11], ['Grayson Munson', 9], ['Jayden Campbell', 4], ['Edwin Reyes', 3], ['Logan Borders', 2], ['Jeremy Harper', 1], ['Erwin Avila', 0], ['Jesse Mullins', 0], ['Joseph Nippert', 0]]);
     eq('Monthly MFG turnover % (fiscal periods)', m.map(x => x.rate == null ? 'n/a' : +(x.rate * 100).toFixed(1)), [2.7, 0.7, 3.4, 2.1, 4.7, 4.7, 2.0, 8.4, 'n/a']);
     eq('YTD rate % / avg headcount', [Math.round(y.rate * 100), y.avg], [34, 148.75]);
+    // Workers' comp: the JSON reproduces the sheet's year totals, and the window figures from the Sep 23 report.
+    if (D.workers_comp) {
+      Object.entries(D.wc_expected_totals).forEach(([yr, segs]) => Object.entries(segs).forEach(([seg, tots]) => {
+        const rows = D.workers_comp.filter(x => x.segment === seg && x.period.endsWith(yr));
+        eq(`WC ${yr} ${seg} matches the sheet`, Object.keys(tots).map(k => rows.reduce((a, x) => a + x[k], 0)), Object.values(tots));
+      }));
+      const whole = { ...DEFAULT_STATE, m0: 1, m1: D.meta.months.length }, w = calc.wc(D, whole), c = calc.wcCorrelation(D, whole);
+      eq('WC MFG Oct 2025 to Aug 2026: injuries, lost, restricted', [w.injuries, w.lost, w.restricted], [7, 6, 206]);
+      eq('WC MFG injuries by tenure (0-30, 31-90, 91-180, over 180) + unknown', [...w.byTenure, w.unknown], [1, 1, 1, 3, 1]);
+      eq('WC MFG injuries per 100 avg headcount', +w.per100.toFixed(2), 4.71);
+      eq('WC MFG separations vs injuries r, months, r without Aug 2026', [+c.r.toFixed(2), c.n, +c.without.r.toFixed(2)], [0.71, 11, 0.1]);
+    }
     const ft = { ...s, dept: 'Processing', tenure: '0-30 days' };
     eq('Filter test Processing 0-30', [calc.sum(D, calc.pred(ft)), calc.sum(D, x => calc.pred(ft)(x) && x.category === 'Voluntary'), calc.sum(D, x => calc.pred(ft)(x) && x.category === 'Involuntary')], [7, 3, 4]);
     return out;
@@ -575,7 +622,88 @@ function renderSection6() {
   el('s6-body').innerHTML = `This dashboard uses Nazdar US manufacturing only, separations through 9/18, on the fiscal calendar the monthly report uses (August = ${D.meta.fiscal_periods ? D.meta.fiscal_periods[ai - 1].start.slice(5).replace('-', '/') + ' to ' + D.meta.fiscal_periods[ai - 1].end.slice(5).replace('-', '/') : 'calendar month'}). On that basis August is ${aug} ÷ ${hc} = ${pct(aug / hc)}, and the prior monthly high is ${full(prior.label)} at ${pct(prior.rate)}. The Hiring &amp; Retention Snapshot dated September 19 reported August at ${pct(D.meta.snapshot_reported_august_rate)}: the same ${aug} US separations plus 2 in UK plant administration, 15 ÷ 155, against the same prior high of 4.7%. For ${D.meta.months[D.meta.year_start_month_index - 1].slice(-4)} year to date, the snapshot's 29.7% divides 46 separations (43 US + 3 UK, through the August close on 9/5) by the August headcount of 155; this dashboard's ${pct(y.rate, 0)} divides ${y.seps} (${monthsLabel(ytdState)}) by the January to August average of ${num(y.avg)}. All of these are correct on their own definitions.`;
 }
 
-const TABS = ['s0', 's1', 's2', 's3', 's4', 's5', 's6'];
+// Section 04: workers' comp injuries and lost days against turnover (id s7; ids stay fixed so old links still work).
+const NA_WC = "Not in HR's monthly report yet";
+function renderSection7(s) {
+  if (!D.workers_comp) { el('s7').hidden = true; return; }
+  const w = calc.wc(D, s), seg = w.seg, segName = seg === 'SG&A' ? 'SG&A' : 'MFG', rng = monthsLabel(s);
+  const haveWc = w.periods.filter(p => p.wc), lastWc = haveWc.length ? haveWc[haveWc.length - 1].label : null;
+  const note = s.dept === 'Packaging' || s.dept === 'Processing' ? ` Injuries are recorded for all of MFG, not by department, so this shows all of MFG.` : '';
+  el('s7-scope').textContent = `Workers' comp from the Mo WC Loss Days tab of HR's monthly report, ${segName}, ${rng}${lastWc && lastWc !== D.meta.months[s.m1 - 1] ? ` (injury data through ${lastWc})` : ''}. Follows the Department filter at the MFG / SG&A level and the From and To months; the Category and Tenure filters do not apply.${note}`;
+
+  const tile = (v, l) => `<div class="kpi"><div class="v"${typeof v === 'number' ? ` data-n="${v}"` : ''}>${v}</div><div class="l">${l}</div></div>`;
+  el('k7').innerHTML = tile(w.injuries, `${segName} injuries, ${rng}`) + tile(w.lost, 'Lost-time days') + tile(w.restricted, 'Restricted-duty days') +
+    tile(w.per100 == null ? na(NA_HC) : num(+w.per100.toFixed(1)), `Injuries per 100 average headcount (${num(w.avg)})`);
+  countUp();
+
+  // 7.1: injuries by period for both segments, then separations on the same months. Two charts, one scale each:
+  // a second y-axis would let any two lines look related, which is exactly the question being asked.
+  const labels = w.periods.map(p => p.label);
+  const other = calc.wc(D, { ...s, dept: seg === 'SG&A' ? 'All MFG' : 'SG&A' });
+  const mfgP = seg === 'MFG' ? w.periods : other.periods, sgaP = seg === 'SG&A' ? w.periods : other.periods;
+  const peakOf = (arr, f) => { const v = arr.map(f), mx = Math.max(...v.filter(x => x != null)); return { mx, at: arr.filter((p, i) => v[i] === mx).map(p => full(p.label)) }; };
+  const pi = peakOf(haveWc, p => p.wc.injuries), ps = peakOf(haveWc, p => p.seps);
+  let t71 = `No ${segName} injuries were recorded in ${rng}`;
+  if (haveWc.length && pi.mx > 0) {
+    t71 = pi.at.length === 1 && ps.at.length === 1 && pi.at[0] === ps.at[0]
+      ? `${segName} injuries and separations both peaked in ${pi.at[0]} (${pi.mx} injur${pi.mx === 1 ? 'y' : 'ies'}, ${ps.mx} separations)`
+      : `${segName} injuries were highest in ${pi.at.join(', ')} (${pi.mx}); separations were highest in ${ps.at.join(', ')} (${ps.mx})`;
+  }
+  figure('c71', {
+    takeaway: t71 + '.',
+    caption: `Workers' comp injuries by fiscal period, MFG and SG&A. ${rng}. A blank month is not in HR's monthly report yet.`,
+    config: { type: 'bar', data: { labels, datasets: [
+      { label: 'MFG injuries', data: mfgP.map(p => p.wc ? p.wc.injuries : null), backgroundColor: COLORS.dark, naWhy: NA_WC },
+      { label: 'SG&A injuries', data: sgaP.map(p => p.wc ? p.wc.injuries : null), backgroundColor: COLORS.teal, naWhy: NA_WC },
+    ] }, options: { scales: { x: { grid: { display: false }, ticks: monthTicks }, y: { beginAtZero: true, ticks: { precision: 0 }, suggestedMax: 4 } }, plugins: { legend: { position: 'top' } } } },
+  });
+  figure('c71s', {
+    takeaway: `${segName} separations on the same months, for comparison with the injuries above.`,
+    caption: `Separations by fiscal period, all categories, ${segName}, ${rng}. From the HR separations log, the same counts as section 01.`,
+    tall: true,
+    config: { type: 'bar', data: { labels, datasets: [{ label: `${segName} separations`, data: w.periods.map(p => p.seps), backgroundColor: COLORS.red }] },
+      options: { scales: { x: { grid: { display: false }, ticks: monthTicks }, y: { beginAtZero: true, ticks: { precision: 0 } } }, plugins: { legend: { display: false } } } },
+  });
+  const c = calc.wcCorrelation(D, s);
+  el('r7').innerHTML = c.r == null
+    ? `Only ${c.n} month${c.n === 1 ? '' : 's'} in this range have both MFG injuries and separations; that is too few to report a correlation. See the charts above.`
+    : `Monthly MFG separations and MFG injuries: correlation r = ${c.r.toFixed(2)} over ${c.n} months.${c.without && c.without.r != null ? ` Leaving out ${full(c.without.label)}, the month with the most separations, r = ${c.without.r.toFixed(2)}.` : ''} <span class="caption">Based on ${c.n} months; a correlation this size on a small sample is a signal to investigate, not proof of cause.</span>`;
+
+  // 7.2 lost and restricted days
+  const days = haveWc.reduce((a, p) => a + p.wc.lost_time_days + p.wc.restricted_duty_days, 0), pd = peakOf(haveWc, p => p.wc.lost_time_days + p.wc.restricted_duty_days);
+  figure('c72', {
+    takeaway: days ? `${segName} recorded ${w.lost} lost-time and ${w.restricted} restricted-duty days in ${rng}; the most in ${pd.at.join(', ')} (${pd.mx}).` : `No lost-time or restricted-duty days recorded for ${segName} in ${rng}.`,
+    caption: `Days recorded in each fiscal period, ${segName}. An injury keeps adding days in later months, so days can appear in a month with no new injury.`,
+    config: { type: 'bar', data: { labels, datasets: [
+      { label: 'Lost-time days', data: w.periods.map(p => p.wc ? p.wc.lost_time_days : null), backgroundColor: COLORS.red, stack: 'd', naWhy: NA_WC },
+      { label: 'Restricted-duty days', data: w.periods.map(p => p.wc ? p.wc.restricted_duty_days : null), backgroundColor: COLORS.dark, stack: 'd', naWhy: NA_WC },
+    ] }, options: { scales: { x: { stacked: true, grid: { display: false }, ticks: monthTicks }, y: { stacked: true, beginAtZero: true, ticks: { precision: 0 } } }, plugins: { legend: { position: 'top' } } } },
+  });
+
+  // 7.3 table
+  const wcCell = (p, k) => p.wc ? p.wc[k] : na(NA_WC);
+  tableFigure('t73', {
+    takeaway: `${segName} by fiscal period, ${rng}.`,
+    caption: `Turnover % = separations ÷ start-of-month headcount (Nazdar ${segName}). Injuries per 100 = injuries ÷ start-of-month headcount × 100.`,
+    html: table(['Period', 'Injuries', 'Lost-time days', 'Restricted-duty days', 'Separations', 'Turnover %', 'Injuries per 100 headcount'],
+      w.periods.map(p => [p.label, wcCell(p, 'injuries'), wcCell(p, 'lost_time_days'), wcCell(p, 'restricted_duty_days'), p.seps, p.rate == null ? na(NA_HC) : pct(p.rate), p.per100 == null ? na(p.wc ? NA_HC : NA_WC) : p.per100.toFixed(1)])
+        .concat([['Total', w.injuries, w.lost, w.restricted, w.periods.reduce((a, p) => a + p.seps, 0), '', w.per100 == null ? na(NA_HC) : w.per100.toFixed(1)]]), { totalLast: true }),
+  });
+
+  // 7.4 tenure at injury, same buckets as the separations tenure chart (section 01)
+  const known = w.byTenure.reduce((a, b) => a + b, 0), within = w.byTenure[0] + w.byTenure[1] + w.byTenure[2];
+  const lv = calc.tenure(D, { ...s, cat: 'All', tenure: 'All', dept: seg === 'SG&A' ? 'SG&A' : 'All MFG' }), lvTot = lv.reduce((a, b) => a + b.n, 0), lv180 = lv[0].n + lv[1].n + lv[2].n;
+  const bl = TENURES.concat(w.unknown ? ['Unknown'] : []), bv = w.byTenure.concat(w.unknown ? [w.unknown] : []);
+  figure('c74', {
+    takeaway: known ? `${within} of ${known} ${segName} injuries with a known hire date (${pct(within / known, 0)}) happened in the first 180 days on the job${lvTot ? `; ${pct(lv180 / lvTot, 0)} of ${segName} leavers left within 180 days` : ''}.` : `No ${segName} injuries with a known hire date in ${rng}.`,
+    caption: `Tenure at injury = date of injury − hire date (roster seniority date, or the hire date in the Terms and Hires tabs for people who have left). ${w.unknown ? `${w.unknown} injur${w.unknown === 1 ? 'y has' : 'ies have'} no hire date before the injury date and ${w.unknown === 1 ? 'is' : 'are'} shown as Unknown.` : ''} ${segName}, ${rng}.`,
+    tall: true,
+    config: { type: 'bar', data: { labels: bl, datasets: [{ label: 'Injuries', data: bv, backgroundColor: bl.map(b => (b === 'Unknown' ? COLORS.light : COLORS.dark)), labelFmt: v => String(v) }] },
+      options: { indexAxis: 'y', scales: { x: { beginAtZero: true, ticks: { precision: 0 }, suggestedMax: Math.max(...bv, 1) * 1.3 }, y: { grid: { display: false } } }, plugins: { legend: { display: false } } } },
+  });
+}
+
+const TABS = ['s0', 's1', 's2', 's3', 's7', 's5', 's4', 's6'];
 let tab = 's0';
 function showTab(id, scrollTop = true) {
   if (!TABS.includes(id)) id = 's0';
@@ -622,6 +750,7 @@ function renderAll() {
   if (el('f2-source').options.length > 1) renderSection2();  // skipped on the first pass; init draws it once the source list exists
   renderSection3(state);
   renderSection5(state);
+  renderSection7(state);
 }
 
 function init(data) {
