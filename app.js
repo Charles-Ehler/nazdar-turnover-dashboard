@@ -726,14 +726,14 @@ function renderSection7(s) {
 // It has its own date switch, because HR's injury report reaches back further than the turnover data.
 let injuryAll = false, injuryMonths = '';
 function renderInjuryLead(s) {
-  // Picking new months above means "count these months": drop back from "Every month HR has" so the headline follows.
+  // Picking new months above means "count these months": drop back from the all-months button so the headline follows.
   if (injuryMonths && injuryMonths !== s.m0 + '-' + s.m1) injuryAll = false;
   injuryMonths = s.m0 + '-' + s.m1;
   const t = calc.injuryLead(D, s, injuryAll), segName = t.seg, whole = calc.wcTenure(D, s, true);
   const rng = injuryAll ? `${whole.from} to ${whole.to}` : monthsLabel(s);
-  const btn = (all, label, sub) => `<button type="button" class="seg-btn" data-all="${all}" aria-pressed="${injuryAll === all}">${label}<small>${sub}</small></button>`;
+  const btn = (all, label) => `<button type="button" class="seg-btn" data-all="${all}" aria-pressed="${injuryAll === all}">${label}</button>`;
   el('h7').innerHTML = `<span class="seg-label">Count injuries from <em>(changes the headline and the chart under it)</em></span>
-    <div class="seg" role="group" aria-label="Count injuries from">${btn(false, 'The months picked above', monthsLabel(s))}${btn(true, 'Every month HR has', `${whole.from} to ${whole.to}`)}</div>
+    <div class="seg" role="group" aria-label="Count injuries from">${btn(false, monthsLabel(s))}${btn(true, `${whole.from} to ${whole.to}`)}</div>
     <p class="lead-stat">${t.title}</p>
     ${t.known && t.wfShare != null ? `<div class="vs">
       <div><b>${pct(t.wfShare, 0)}</b><span>of ${segName} workers are new</span></div>
