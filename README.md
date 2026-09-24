@@ -18,7 +18,7 @@ A single-page, filterable dashboard answering the six production hiring and rete
 | `data/headcount-history.csv` | Start-of-month headcounts for months the workbook lacks (Oct to Dec 2025 today). Fills gaps only. |
 | `tools/build_data.py` | Regenerates `data/turnover-data.json` and `data/data.js` from Taylor's workbook |
 | `tools/check.js` | Runs the acceptance checks against the JSON without a browser |
-| `concept/` | The briefing view: the same data and calculations on one screen (month timeline, tiles, Details drawer). Reached from the "Briefing view" button; it links back with "Classic view", keeping the filters. |
+| `concept/` | The briefing view: the same data and calculations on one screen (month timeline, tiles, Details drawer). Reached at `concept/` by typing the address (the Briefing view button on the main page is hidden for now); it links back with "Classic view", keeping the filters. |
 
 ## Publishing with GitHub Pages (two steps)
 
@@ -81,7 +81,7 @@ git add -A && git commit -m "Data refresh through 2026-10-20" && git push
 - The `Mo WC Loss Days` month columns are fiscal periods: each listed injury date falls in the period it is counted in (Sep 23, 2026 check: all 16 do). If that ever stops being true, the build stops.
 - Lost and restricted days are the days recorded in each period. An injury keeps adding days in later months, so days can appear in a month with no new injury.
 - WC data is by MFG and SG&A only. The Department filter picks MFG or SG&A; Packaging and Processing show all of MFG. Category and Tenure do not apply.
-- The section opens with tenure at injury: the share of injuries in the first 180 days on the job, against the share of workers in their first 180 days on the report's roster tab (`wc_workforce`, counted at that period's close). The roster is one month, taken after the summer hiring push, so the comparison is conservative. Its own "Injury dates" switch can show every period the report has, back before the page window. Earlier years (2024) are waiting on HR; add them to the report's WC tab and fiscal periods to the CSV.
+- The section opens with tenure at injury: the share of injuries in the first 180 days on the job, against the share of workers in their first 180 days on the report's roster tab (`wc_workforce`, counted at that period's close). The roster is one month, taken after the summer hiring push, so the comparison is conservative. A two-button switch above the headline ("The months picked above" or "Every month HR has") can count every period the report has, back before the page window. Earlier years (2024) are waiting on HR; add them to the report's WC tab and fiscal periods to the CSV.
 - Injuries per 100 average headcount = injuries ÷ average reported start-of-month headcount × 100, the same headcount series as the turnover rate.
 - The correlation is Pearson r between monthly MFG separations and monthly MFG injuries, over the selected periods that have both, reported only from 8 months up. The page also shows r with the month of most separations left out, so one month cannot carry the result unseen.
 - Injuries chart and separations chart share the month axis but not a y-axis: two scales on one chart would make any two series look related.

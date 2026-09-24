@@ -166,6 +166,16 @@ const calc = {
       from: rows.length ? rows[0].period : null, to: rows.length ? rows[rows.length - 1].period : null,
       injShare: known ? first180 / known : null, wf, asOf: D.wc_workforce && D.wc_workforce.as_of, wfShare: wf && wf.total ? wf.first_180_days / wf.total : null };
   },
+  // The injury headline both views show: new employees' share of injuries against their share of workers.
+  injuryLead(D, s, all) {
+    const t = calc.wcTenure(D, s, all), ratio = t.injShare != null && t.wfShare ? t.injShare / t.wfShare : null;
+    const title = !t.known ? `No ${t.seg} injuries in these months.`
+      : ratio == null ? `${t.first180} of ${t.known} injuries were new employees.`
+      : ratio >= 1.5 ? `New employees had ${ratio.toFixed(1)} times their share of injuries.`
+      : ratio > 0.67 ? 'New employees had about their share of injuries.' : 'New employees had fewer than their share of injuries.';
+    const note = t.known ? `New = first 180 days on the job. Based on only ${t.known} injur${t.known === 1 ? 'y' : 'ies'}, so a warning sign, not proof.` : '';
+    return { ...t, ratio, title, note };
+  },
   pearson(xs, ys) {
     const n = xs.length, mx = xs.reduce((a, b) => a + b, 0) / n, my = ys.reduce((a, b) => a + b, 0) / n;
     let sxy = 0, sxx = 0, syy = 0;
@@ -654,64 +664,57 @@ function renderSection7(s) {
   if (!D.workers_comp) { el('s7').hidden = true; return; }
   const w = calc.wc(D, s), seg = w.seg, segName = seg === 'SG&A' ? 'SG&A' : 'MFG', rng = monthsLabel(s);
   const haveWc = w.periods.filter(p => p.wc), lastWc = haveWc.length ? haveWc[haveWc.length - 1].label : null;
-  const note = s.dept === 'Packaging' || s.dept === 'Processing' ? ` Injuries are recorded for all of MFG, not by department, so this shows all of MFG.` : '';
-  el('s7-scope').textContent = `Workers' comp from the Mo WC Loss Days tab of HR's monthly report, ${segName}, ${rng}${lastWc && lastWc !== D.meta.months[s.m1 - 1] ? ` (injury data through ${lastWc})` : ''}. Follows the Department filter at the MFG / SG&A level and the From and To months; the Category and Tenure filters do not apply.${note}`;
+  el('s7-scope').textContent = `Workers' comp from HR's monthly report, ${segName}${lastWc && lastWc !== D.meta.months[s.m1 - 1] ? `, through ${lastWc}` : ''}.` +
+    (s.dept === 'Packaging' || s.dept === 'Processing' ? ' Injuries are not split by department, so this is all of MFG.' : '');
 
   const tile = (v, l) => `<div class="kpi"><div class="v"${typeof v === 'number' ? ` data-n="${v}"` : ''}>${v}</div><div class="l">${l}</div></div>`;
-  el('k7').innerHTML = tile(w.injuries, `${segName} injuries, ${rng}`) + tile(w.lost, 'Lost-time days') + tile(w.restricted, 'Restricted-duty days') +
-    tile(w.per100 == null ? na(NA_HC) : num(+w.per100.toFixed(1)), `Injuries per 100 average headcount (${num(w.avg)})`);
+  el('k7').innerHTML = tile(w.injuries, 'Injuries') + tile(w.lost, 'Lost-time days') + tile(w.restricted, 'Restricted-duty days') +
+    tile(w.per100 == null ? na(NA_HC) : num(+w.per100.toFixed(1)), 'Injuries per 100 people');
   countUp();
 
-  // 7.1: injuries by period for both segments, then separations on the same months. Two charts, one scale each:
+  // Injuries by period for both segments, then separations on the same months. Two charts, one scale each:
   // a second y-axis would let any two lines look related, which is exactly the question being asked.
   const labels = w.periods.map(p => p.label);
   const other = calc.wc(D, { ...s, dept: seg === 'SG&A' ? 'All MFG' : 'SG&A' });
   const mfgP = seg === 'MFG' ? w.periods : other.periods, sgaP = seg === 'SG&A' ? w.periods : other.periods;
   const peakOf = (arr, f) => { const v = arr.map(f), mx = Math.max(...v.filter(x => x != null)); return { mx, at: arr.filter((p, i) => v[i] === mx).map(p => full(p.label)) }; };
-  const pi = peakOf(haveWc, p => p.wc.injuries), ps = peakOf(haveWc, p => p.seps);
-  let t71 = `No ${segName} injuries were recorded in ${rng}`;
-  if (haveWc.length && pi.mx > 0) {
-    t71 = pi.at.length === 1 && ps.at.length === 1 && pi.at[0] === ps.at[0]
-      ? `${segName} injuries and separations both peaked in ${pi.at[0]} (${pi.mx} injur${pi.mx === 1 ? 'y' : 'ies'}, ${ps.mx} separations)`
-      : `${segName} injuries were highest in ${pi.at.join(', ')} (${pi.mx}); separations were highest in ${ps.at.join(', ')} (${ps.mx})`;
-  }
+  const pi = peakOf(haveWc, p => p.wc.injuries), ps = peakOf(w.periods, p => p.seps);
   figure('c71', {
-    takeaway: t71 + '.',
-    caption: `Workers' comp injuries by fiscal period, MFG and SG&A. ${rng}. A blank month is not in HR's monthly report yet.`,
+    takeaway: haveWc.length && pi.mx > 0 ? `Injuries peaked in ${pi.at.join(', ')} (${pi.mx}).` : `No ${segName} injuries in ${rng}.`,
+    caption: `MFG and SG&A. A blank month is not in HR's report yet.`,
     config: { type: 'bar', data: { labels, datasets: [
       { label: 'MFG injuries', data: mfgP.map(p => p.wc ? p.wc.injuries : null), backgroundColor: COLORS.dark, naWhy: NA_WC },
       { label: 'SG&A injuries', data: sgaP.map(p => p.wc ? p.wc.injuries : null), backgroundColor: COLORS.teal, naWhy: NA_WC },
     ] }, options: { scales: { x: { grid: { display: false }, ticks: monthTicks }, y: { beginAtZero: true, ticks: { precision: 0 }, suggestedMax: 4 } }, plugins: { legend: { position: 'top' } } } },
   });
   figure('c71s', {
-    takeaway: `${segName} separations on the same months, for comparison with the injuries above.`,
-    caption: `Separations by fiscal period, all categories, ${segName}, ${rng}. From the HR separations log, the same counts as section 01.`,
+    takeaway: ps.mx > 0 ? `Separations peaked in ${ps.at.join(', ')} (${ps.mx}).` : `No ${segName} separations in ${rng}.`,
+    caption: `${segName}, same months as above.`,
     tall: true,
     config: { type: 'bar', data: { labels, datasets: [{ label: `${segName} separations`, data: w.periods.map(p => p.seps), backgroundColor: COLORS.red }] },
       options: { scales: { x: { grid: { display: false }, ticks: monthTicks }, y: { beginAtZero: true, ticks: { precision: 0 } } }, plugins: { legend: { display: false } } } },
   });
-  const c = calc.wcCorrelation(D, s);
-  el('r7').innerHTML = c.r == null
-    ? `Only ${c.n} month${c.n === 1 ? '' : 's'} in this range have both MFG injuries and separations; that is too few to report a correlation. See the charts above.`
-    : `Monthly MFG separations and MFG injuries: correlation r = ${c.r.toFixed(2)} over ${c.n} months.${c.without && c.without.r != null ? ` Leaving out ${full(c.without.label)}, the month with the most separations, r = ${c.without.r.toFixed(2)}.` : ''} <span class="caption">Based on ${c.n} months; a correlation this size on a small sample is a signal to investigate, not proof of cause.</span>`;
+  // If r collapses without the month of most separations, that one month is the whole "link": say so plainly.
+  const c = calc.wcCorrelation(D, s), oneMonth = c.r != null && c.without && c.without.r != null && Math.abs(c.without.r) < Math.abs(c.r) / 2;
+  el('r7').innerHTML = c.r == null ? 'Too few months to compare injuries and separations.'
+    : oneMonth ? `Injuries and separations only rose together in ${full(c.without.label)}. Without that month there is no real link (r = ${c.without.r.toFixed(2)}).`
+    : `Injuries and separations move together (r = ${c.r.toFixed(2)} over ${c.n} months). A signal, not proof.`;
 
-  // 7.2 lost and restricted days
-  const days = haveWc.reduce((a, p) => a + p.wc.lost_time_days + p.wc.restricted_duty_days, 0), pd = peakOf(haveWc, p => p.wc.lost_time_days + p.wc.restricted_duty_days);
+  const pd = peakOf(haveWc, p => p.wc.lost_time_days + p.wc.restricted_duty_days);
   figure('c72', {
-    takeaway: days ? `${segName} recorded ${w.lost} lost-time and ${w.restricted} restricted-duty days in ${rng}; the most in ${pd.at.join(', ')} (${pd.mx}).` : `No lost-time or restricted-duty days recorded for ${segName} in ${rng}.`,
-    caption: `Days recorded in each fiscal period, ${segName}. An injury keeps adding days in later months, so days can appear in a month with no new injury.`,
+    takeaway: w.lost + w.restricted ? `${w.lost} lost-time and ${w.restricted} restricted-duty days, most in ${pd.at.join(', ')}.` : `No lost or restricted days in ${rng}.`,
+    caption: 'One injury can keep adding days in later months.',
     config: { type: 'bar', data: { labels, datasets: [
       { label: 'Lost-time days', data: w.periods.map(p => p.wc ? p.wc.lost_time_days : null), backgroundColor: COLORS.red, stack: 'd', naWhy: NA_WC },
       { label: 'Restricted-duty days', data: w.periods.map(p => p.wc ? p.wc.restricted_duty_days : null), backgroundColor: COLORS.dark, stack: 'd', naWhy: NA_WC },
     ] }, options: { scales: { x: { stacked: true, grid: { display: false }, ticks: monthTicks }, y: { stacked: true, beginAtZero: true, ticks: { precision: 0 } } }, plugins: { legend: { position: 'top' } } } },
   });
 
-  // 7.3 table
   const wcCell = (p, k) => p.wc ? p.wc[k] : na(NA_WC);
   tableFigure('t73', {
-    takeaway: `${segName} by fiscal period, ${rng}.`,
-    caption: `Turnover % = separations ÷ start-of-month headcount (Nazdar ${segName}). Injuries per 100 = injuries ÷ start-of-month headcount × 100.`,
-    html: table(['Period', 'Injuries', 'Lost-time days', 'Restricted-duty days', 'Separations', 'Turnover %', 'Injuries per 100 headcount'],
+    takeaway: 'Month by month',
+    caption: 'Per 100 people = injuries ÷ start-of-month headcount × 100.',
+    html: table(['Period', 'Injuries', 'Lost-time days', 'Restricted-duty days', 'Separations', 'Turnover %', 'Injuries per 100 people'],
       w.periods.map(p => [p.label, wcCell(p, 'injuries'), wcCell(p, 'lost_time_days'), wcCell(p, 'restricted_duty_days'), p.seps, p.rate == null ? na(NA_HC) : pct(p.rate), p.per100 == null ? na(p.wc ? NA_HC : NA_WC) : p.per100.toFixed(1)])
         .concat([['Total', w.injuries, w.lost, w.restricted, w.periods.reduce((a, p) => a + p.seps, 0), '', w.per100 == null ? na(NA_HC) : w.per100.toFixed(1)]]), { totalLast: true }),
   });
@@ -719,26 +722,26 @@ function renderSection7(s) {
   renderInjuryLead(s);
 }
 
-// The lead of section 04 (Anissa, Sep 24): are newer employees hurt more often than their share of the workforce?
-// Its own date switch, because HR's injury report reaches back further than the turnover data.
+// The lead of section 04 (Anissa, Sep 24): do new employees get hurt more than their share of the workforce?
+// It has its own date switch, because HR's injury report reaches back further than the turnover data.
+let injuryAll = false;
 function renderInjuryLead(s) {
-  const all = el('f7-range').value === 'all', t = calc.wcTenure(D, s, all), segName = t.seg;
-  const rng = all ? (t.from ? `${full(t.from)} to ${full(t.to)}` : 'no periods') : monthsLabel(s);
-  const n = v => `${v} injur${v === 1 ? 'y' : 'ies'}`;
-  let head = `No ${segName} injuries with a known hire date in ${rng}.`, sub = '';
-  if (t.known) {
-    const ratio = t.wfShare ? t.injShare / t.wfShare : null;
-    head = t.wfShare == null ? `${t.first180} of ${t.known} ${segName} injuries happened in the first 180 days on the job.`
-      : ratio >= 1.5 ? `Newer employees are about ${pct(t.wfShare, 0)} of ${segName} workers but had ${t.first180} of ${t.known} injuries (${pct(t.injShare, 0)}), about ${ratio.toFixed(1)} times their share.`
-      : `Newer employees are about ${pct(t.wfShare, 0)} of ${segName} workers and had ${t.first180} of ${t.known} injuries (${pct(t.injShare, 0)}), close to their share.`;
-    sub = `Newer = in the first 180 days on the job. Injuries: ${rng}. Workers: ${t.wf ? `${t.wf.first_180_days} of ${t.wf.total} on HR's ${full(t.asOf)} roster, after the summer hiring push, so their usual share is lower and this comparison is conservative` : 'no roster in the report'}.` +
-      ` <strong>Based on ${n(t.first180)} in the first 180 days: a warning sign worth watching, not proof.</strong> More years of injury data will make it firmer.`;
-  }
-  el('h7').innerHTML = `<p class="lead-stat">${head}</p>${sub ? `<p class="caption">${sub}</p>` : ''}`;
+  const t = calc.injuryLead(D, s, injuryAll), segName = t.seg, whole = calc.wcTenure(D, s, true);
+  const rng = injuryAll ? `${whole.from} to ${whole.to}` : monthsLabel(s);
+  const btn = (all, label, sub) => `<button type="button" class="seg-btn" data-all="${all}" aria-pressed="${injuryAll === all}">${label}<small>${sub}</small></button>`;
+  el('h7').innerHTML = `<span class="seg-label">Count injuries from</span>
+    <div class="seg" role="group" aria-label="Count injuries from">${btn(false, 'The months picked above', monthsLabel(s))}${btn(true, 'Every month HR has', `${whole.from} to ${whole.to}`)}</div>
+    <p class="lead-stat">${t.title}</p>
+    ${t.known && t.wfShare != null ? `<div class="vs">
+      <div><b>${pct(t.wfShare, 0)}</b><span>of ${segName} workers are new</span></div>
+      <div class="hot"><b>${pct(t.injShare, 0)}</b><span>of ${segName} injuries were new employees (${t.first180} of ${t.known})</span></div>
+    </div>` : ''}
+    <p class="caption">${t.note}</p>`;
+  el('h7').querySelectorAll('.seg-btn').forEach(b => { b.onclick = () => { injuryAll = b.dataset.all === 'true'; renderInjuryLead(state); }; });
   const bl = TENURES.concat(t.unknown ? ['Unknown'] : []), bv = t.byTenure.concat(t.unknown ? [t.unknown] : []);
   figure('c74', {
-    takeaway: t.known ? `${segName} injuries by time on the job, ${rng}: ${t.first180} in the first 180 days, ${t.byTenure[3]} after.` : `No ${segName} injuries with a known hire date in ${rng}.`,
-    caption: `Tenure at injury = date of injury − hire date (roster seniority date, or the hire date in the Terms and Hires tabs for people who have left). ${t.unknown ? `${n(t.unknown)} with no hire date before the injury date ${t.unknown === 1 ? 'is' : 'are'} shown as Unknown. ` : ''}${segName}, ${rng}.`,
+    takeaway: 'Injuries by time on the job',
+    caption: `${segName}, ${rng}. Red = the first 180 days.${t.wf ? ` Worker share: ${t.wf.first_180_days} of ${t.wf.total} on HR's ${full(t.asOf)} roster.` : ''}`,
     tall: true,
     config: { type: 'bar', data: { labels: bl, datasets: [{ label: 'Injuries', data: bv, backgroundColor: bl.map((b, i) => (b === 'Unknown' ? COLORS.light : i < 3 ? COLORS.red : COLORS.dark)), labelFmt: v => String(v) }] },
       options: { indexAxis: 'y', scales: { x: { beginAtZero: true, ticks: { precision: 0 }, suggestedMax: Math.max(...bv, 1) * 1.3 }, y: { grid: { display: false } } }, plugins: { legend: { display: false } } } },
@@ -811,7 +814,6 @@ function init(data) {
   const read = () => setState({ cat: el('f-cat').value, dept: el('f-dept').value, tenure: el('f-tenure').value, m0: +el('f-m0').value, m1: +el('f-m1').value });
   ['f-cat', 'f-dept', 'f-tenure', 'f-m0', 'f-m1'].forEach(id => el(id).addEventListener('change', read));
   ['f2-scope', 'f2-source'].forEach(id => el(id).addEventListener('change', renderSection2));
-  el('f7-range').addEventListener('change', () => renderInjuryLead(state));
   el('btn-reset').onclick = () => setState({ ...DEFAULT_STATE });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') setState({ ...DEFAULT_STATE }); });
   // The section and filters live in the URL so a view can be shared: #turnover&cat=Voluntary&dept=Processing&tenure=0-30+days&m=8-8

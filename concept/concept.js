@@ -181,6 +181,13 @@
     $('#t-injury-r').innerHTML = c.r == null ? `Only ${plural(c.n, "month", "months")} with both figures here, too few for a correlation.`
       : `MFG correlation r = <strong>${c.r.toFixed(2)}</strong> over ${c.n} months${c.without && c.without.r != null ? `; without ${full(c.without.label)}, r = ${c.without.r.toFixed(2)}` : ''}. A correlation on a sample this small is a signal to investigate, not proof of cause.`;
   }
+  function renderNewInjury() {
+    const t = calc.injuryLead(D, S, false);
+    $('#t-newinj-h').textContent = t.title;
+    $('#t-newinj-vs').innerHTML = t.known && t.wfShare != null ? `<div><b>${pct(t.wfShare)}</b><span>of ${t.seg} workers are new</span></div><div class="hot"><b>${pct(t.injShare)}</b><span>of ${t.seg} injuries were new employees (${t.first180} of ${t.known})</span></div>` : '';
+    $('#t-newinj-n').textContent = t.note;
+    $('#t-newinj-n').hidden = !t.note;
+  }
   function hcSeries() { return D.headcount_start_of_month[HC_KEY[S.dept]]; }
   function renderBridge() {
     const hc = hcSeries(), pts = D.meta.months.map((l, i) => ({ l, v: hc[i], m: i + 1 })).filter(p => p.m >= S.m0 && p.m <= S.m1);
@@ -225,7 +232,7 @@
     pills('#p-tenure', 'Time on the job', 'tenure', [['All', 'All'], ['0-30 days', '0-30 d'], ['31-90 days', '31-90 d'], ['91-180 days', '91-180 d'], ['Over 180 days', '180+ d']]);
     renderTimeline();
     const y = calc.ytd(D, S), monthly = calc.monthly(D, S);
-    renderLede(y, monthly); renderMonth(monthly); renderStats(y); renderTenure(); renderReasons(); renderShift(); renderRetention(); renderInjury(); renderBridge();
+    renderLede(y, monthly); renderMonth(monthly); renderStats(y); renderTenure(); renderReasons(); renderShift(); renderRetention(); renderInjury(); renderNewInjury(); renderBridge();
     if ($('#drawer').classList.contains('open')) { const k = $('#drawer').dataset.key; if (k) { const [h, b] = DETAILS[k](); $('#drawer-h').textContent = h; $('#drawer-body').innerHTML = b; } }
   }
 

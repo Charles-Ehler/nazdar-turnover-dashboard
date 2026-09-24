@@ -79,6 +79,13 @@ button { font: inherit; color: inherit; }
 .stat .s { color: var(--muted); font-size: 13px; }
 .stat.lead .v { color: var(--red); }
 
+/* New employees against injuries */
+.vs { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
+.vs div { padding: 12px 14px; border: 1px solid var(--line); border-radius: 8px; }
+.vs b { display: block; font-size: 38px; line-height: 1; letter-spacing: -.02em; }
+.vs span { display: block; margin-top: 6px; color: var(--ink-2); font-size: 13px; }
+.vs .hot b { color: var(--red-dark); }
+
 /* Horizontal bars (tenure, reasons) */
 .bars { display: grid; gap: 8px; }
 .bar { display: grid; grid-template-columns: 112px 1fr 64px; align-items: center; gap: 10px; padding: 3px 0; border: 0; background: none; text-align: left; font-size: 13px; }

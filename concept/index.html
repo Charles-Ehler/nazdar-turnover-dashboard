@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="concept.css?v=c600f67">
+<link rel="stylesheet" href="concept.css?v=7f6f6b1">
 </head>
 <body>
 <header class="topbar">
@@ -78,7 +78,13 @@
       <p class="note" id="t-injury-r"></p>
     </article>
 
-    <article class="tile span-12" id="t-bridge">
+    <article class="tile span-6" id="t-newinj">
+      <header><h2 id="t-newinj-h"></h2></header>
+      <div class="vs" id="t-newinj-vs"></div>
+      <p class="note" id="t-newinj-n"></p>
+    </article>
+
+    <article class="tile span-6" id="t-bridge">
       <header><h2 id="t-bridge-h"></h2><button type="button" class="more" data-detail="bridge">Details</button></header>
       <p class="hint">Reported start-of-month headcount.</p>
       <div class="plot mid"><canvas id="c-hc"></canvas></div>
@@ -100,8 +106,8 @@
 
 <script>window.TURNOVER_NO_UI = true;</script>
 <script src="../vendor/chart.umd.js"></script>
-<script src="../data/data.js?v=c600f67"></script>
-<script src="../app.js?v=c600f67"></script>
-<script src="concept.js?v=c600f67"></script>
+<script src="../data/data.js?v=7f6f6b1"></script>
+<script src="../app.js?v=7f6f6b1"></script>
+<script src="concept.js?v=7f6f6b1"></script>
 </body>
 </html>
