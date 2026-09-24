@@ -273,5 +273,6 @@ footer ul { padding-left: 20px; }
 .cnt { color: var(--muted); font-size: 12px; }
 
 /* Switch to the briefing view (concept/), carrying the same filters */
-.view-switch { display: inline-flex; align-items: center; text-decoration: none; white-space: nowrap; }
-.view-switch:hover { color: #fff; }
+/* A quiet text link, not a button: the classic view is the main one. */
+.view-switch { align-self: center; font-size: 13px; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; white-space: nowrap; }
+.view-switch:hover { color: var(--red-dark); }

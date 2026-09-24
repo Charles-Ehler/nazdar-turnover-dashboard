@@ -18,7 +18,7 @@ A single-page, filterable dashboard answering the six production hiring and rete
 | `data/headcount-history.csv` | Start-of-month headcounts for months the workbook lacks (Oct to Dec 2025 today). Fills gaps only. |
 | `tools/build_data.py` | Regenerates `data/turnover-data.json` and `data/data.js` from Taylor's workbook |
 | `tools/check.js` | Runs the acceptance checks against the JSON without a browser |
-| `concept/` | The briefing view: the same data and calculations on one screen (month timeline, tiles, Details drawer). Reached at `concept/` by typing the address (the Briefing view button on the main page is hidden for now); it links back with "Classic view", keeping the filters. |
+| `concept/` | The briefing view: the same data and calculations on one screen (month timeline, tiles, Details drawer). Reached at `concept/` by typing the address, or from the small "Briefing view" link beside Reset filters; it links back with "Classic view", keeping the filters. |
 
 ## Publishing with GitHub Pages (two steps)
 
