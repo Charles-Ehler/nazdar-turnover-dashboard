@@ -7,6 +7,8 @@
 const COLORS = { teal: '#1F8A8A', Voluntary: '#CF102D', Involuntary: '#323E48', Retirement: '#B9C1C9', red: '#CF102D', dark: '#323E48', gray: '#666666', light: '#B9C1C9', text: '#323E48', muted: '#666666' };
 const CATS = ['Voluntary', 'Involuntary', 'Retirement'];
 const TENURES = ['0-30 days', '31-90 days', '91-180 days', 'Over 180 days'];
+// Injuries only: "Over 180 days" split by length of service (Anissa, Sep 24).
+const LONG = ['181 days to 1 year', '1 to 2 years', '2 to 3 years', 'Over 3 years'];
 const HC_KEY = { 'All MFG': 'Nazdar MFG', Packaging: 'Packaging', Processing: 'Processing', 'SG&A': 'Nazdar SG&A' };
 // SG&A rows share the cube for the comparison view; every MFG total must leave them out.
 const isMfg = r => r.department !== 'SG&A';
@@ -161,8 +163,9 @@ const calc = {
   wcTenure(D, s, all) {
     const seg = calc.wcSeg(s), rows = all ? (D.workers_comp || []).filter(r => r.segment === seg) : calc.wcRows(D, seg, s.m0, s.m1);
     const byTenure = TENURES.map(b => rows.reduce((a, r) => a + r.injuries_by_tenure[b], 0)), known = byTenure.reduce((a, b) => a + b, 0);
+    const byLength = LONG.map(b => rows.reduce((a, r) => a + ((r.injuries_over_180_by_length || {})[b] || 0), 0));
     const first180 = byTenure[0] + byTenure[1] + byTenure[2], wf = D.wc_workforce && D.wc_workforce[seg];
-    return { seg, rows, byTenure, known, first180, unknown: rows.reduce((a, r) => a + r.injuries_tenure_unknown, 0),
+    return { seg, rows, byTenure, byLength, known, first180, unknown: rows.reduce((a, r) => a + r.injuries_tenure_unknown, 0),
       from: rows.length ? rows[0].period : null, to: rows.length ? rows[rows.length - 1].period : null,
       injShare: known ? first180 / known : null, wf, asOf: D.wc_workforce && D.wc_workforce.as_of, wfShare: wf && wf.total ? wf.first_180_days / wf.total : null };
   },
@@ -252,6 +255,7 @@ const calc = {
       eq('WC MFG injuries by tenure (0-30, 31-90, 91-180, over 180) + unknown', [...w.byTenure, w.unknown], [1, 1, 1, 4, 0]);
       const tw = calc.wcTenure(D, whole, false), ta = calc.wcTenure(D, whole, true);
       eq('WC MFG first 180 days: injuries in window, all periods on file, roster', [tw.first180, tw.known, ta.first180, ta.known, ta.from, tw.wf.first_180_days, tw.wf.total], [3, 7, 8, 30, 'Jan 2024', 25, 155]);
+      eq('WC MFG over 180 days split by length (1 yr, 2 yr, 3 yr, more) adds up, all periods', [...ta.byLength, ta.byLength.reduce((x, y) => x + y, 0) === ta.byTenure[3]], [6, 3, 5, 8, true]);
       eq('WC MFG injuries per 100 avg headcount', +w.per100.toFixed(2), 4.71);
       eq('WC MFG separations vs injuries r, months, r without Aug 2026', [+c.r.toFixed(2), c.n, +c.without.r.toFixed(2)], [0.71, 11, 0.1]);
     }
@@ -552,6 +556,15 @@ function renderSection2() {
   const scopeTxt = `${{ all: 'All Nazdar MFG', frontline: 'Packaging + Processing', sga: 'Nazdar SG&A' }[scope]} hires ${monthsLabel(state)}${source === 'All' ? '' : ', source: ' + source}`;
   const rc = (x, n) => (x['eligible_' + n] ? `${pct(x['retained_' + n] / x['eligible_' + n], 0)} <span class="cnt">(${x['retained_' + n]} of ${x['eligible_' + n]})</span>` : na(NA_COHORT));
   const T = c.total;
+  // "18 of 55" (leavers) and "36 of 53" (hires) get read as the same thing, so spell out how they connect.
+  let tie = '';
+  if (scope === 'all' && source === 'All' && T.hires) {
+    const lv = calc.tenure(D, { ...state, cat: 'All', tenure: 'All', dept: 'All MFG' }), lvAll = lv.reduce((a, b) => a + b.n, 0), early = T.eligible_30 - T.retained_30, gap = lv[0].n - early;
+    tie = `Why ${T.eligible_30}, not ${lvAll}: this tab starts from the ${T.hires} people hired, not the ${lvAll} who left. ` +
+      (T.hires > T.eligible_30 ? `${T.hires - T.eligible_30} started too recently to count, so ${T.eligible_30} are counted. ` : '') +
+      `${early} of the ${T.eligible_30} left within 30 days. The Turnover tab's ${lv[0].n} early leavers are those ${early}` +
+      (gap > 0 ? ` plus ${gap} with no matching row in the Hires tab.` : '.');
+  }
   tableFigure('t21', {
     takeaway: T.hires ? `${T.still_employed} of ${T.hires} hires (${pct(T.still_employed / T.hires, 0)}) are still employed; 30-day retention ${T.eligible_30 ? pct(T.r30, 0) : 'n/a'}, 90-day ${T.eligible_90 ? pct(T.r90, 0) : 'n/a'}, 180-day ${T.eligible_180 ? pct(T.r180, 0) : 'n/a'}.` : 'No hires match this selection.',
     caption: `${scopeTxt}, by hire month. Each milestone shows retained ÷ eligible, with the counts in brackets; n/a means no hire in that month has been with us that long yet.`,
@@ -559,6 +572,7 @@ function renderSection2() {
     html: table(['Hire month', 'Hires', 'Reached 30 days', 'Reached 90 days', 'Reached 180 days', 'Still employed'],
       c.byMonth.map(x => [x.label, x.hires, rc(x, 30), rc(x, 90), rc(x, 180), `${pct(x.still_employed / x.hires, 0)} <span class="cnt">(${x.still_employed})</span>`])
         .concat([['Total', T.hires, rc(T, 30), rc(T, 90), rc(T, 180), T.hires ? `${pct(T.still_employed / T.hires, 0)} <span class="cnt">(${T.still_employed})</span>` : na('No hires')]]), { totalLast: true }),
+    callout: tie,
   });
   const rows = c.byMonth.filter(x => x.eligible_30);
   const pctFmt = v => Math.round(v) + '%';
@@ -741,7 +755,8 @@ function renderInjuryLead(s) {
     </div>` : ''}
     <p class="caption">${t.note}</p>`;
   el('h7').querySelectorAll('.seg-btn').forEach(b => { b.onclick = () => { injuryAll = b.dataset.all === 'true'; renderInjuryLead(state); }; });
-  const bl = TENURES.concat(t.unknown ? ['Unknown'] : []), bv = t.byTenure.concat(t.unknown ? [t.unknown] : []);
+  // The first 180 days in red, then "Over 180 days" split by length of service so the long-service side is not one bar.
+  const bl = TENURES.slice(0, 3).concat(LONG, t.unknown ? ['Unknown'] : []), bv = t.byTenure.slice(0, 3).concat(t.byLength, t.unknown ? [t.unknown] : []);
   figure('c74', {
     takeaway: 'Injuries by time on the job',
     caption: `${segName}, ${rng}. Red = the first 180 days.${t.wf ? ` Worker share: ${t.wf.first_180_days} of ${t.wf.total} on HR's ${full(t.asOf)} roster.` : ''}`,

@@ -99,6 +99,13 @@ def tenure_bucket(days):
     return "0-30 days" if days <= 30 else "31-90 days" if days <= 90 else "91-180 days" if days <= 180 else "Over 180 days"
 
 
+LONG = ("181 days to 1 year", "1 to 2 years", "2 to 3 years", "Over 3 years")
+
+
+def long_bucket(days):
+    return None if days is None or days <= 180 else LONG[0] if days <= 365 else LONG[1] if days <= 730 else LONG[2] if days <= 1095 else LONG[3]
+
+
 def tenure_days(t):
     if t.get("Tenure - Days") is not None:
         return int(t["Tenure - Days"])
@@ -571,6 +578,7 @@ def read_wc(path, months, people):
             "injuries_tenure_unknown": sum(1 for i in mine if i["days"] is None),
             "injuries_by_tenure": {b: sum(1 for i in mine if i["days"] is not None and tenure_bucket(i["days"]) == b)
                                    for b in ("0-30 days", "31-90 days", "91-180 days", "Over 180 days")},
+            "injuries_over_180_by_length": {b: sum(1 for i in mine if long_bucket(i["days"]) == b) for b in LONG},
         })
     exp = {str(y): {} for y, _ in expected}
     for (y, sg), tots in expected.items():
@@ -618,7 +626,8 @@ def read_wc_list(path, have):
                             "injuries_first_180_days": sum(1 for x in d if x is not None and x <= 180),
                             "injuries_tenure_unknown": sum(1 for x in d if x is None),
                             "injuries_by_tenure": {b: sum(1 for x in d if x is not None and tenure_bucket(x) == b)
-                                                   for b in ("0-30 days", "31-90 days", "91-180 days", "Over 180 days")}})
+                                                   for b in ("0-30 days", "31-90 days", "91-180 days", "Over 180 days")},
+                            "injuries_over_180_by_length": {b: sum(1 for x in d if long_bucket(x) == b) for b in LONG}})
     n = sum(r["injuries"] for r in out)
     print(f"NOTE: {path}: {n} injuries in {years}, calendar months, tenure only (no lost days)", file=sys.stderr)
     return out
