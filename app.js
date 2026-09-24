@@ -724,8 +724,11 @@ function renderSection7(s) {
 
 // The lead of section 04 (Anissa, Sep 24): do new employees get hurt more than their share of the workforce?
 // It has its own date switch, because HR's injury report reaches back further than the turnover data.
-let injuryAll = false;
+let injuryAll = false, injuryMonths = '';
 function renderInjuryLead(s) {
+  // Picking new months above means "count these months": drop back from "Every month HR has" so the headline follows.
+  if (injuryMonths && injuryMonths !== s.m0 + '-' + s.m1) injuryAll = false;
+  injuryMonths = s.m0 + '-' + s.m1;
   const t = calc.injuryLead(D, s, injuryAll), segName = t.seg, whole = calc.wcTenure(D, s, true);
   const rng = injuryAll ? `${whole.from} to ${whole.to}` : monthsLabel(s);
   const btn = (all, label, sub) => `<button type="button" class="seg-btn" data-all="${all}" aria-pressed="${injuryAll === all}">${label}<small>${sub}</small></button>`;
