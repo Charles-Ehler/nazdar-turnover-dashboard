@@ -2386,6 +2386,390 @@
  },
  "workers_comp": [
   {
+   "period": "Jan 2024",
+   "month": null,
+   "segment": "MFG",
+   "injuries": 1,
+   "lost_time_days": null,
+   "restricted_duty_days": null,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 1
+   }
+  },
+  {
+   "period": "Jan 2024",
+   "month": null,
+   "segment": "SG&A",
+   "injuries": 0,
+   "lost_time_days": null,
+   "restricted_duty_days": null,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 0
+   }
+  },
+  {
+   "period": "Feb 2024",
+   "month": null,
+   "segment": "MFG",
+   "injuries": 3,
+   "lost_time_days": null,
+   "restricted_duty_days": null,
+   "injuries_first_180_days": 1,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 1,
+    "Over 180 days": 2
+   }
+  },
+  {
+   "period": "Feb 2024",
+   "month": null,
+   "segment": "SG&A",
+   "injuries": 0,
+   "lost_time_days": null,
+   "restricted_duty_days": null,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 0
+   }
+  },
+  {
+   "period": "Mar 2024",
+   "month": null,
+   "segment": "MFG",
+   "injuries": 0,
+   "lost_time_days": null,
+   "restricted_duty_days": null,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 0
+   }
+  },
+  {
+   "period": "Mar 2024",
+   "month": null,
+   "segment": "SG&A",
+   "injuries": 0,
+   "lost_time_days": null,
+   "restricted_duty_days": null,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 0
+   }
+  },
+  {
+   "period": "Apr 2024",
+   "month": null,
+   "segment": "MFG",
+   "injuries": 1,
+   "lost_time_days": null,
+   "restricted_duty_days": null,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 1
+   }
+  },
+  {
+   "period": "Apr 2024",
+   "month": null,
+   "segment": "SG&A",
+   "injuries": 0,
+   "lost_time_days": null,
+   "restricted_duty_days": null,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 0
+   }
+  },
+  {
+   "period": "May 2024",
+   "month": null,
+   "segment": "MFG",
+   "injuries": 0,
+   "lost_time_days": null,
+   "restricted_duty_days": null,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 0
+   }
+  },
+  {
+   "period": "May 2024",
+   "month": null,
+   "segment": "SG&A",
+   "injuries": 0,
+   "lost_time_days": null,
+   "restricted_duty_days": null,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 0
+   }
+  },
+  {
+   "period": "Jun 2024",
+   "month": null,
+   "segment": "MFG",
+   "injuries": 2,
+   "lost_time_days": null,
+   "restricted_duty_days": null,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 2
+   }
+  },
+  {
+   "period": "Jun 2024",
+   "month": null,
+   "segment": "SG&A",
+   "injuries": 1,
+   "lost_time_days": null,
+   "restricted_duty_days": null,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 1
+   }
+  },
+  {
+   "period": "Jul 2024",
+   "month": null,
+   "segment": "MFG",
+   "injuries": 1,
+   "lost_time_days": null,
+   "restricted_duty_days": null,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 1
+   }
+  },
+  {
+   "period": "Jul 2024",
+   "month": null,
+   "segment": "SG&A",
+   "injuries": 0,
+   "lost_time_days": null,
+   "restricted_duty_days": null,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 0
+   }
+  },
+  {
+   "period": "Aug 2024",
+   "month": null,
+   "segment": "MFG",
+   "injuries": 3,
+   "lost_time_days": null,
+   "restricted_duty_days": null,
+   "injuries_first_180_days": 1,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 1,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 2
+   }
+  },
+  {
+   "period": "Aug 2024",
+   "month": null,
+   "segment": "SG&A",
+   "injuries": 0,
+   "lost_time_days": null,
+   "restricted_duty_days": null,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 0
+   }
+  },
+  {
+   "period": "Sep 2024",
+   "month": null,
+   "segment": "MFG",
+   "injuries": 4,
+   "lost_time_days": null,
+   "restricted_duty_days": null,
+   "injuries_first_180_days": 1,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 1,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 3
+   }
+  },
+  {
+   "period": "Sep 2024",
+   "month": null,
+   "segment": "SG&A",
+   "injuries": 0,
+   "lost_time_days": null,
+   "restricted_duty_days": null,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 0
+   }
+  },
+  {
+   "period": "Oct 2024",
+   "month": null,
+   "segment": "MFG",
+   "injuries": 0,
+   "lost_time_days": null,
+   "restricted_duty_days": null,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 0
+   }
+  },
+  {
+   "period": "Oct 2024",
+   "month": null,
+   "segment": "SG&A",
+   "injuries": 0,
+   "lost_time_days": null,
+   "restricted_duty_days": null,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 0
+   }
+  },
+  {
+   "period": "Nov 2024",
+   "month": null,
+   "segment": "MFG",
+   "injuries": 1,
+   "lost_time_days": null,
+   "restricted_duty_days": null,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 1
+   }
+  },
+  {
+   "period": "Nov 2024",
+   "month": null,
+   "segment": "SG&A",
+   "injuries": 0,
+   "lost_time_days": null,
+   "restricted_duty_days": null,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 0
+   }
+  },
+  {
+   "period": "Dec 2024",
+   "month": null,
+   "segment": "MFG",
+   "injuries": 0,
+   "lost_time_days": null,
+   "restricted_duty_days": null,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 0
+   }
+  },
+  {
+   "period": "Dec 2024",
+   "month": null,
+   "segment": "SG&A",
+   "injuries": 0,
+   "lost_time_days": null,
+   "restricted_duty_days": null,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 0
+   }
+  },
+  {
    "period": "Jan 2025",
    "month": null,
    "segment": "MFG",

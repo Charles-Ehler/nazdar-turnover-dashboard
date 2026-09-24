@@ -134,7 +134,7 @@ def dedupe(rows, key, what):
     return out
 
 
-def build(xlsx, as_of, history=None, start=None, rosters=None, previous=None, wc=None):
+def build(xlsx, as_of, history=None, start=None, rosters=None, previous=None, wc=None, wc_history=None):
     wb = openpyxl.load_workbook(xlsx, read_only=True, data_only=True)
     start = start or dt.date(as_of.year, 1, 1)
     n_months = (as_of.year - start.year) * 12 + as_of.month - start.month + 1
@@ -442,6 +442,8 @@ def build(xlsx, as_of, history=None, start=None, rosters=None, previous=None, wc
         people = [(norm(r["Last Name"]).lower(), norm(r["First Name"]).lower(), norm(r.get(seg_col(r))), d)
                   for r in terms + hires for d in [r.get("Hire Date")] if isinstance(d, dt.datetime)]
         data["workers_comp"], data["wc_expected_totals"], data["wc_workforce"] = read_wc(wc, months, people)
+        if wc_history:
+            data["workers_comp"] = read_wc_list(wc_history, data["workers_comp"]) + data["workers_comp"]
         data["meta"]["notes"].append(
             "Workers' comp figures come from the Mo WC Loss Days tab of HR's monthly report. Its month columns are fiscal periods "
             "(each listed injury date falls in the period it is counted in). Lost and restricted days are the days recorded in each "
@@ -585,6 +587,43 @@ def read_wc(path, months, people):
     return rows, exp, workforce
 
 
+def read_wc_list(path, have):
+    """Read a plain injury list for years before the monthly report (HR's "2024 WC Claims": Employee, Date of Injury,
+    Hire Date, MFG/SG&A). It has no lost or restricted days, so those stay null and only feed tenure at injury.
+    Rows are calendar months, one per month of each year listed, both segments. Names never leave this function."""
+    wb = openpyxl.load_workbook(path, data_only=True)
+    rows = list(wb.worksheets[0].iter_rows(values_only=True))
+    hdr = [norm(h) for h in rows[0]]
+    ci = {h: hdr.index(h) for h in ("Date of Injury", "Hire Date", "MFG/SG&A")}
+    covered = {r["period"] for r in have}
+    got = defaultdict(list)
+    for r in rows[1:]:
+        when, hired, sg = r[ci["Date of Injury"]], r[ci["Hire Date"]], norm(r[ci["MFG/SG&A"]])
+        if not isinstance(when, dt.datetime):
+            continue
+        if sg not in ("MFG", "SG&A"):
+            sys.exit(f"FATAL: {path}: segment '{sg}' is not MFG or SG&A")
+        days = (when - hired).days if isinstance(hired, dt.datetime) and hired <= when else None
+        got[(f"{MON[when.month - 1]} {when.year}", sg)].append(days)
+    years = sorted({int(k[0][-4:]) for k in got})
+    out = []
+    for y in years:
+        for m in MON:
+            label = f"{m} {y}"
+            if label in covered:
+                sys.exit(f"FATAL: {path}: {label} is already in the monthly report; the list would count it twice")
+            for sg in ("MFG", "SG&A"):
+                d = got.get((label, sg), [])
+                out.append({"period": label, "month": None, "segment": sg, "injuries": len(d), "lost_time_days": None, "restricted_duty_days": None,
+                            "injuries_first_180_days": sum(1 for x in d if x is not None and x <= 180),
+                            "injuries_tenure_unknown": sum(1 for x in d if x is None),
+                            "injuries_by_tenure": {b: sum(1 for x in d if x is not None and tenure_bucket(x) == b)
+                                                   for b in ("0-30 days", "31-90 days", "91-180 days", "Over 180 days")}})
+    n = sum(r["injuries"] for r in out)
+    print(f"NOTE: {path}: {n} injuries in {years}, calendar months, tenure only (no lost days)", file=sys.stderr)
+    return out
+
+
 def roster_span(dept_shift, months):
     have = [i for i in range(len(months)) if any(v[i] for v in dept_shift.values())]
     return f"{months[have[0]][:3]} to {months[have[-1]]}" if have else "none reported"
@@ -597,6 +636,7 @@ def main():
     ap.add_argument("--history", help="workbook with Terms and Hires tabs for earlier months")
     ap.add_argument("--rosters", help="workbook with the monthly roster tabs, when the main workbook has none")
     ap.add_argument("--wc", help="HR monthly report workbook with the Mo WC Loss Days tab (workers' comp, Section 04)")
+    ap.add_argument("--wc-history", help="plain injury list for earlier years (Employee, Date of Injury, Hire Date, MFG/SG&A)")
     ap.add_argument("--from", dest="start", help="first month of the window, YYYY-MM (default: January of the as-of year)")
     ap.add_argument("--out", default=Path(__file__).resolve().parent.parent / "data" / "turnover-data.json")
     a = ap.parse_args()
@@ -604,7 +644,7 @@ def main():
     start = dt.date.fromisoformat(a.start + "-01") if a.start else None
     out = Path(a.out)
     previous = json.loads(out.read_text(encoding="utf-8")) if out.exists() else None
-    data = build(a.xlsx, as_of, a.history, start, a.rosters, previous, a.wc)
+    data = build(a.xlsx, as_of, a.history, start, a.rosters, previous, a.wc, a.wc_history)
     if previous:
         archive = out.parent / "archive" / f"turnover-data-{previous['meta']['as_of']}.json"
         archive.parent.mkdir(exist_ok=True)

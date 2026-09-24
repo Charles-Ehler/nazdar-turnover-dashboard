@@ -251,7 +251,7 @@ const calc = {
       eq('WC MFG Oct 2025 to Aug 2026: injuries, lost, restricted', [w.injuries, w.lost, w.restricted], [7, 6, 206]);
       eq('WC MFG injuries by tenure (0-30, 31-90, 91-180, over 180) + unknown', [...w.byTenure, w.unknown], [1, 1, 1, 4, 0]);
       const tw = calc.wcTenure(D, whole, false), ta = calc.wcTenure(D, whole, true);
-      eq('WC MFG first 180 days: injuries in window, all periods on file, roster', [tw.first180, tw.known, ta.first180, ta.known, ta.from, tw.wf.first_180_days, tw.wf.total], [3, 7, 5, 14, 'Jan 2025', 25, 155]);
+      eq('WC MFG first 180 days: injuries in window, all periods on file, roster', [tw.first180, tw.known, ta.first180, ta.known, ta.from, tw.wf.first_180_days, tw.wf.total], [3, 7, 8, 30, 'Jan 2024', 25, 155]);
       eq('WC MFG injuries per 100 avg headcount', +w.per100.toFixed(2), 4.71);
       eq('WC MFG separations vs injuries r, months, r without Aug 2026', [+c.r.toFixed(2), c.n, +c.without.r.toFixed(2)], [0.71, 11, 0.1]);
     }
