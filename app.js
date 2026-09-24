@@ -156,6 +156,16 @@ const calc = {
       unknown: t('injuries_tenure_unknown'), byTenure: TENURES.map(b => rows.reduce((a, r) => a + r.injuries_by_tenure[b], 0)),
       avg, per100: avg ? injuries / avg * 100 : null };
   },
+  // Tenure at injury. all = every period HR's report has (it reaches back before the page window), else the From and To months.
+  // The workforce side is the report's roster: people in their first 180 days on the job at that period's close.
+  wcTenure(D, s, all) {
+    const seg = calc.wcSeg(s), rows = all ? (D.workers_comp || []).filter(r => r.segment === seg) : calc.wcRows(D, seg, s.m0, s.m1);
+    const byTenure = TENURES.map(b => rows.reduce((a, r) => a + r.injuries_by_tenure[b], 0)), known = byTenure.reduce((a, b) => a + b, 0);
+    const first180 = byTenure[0] + byTenure[1] + byTenure[2], wf = D.wc_workforce && D.wc_workforce[seg];
+    return { seg, rows, byTenure, known, first180, unknown: rows.reduce((a, r) => a + r.injuries_tenure_unknown, 0),
+      from: rows.length ? rows[0].period : null, to: rows.length ? rows[rows.length - 1].period : null,
+      injShare: known ? first180 / known : null, wf, asOf: D.wc_workforce && D.wc_workforce.as_of, wfShare: wf && wf.total ? wf.first_180_days / wf.total : null };
+  },
   pearson(xs, ys) {
     const n = xs.length, mx = xs.reduce((a, b) => a + b, 0) / n, my = ys.reduce((a, b) => a + b, 0) / n;
     let sxy = 0, sxx = 0, syy = 0;
@@ -230,6 +240,8 @@ const calc = {
       const whole = { ...DEFAULT_STATE, m0: 1, m1: D.meta.months.length }, w = calc.wc(D, whole), c = calc.wcCorrelation(D, whole);
       eq('WC MFG Oct 2025 to Aug 2026: injuries, lost, restricted', [w.injuries, w.lost, w.restricted], [7, 6, 206]);
       eq('WC MFG injuries by tenure (0-30, 31-90, 91-180, over 180) + unknown', [...w.byTenure, w.unknown], [1, 1, 1, 4, 0]);
+      const tw = calc.wcTenure(D, whole, false), ta = calc.wcTenure(D, whole, true);
+      eq('WC MFG first 180 days: injuries in window, all periods on file, roster', [tw.first180, tw.known, ta.first180, ta.known, ta.from, tw.wf.first_180_days, tw.wf.total], [3, 7, 5, 14, 'Jan 2025', 25, 155]);
       eq('WC MFG injuries per 100 avg headcount', +w.per100.toFixed(2), 4.71);
       eq('WC MFG separations vs injuries r, months, r without Aug 2026', [+c.r.toFixed(2), c.n, +c.without.r.toFixed(2)], [0.71, 11, 0.1]);
     }
@@ -704,15 +716,31 @@ function renderSection7(s) {
         .concat([['Total', w.injuries, w.lost, w.restricted, w.periods.reduce((a, p) => a + p.seps, 0), '', w.per100 == null ? na(NA_HC) : w.per100.toFixed(1)]]), { totalLast: true }),
   });
 
-  // 7.4 tenure at injury, same buckets as the separations tenure chart (section 01)
-  const known = w.byTenure.reduce((a, b) => a + b, 0), within = w.byTenure[0] + w.byTenure[1] + w.byTenure[2];
-  const lv = calc.tenure(D, { ...s, cat: 'All', tenure: 'All', dept: seg === 'SG&A' ? 'SG&A' : 'All MFG' }), lvTot = lv.reduce((a, b) => a + b.n, 0), lv180 = lv[0].n + lv[1].n + lv[2].n;
-  const bl = TENURES.concat(w.unknown ? ['Unknown'] : []), bv = w.byTenure.concat(w.unknown ? [w.unknown] : []);
+  renderInjuryLead(s);
+}
+
+// The lead of section 04 (Anissa, Sep 24): are newer employees hurt more often than their share of the workforce?
+// Its own date switch, because HR's injury report reaches back further than the turnover data.
+function renderInjuryLead(s) {
+  const all = el('f7-range').value === 'all', t = calc.wcTenure(D, s, all), segName = t.seg;
+  const rng = all ? (t.from ? `${full(t.from)} to ${full(t.to)}` : 'no periods') : monthsLabel(s);
+  const n = v => `${v} injur${v === 1 ? 'y' : 'ies'}`;
+  let head = `No ${segName} injuries with a known hire date in ${rng}.`, sub = '';
+  if (t.known) {
+    const ratio = t.wfShare ? t.injShare / t.wfShare : null;
+    head = t.wfShare == null ? `${t.first180} of ${t.known} ${segName} injuries happened in the first 180 days on the job.`
+      : ratio >= 1.5 ? `Newer employees are about ${pct(t.wfShare, 0)} of ${segName} workers but had ${t.first180} of ${t.known} injuries (${pct(t.injShare, 0)}), about ${ratio.toFixed(1)} times their share.`
+      : `Newer employees are about ${pct(t.wfShare, 0)} of ${segName} workers and had ${t.first180} of ${t.known} injuries (${pct(t.injShare, 0)}), close to their share.`;
+    sub = `Newer = in the first 180 days on the job. Injuries: ${rng}. Workers: ${t.wf ? `${t.wf.first_180_days} of ${t.wf.total} on HR's ${full(t.asOf)} roster, after the summer hiring push, so their usual share is lower and this comparison is conservative` : 'no roster in the report'}.` +
+      ` <strong>Based on ${n(t.first180)} in the first 180 days: a warning sign worth watching, not proof.</strong> More years of injury data will make it firmer.`;
+  }
+  el('h7').innerHTML = `<p class="lead-stat">${head}</p>${sub ? `<p class="caption">${sub}</p>` : ''}`;
+  const bl = TENURES.concat(t.unknown ? ['Unknown'] : []), bv = t.byTenure.concat(t.unknown ? [t.unknown] : []);
   figure('c74', {
-    takeaway: known ? `${within} of ${known} ${segName} injuries with a known hire date (${pct(within / known, 0)}) happened in the first 180 days on the job${lvTot ? `; ${pct(lv180 / lvTot, 0)} of ${segName} leavers left within 180 days` : ''}.` : `No ${segName} injuries with a known hire date in ${rng}.`,
-    caption: `Tenure at injury = date of injury − hire date (roster seniority date, or the hire date in the Terms and Hires tabs for people who have left). ${w.unknown ? `${w.unknown} injur${w.unknown === 1 ? 'y has' : 'ies have'} no hire date before the injury date and ${w.unknown === 1 ? 'is' : 'are'} shown as Unknown.` : ''} ${segName}, ${rng}.`,
+    takeaway: t.known ? `${segName} injuries by time on the job, ${rng}: ${t.first180} in the first 180 days, ${t.byTenure[3]} after.` : `No ${segName} injuries with a known hire date in ${rng}.`,
+    caption: `Tenure at injury = date of injury − hire date (roster seniority date, or the hire date in the Terms and Hires tabs for people who have left). ${t.unknown ? `${n(t.unknown)} with no hire date before the injury date ${t.unknown === 1 ? 'is' : 'are'} shown as Unknown. ` : ''}${segName}, ${rng}.`,
     tall: true,
-    config: { type: 'bar', data: { labels: bl, datasets: [{ label: 'Injuries', data: bv, backgroundColor: bl.map(b => (b === 'Unknown' ? COLORS.light : COLORS.dark)), labelFmt: v => String(v) }] },
+    config: { type: 'bar', data: { labels: bl, datasets: [{ label: 'Injuries', data: bv, backgroundColor: bl.map((b, i) => (b === 'Unknown' ? COLORS.light : i < 3 ? COLORS.red : COLORS.dark)), labelFmt: v => String(v) }] },
       options: { indexAxis: 'y', scales: { x: { beginAtZero: true, ticks: { precision: 0 }, suggestedMax: Math.max(...bv, 1) * 1.3 }, y: { grid: { display: false } } }, plugins: { legend: { display: false } } } },
   });
 }
@@ -783,6 +811,7 @@ function init(data) {
   const read = () => setState({ cat: el('f-cat').value, dept: el('f-dept').value, tenure: el('f-tenure').value, m0: +el('f-m0').value, m1: +el('f-m1').value });
   ['f-cat', 'f-dept', 'f-tenure', 'f-m0', 'f-m1'].forEach(id => el(id).addEventListener('change', read));
   ['f2-scope', 'f2-source'].forEach(id => el(id).addEventListener('change', renderSection2));
+  el('f7-range').addEventListener('change', () => renderInjuryLead(state));
   el('btn-reset').onclick = () => setState({ ...DEFAULT_STATE });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') setState({ ...DEFAULT_STATE }); });
   // The section and filters live in the URL so a view can be shared: #turnover&cat=Voluntary&dept=Processing&tenure=0-30+days&m=8-8

@@ -3051,5 +3051,16 @@
     "restricted_duty_days": 0
    }
   }
+ },
+ "wc_workforce": {
+  "as_of": "Aug 2026",
+  "MFG": {
+   "total": 155,
+   "first_180_days": 25
+  },
+  "SG&A": {
+   "total": 286,
+   "first_180_days": 17
+  }
  }
 }

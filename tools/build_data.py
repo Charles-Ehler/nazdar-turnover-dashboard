@@ -441,7 +441,7 @@ def build(xlsx, as_of, history=None, start=None, rosters=None, previous=None, wc
         # People in Taylor's file (anyone who left or was hired in the window), for tenure at injury.
         people = [(norm(r["Last Name"]).lower(), norm(r["First Name"]).lower(), norm(r.get(seg_col(r))), d)
                   for r in terms + hires for d in [r.get("Hire Date")] if isinstance(d, dt.datetime)]
-        data["workers_comp"], data["wc_expected_totals"] = read_wc(wc, months, people)
+        data["workers_comp"], data["wc_expected_totals"], data["wc_workforce"] = read_wc(wc, months, people)
         data["meta"]["notes"].append(
             "Workers' comp figures come from the Mo WC Loss Days tab of HR's monthly report. Its month columns are fiscal periods "
             "(each listed injury date falls in the period it is counted in). Lost and restricted days are the days recorded in each "
@@ -512,14 +512,24 @@ def read_wc(path, months, people):
 
     # Tenure at injury: roster seniority date in the same workbook, else a hire date from Taylor's Terms / Hires.
     roster = next((wb[n] for n in wb.sheetnames if "Seniority Date" in [c.value for c in next(wb[n].iter_rows(max_row=1))]), None)
+    workforce = None
     if roster is not None:
         hdr = [c.value for c in next(roster.iter_rows(max_row=1))]
         ci = {h: hdr.index(h) for h in ("Employee Name", "Seniority Date", "Cost Center")}
+        # The roster tab is named for its fiscal period ("8-26"); people on it are counted as of that period's close.
+        mo, yy = (int(x) for x in roster.title.split("-"))
+        label = f"{MON[mo - 1]} 20{yy:02d}"
+        close = next(e for l, _, e in fiscal_all if l == label)
+        workforce = {"as_of": label, "MFG": {"total": 0, "first_180_days": 0}, "SG&A": {"total": 0, "first_180_days": 0}}
         for r in roster.iter_rows(min_row=2, values_only=True):
             if r[ci["Employee Name"]] and "," in str(r[ci["Employee Name"]]) and isinstance(r[ci["Seniority Date"]], dt.datetime):
                 last, first = [x.strip().lower() for x in str(r[ci["Employee Name"]]).split(",", 1)]
                 cc = norm(r[ci["Cost Center"]])
-                people.append((last, first, "SG&A" if cc == "SGA" else cc, r[ci["Seniority Date"]]))  # the roster spells it SGA
+                sg = "SG&A" if cc == "SGA" else cc  # the roster spells it SGA
+                people.append((last, first, sg, r[ci["Seniority Date"]]))
+                if sg in workforce:
+                    workforce[sg]["total"] += 1
+                    workforce[sg]["first_180_days"] += (close - r[ci["Seniority Date"]].date()).days <= 180
     injuries = []
     for name, when, y in listed:
         if isinstance(when, str):  # typed dates; a mistyped year (e.g. 8/24/20206) takes its block's year
@@ -572,7 +582,7 @@ def read_wc(path, months, people):
                     sys.exit(f"FATAL: workers_comp {y} {sg} {k} = {got}, sheet says {v}")
     unknown = sum(1 for i in injuries if i["days"] is None)
     print(f"NOTE: {WC_TAB}: {len(rows)} period rows, {len(injuries)} listed injuries, {unknown} with unknown tenure", file=sys.stderr)
-    return rows, exp
+    return rows, exp, workforce
 
 
 def roster_span(dept_shift, months):

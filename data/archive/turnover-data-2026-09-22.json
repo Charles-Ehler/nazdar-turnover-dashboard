@@ -84,7 +84,8 @@
   "months_elapsed": 11.6,
   "notes": [
    "No start-of-month headcount is reported for Sep 2026; turnover % shows n/a there.",
-   "The Hiring & Retention Snapshot dated Sep 19 reported August at 9.7% (15 terminations ÷ 155, data through the August close on 9/5, UK plant administration included). This dataset is US only: August is 13 ÷ 155 = 8.4%. Both are correct on their own definitions."
+   "The Hiring & Retention Snapshot dated Sep 19 reported August at 9.7% (15 terminations ÷ 155, data through the August close on 9/5, UK plant administration included). This dataset is US only: August is 13 ÷ 155 = 8.4%. Both are correct on their own definitions.",
+   "Workers' comp figures come from the Mo WC Loss Days tab of HR's monthly report. Its month columns are fiscal periods (each listed injury date falls in the period it is counted in). Lost and restricted days are the days recorded in each period, so an injury keeps adding days in later months. Tenure at injury uses the report's roster Seniority Date, or the hire date in the Terms and Hires tabs for people who have left; injuries with no hire date before the injury date count as unknown."
   ],
   "snapshot_reported_august_rate": 0.097
  },
@@ -458,7 +459,7 @@
    "department": "Packaging",
    "shift": "Mid-Shift",
    "category": "Voluntary",
-   "tenure_bucket": "0-30 days",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -772,6 +773,7 @@
    "department": "Packaging",
    "reason": "Return to School",
    "category": "Voluntary",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -779,6 +781,7 @@
    "department": "Processing",
    "reason": "Poor Attendance",
    "category": "Involuntary",
+   "tenure_bucket": "31-90 days",
    "count": 1
   },
   {
@@ -786,6 +789,7 @@
    "department": "SG&A",
    "reason": "Position Elimination",
    "category": "Involuntary",
+   "tenure_bucket": "Over 180 days",
    "count": 4
   },
   {
@@ -793,6 +797,7 @@
    "department": "Packaging",
    "reason": "Personal Reasons",
    "category": "Voluntary",
+   "tenure_bucket": "91-180 days",
    "count": 1
   },
   {
@@ -800,6 +805,7 @@
    "department": "SG&A",
    "reason": "Position Elimination",
    "category": "Involuntary",
+   "tenure_bucket": "Over 180 days",
    "count": 2
   },
   {
@@ -807,6 +813,7 @@
    "department": "SG&A",
    "reason": "Retirement",
    "category": "Retirement",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -814,6 +821,7 @@
    "department": "Processing",
    "reason": "Another job",
    "category": "Voluntary",
+   "tenure_bucket": "91-180 days",
    "count": 1
   },
   {
@@ -821,6 +829,7 @@
    "department": "Processing",
    "reason": "Poor Performance",
    "category": "Involuntary",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -828,6 +837,7 @@
    "department": "SG&A",
    "reason": "Dissatisfaction with Job",
    "category": "Voluntary",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -835,6 +845,7 @@
    "department": "SG&A",
    "reason": "Poor Performance",
    "category": "Involuntary",
+   "tenure_bucket": "31-90 days",
    "count": 1
   },
   {
@@ -842,6 +853,7 @@
    "department": "SG&A",
    "reason": "Retirement",
    "category": "Retirement",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -849,6 +861,7 @@
    "department": "Packaging",
    "reason": "Job Abandonment",
    "category": "Voluntary",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -856,13 +869,23 @@
    "department": "Packaging",
    "reason": "Poor Attendance",
    "category": "Involuntary",
-   "count": 2
+   "tenure_bucket": "0-30 days",
+   "count": 1
+  },
+  {
+   "month": 4,
+   "department": "Packaging",
+   "reason": "Poor Attendance",
+   "category": "Involuntary",
+   "tenure_bucket": "31-90 days",
+   "count": 1
   },
   {
    "month": 4,
    "department": "Processing",
    "reason": "Poor Performance",
    "category": "Involuntary",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -870,6 +893,7 @@
    "department": "SG&A",
    "reason": "Another job",
    "category": "Voluntary",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -877,6 +901,7 @@
    "department": "SG&A",
    "reason": "Poor Performance",
    "category": "Involuntary",
+   "tenure_bucket": "91-180 days",
    "count": 1
   },
   {
@@ -884,6 +909,7 @@
    "department": "Processing",
    "reason": "Misconduct",
    "category": "Involuntary",
+   "tenure_bucket": "91-180 days",
    "count": 1
   },
   {
@@ -891,6 +917,7 @@
    "department": "SG&A",
    "reason": "Retirement/Early Retire",
    "category": "Retirement",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -898,6 +925,7 @@
    "department": "Packaging",
    "reason": "Job Abandonment",
    "category": "Involuntary",
+   "tenure_bucket": "0-30 days",
    "count": 1
   },
   {
@@ -905,6 +933,7 @@
    "department": "Packaging",
    "reason": "Poor Attendance",
    "category": "Involuntary",
+   "tenure_bucket": "0-30 days",
    "count": 1
   },
   {
@@ -912,6 +941,7 @@
    "department": "Processing",
    "reason": "Another job",
    "category": "Voluntary",
+   "tenure_bucket": "31-90 days",
    "count": 1
   },
   {
@@ -919,6 +949,7 @@
    "department": "Processing",
    "reason": "Poor Attendance",
    "category": "Involuntary",
+   "tenure_bucket": "0-30 days",
    "count": 2
   },
   {
@@ -926,6 +957,7 @@
    "department": "SG&A",
    "reason": "Retirement/Early Retire",
    "category": "Retirement",
+   "tenure_bucket": "Over 180 days",
    "count": 2
   },
   {
@@ -933,6 +965,7 @@
    "department": "Other MFG",
    "reason": "Dissatisfaction with Job",
    "category": "Voluntary",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -940,6 +973,7 @@
    "department": "Other MFG",
    "reason": "Gross Misconduct",
    "category": "Involuntary",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -947,6 +981,7 @@
    "department": "Packaging",
    "reason": "Personal Reasons",
    "category": "Voluntary",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -954,6 +989,7 @@
    "department": "SG&A",
    "reason": "Retirement/Early Retire",
    "category": "Retirement",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -961,6 +997,7 @@
    "department": "Other MFG",
    "reason": "Another job",
    "category": "Voluntary",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -968,6 +1005,7 @@
    "department": "Other MFG",
    "reason": "Retirement/Early Retire",
    "category": "Retirement",
+   "tenure_bucket": "Over 180 days",
    "count": 2
   },
   {
@@ -975,6 +1013,7 @@
    "department": "Packaging",
    "reason": "Another job",
    "category": "Voluntary",
+   "tenure_bucket": "0-30 days",
    "count": 1
   },
   {
@@ -982,6 +1021,7 @@
    "department": "Packaging",
    "reason": "Job Abandonment",
    "category": "Voluntary",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -989,6 +1029,7 @@
    "department": "Processing",
    "reason": "Job Abandonment",
    "category": "Voluntary",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -996,6 +1037,7 @@
    "department": "Processing",
    "reason": "Poor Attendance",
    "category": "Involuntary",
+   "tenure_bucket": "0-30 days",
    "count": 1
   },
   {
@@ -1003,6 +1045,7 @@
    "department": "SG&A",
    "reason": "Personal Reasons",
    "category": "Voluntary",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -1010,6 +1053,7 @@
    "department": "SG&A",
    "reason": "Retirement/Early Retire",
    "category": "Retirement",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -1017,6 +1061,7 @@
    "department": "Other MFG",
    "reason": "Another job",
    "category": "Voluntary",
+   "tenure_bucket": "0-30 days",
    "count": 1
   },
   {
@@ -1024,6 +1069,7 @@
    "department": "Other MFG",
    "reason": "Dissatisfaction w/Superv",
    "category": "Voluntary",
+   "tenure_bucket": "0-30 days",
    "count": 1
   },
   {
@@ -1031,6 +1077,7 @@
    "department": "Other MFG",
    "reason": "Poor Attendance",
    "category": "Involuntary",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -1038,6 +1085,7 @@
    "department": "Packaging",
    "reason": "Another job",
    "category": "Voluntary",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -1045,6 +1093,7 @@
    "department": "Packaging",
    "reason": "Job Abandonment",
    "category": "Voluntary",
+   "tenure_bucket": "0-30 days",
    "count": 1
   },
   {
@@ -1052,6 +1101,7 @@
    "department": "Processing",
    "reason": "Dissatisfaction with Job",
    "category": "Voluntary",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -1059,6 +1109,7 @@
    "department": "Processing",
    "reason": "Job Abandonment",
    "category": "Voluntary",
+   "tenure_bucket": "0-30 days",
    "count": 1
   },
   {
@@ -1066,6 +1117,7 @@
    "department": "SG&A",
    "reason": "Retirement/Early Retire",
    "category": "Retirement",
+   "tenure_bucket": "Over 180 days",
    "count": 2
   },
   {
@@ -1073,6 +1125,7 @@
    "department": "Packaging",
    "reason": "Job Abandonment",
    "category": "Voluntary",
+   "tenure_bucket": "0-30 days",
    "count": 1
   },
   {
@@ -1080,6 +1133,7 @@
    "department": "Packaging",
    "reason": "Personal Reasons",
    "category": "Voluntary",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -1087,6 +1141,7 @@
    "department": "Processing",
    "reason": "Job Abandonment",
    "category": "Voluntary",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -1094,6 +1149,7 @@
    "department": "SG&A",
    "reason": "Personal Reasons",
    "category": "Voluntary",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -1101,6 +1157,7 @@
    "department": "SG&A",
    "reason": "Poor Performance",
    "category": "Involuntary",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -1108,6 +1165,7 @@
    "department": "SG&A",
    "reason": "Temp Assignment Ended",
    "category": "Voluntary",
+   "tenure_bucket": "31-90 days",
    "count": 1
   },
   {
@@ -1115,6 +1173,7 @@
    "department": "Other MFG",
    "reason": "Poor Attendance",
    "category": "Involuntary",
+   "tenure_bucket": "0-30 days",
    "count": 1
   },
   {
@@ -1122,6 +1181,7 @@
    "department": "Packaging",
    "reason": "Job Abandonment",
    "category": "Voluntary",
+   "tenure_bucket": "0-30 days",
    "count": 1
   },
   {
@@ -1129,6 +1189,23 @@
    "department": "Packaging",
    "reason": "Personal Reasons",
    "category": "Voluntary",
+   "tenure_bucket": "0-30 days",
+   "count": 1
+  },
+  {
+   "month": 11,
+   "department": "Packaging",
+   "reason": "Personal Reasons",
+   "category": "Voluntary",
+   "tenure_bucket": "31-90 days",
+   "count": 1
+  },
+  {
+   "month": 11,
+   "department": "Packaging",
+   "reason": "Poor Attendance",
+   "category": "Involuntary",
+   "tenure_bucket": "31-90 days",
    "count": 2
   },
   {
@@ -1136,13 +1213,15 @@
    "department": "Packaging",
    "reason": "Poor Attendance",
    "category": "Involuntary",
-   "count": 3
+   "tenure_bucket": "91-180 days",
+   "count": 1
   },
   {
    "month": 11,
    "department": "Processing",
    "reason": "Another job",
    "category": "Voluntary",
+   "tenure_bucket": "0-30 days",
    "count": 1
   },
   {
@@ -1150,6 +1229,7 @@
    "department": "Processing",
    "reason": "Dissatisfaction with Job",
    "category": "Voluntary",
+   "tenure_bucket": "31-90 days",
    "count": 1
   },
   {
@@ -1157,6 +1237,7 @@
    "department": "Processing",
    "reason": "Personal Reasons",
    "category": "Voluntary",
+   "tenure_bucket": "0-30 days",
    "count": 1
   },
   {
@@ -1164,6 +1245,7 @@
    "department": "Processing",
    "reason": "Poor Attendance",
    "category": "Involuntary",
+   "tenure_bucket": "0-30 days",
    "count": 1
   },
   {
@@ -1171,6 +1253,7 @@
    "department": "Processing",
    "reason": "Poor Attendance",
    "category": "Voluntary",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -1178,6 +1261,7 @@
    "department": "Processing",
    "reason": "Return to School",
    "category": "Voluntary",
+   "tenure_bucket": "91-180 days",
    "count": 1
   },
   {
@@ -1185,6 +1269,7 @@
    "department": "SG&A",
    "reason": "Another job",
    "category": "Voluntary",
+   "tenure_bucket": "Over 180 days",
    "count": 2
   },
   {
@@ -1192,6 +1277,7 @@
    "department": "SG&A",
    "reason": "Personal Reasons",
    "category": "Voluntary",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -1199,6 +1285,7 @@
    "department": "SG&A",
    "reason": "Retirement/Early Retire",
    "category": "Retirement",
+   "tenure_bucket": "Over 180 days",
    "count": 3
   },
   {
@@ -1206,6 +1293,7 @@
    "department": "SG&A",
    "reason": "Temp Assignment Ended",
    "category": "Voluntary",
+   "tenure_bucket": "31-90 days",
    "count": 1
   },
   {
@@ -1213,6 +1301,7 @@
    "department": "Packaging",
    "reason": "Another job",
    "category": "Voluntary",
+   "tenure_bucket": "31-90 days",
    "count": 1
   },
   {
@@ -1220,6 +1309,7 @@
    "department": "Packaging",
    "reason": "Poor Attendance",
    "category": "Involuntary",
+   "tenure_bucket": "91-180 days",
    "count": 1
   },
   {
@@ -1227,6 +1317,7 @@
    "department": "Packaging",
    "reason": "Relocation",
    "category": "Voluntary",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -1234,6 +1325,7 @@
    "department": "Packaging",
    "reason": "Retirement/Early Retire",
    "category": "Retirement",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -1241,6 +1333,7 @@
    "department": "Packaging",
    "reason": "Violation of Policy",
    "category": "Involuntary",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   },
   {
@@ -1248,6 +1341,7 @@
    "department": "Processing",
    "reason": "Poor Attendance",
    "category": "Involuntary",
+   "tenure_bucket": "31-90 days",
    "count": 1
   },
   {
@@ -1255,6 +1349,7 @@
    "department": "Processing",
    "reason": "Positive Drug Test Result",
    "category": "Involuntary",
+   "tenure_bucket": "31-90 days",
    "count": 1
   },
   {
@@ -1262,6 +1357,7 @@
    "department": "SG&A",
    "reason": "Retirement/Early Retire",
    "category": "Retirement",
+   "tenure_bucket": "Over 180 days",
    "count": 1
   }
  ],
@@ -1991,8 +2087,8 @@
   "packaging": 23,
   "processing": 18,
   "august_mfg": 13,
-  "left_within_30_days": 19,
-  "left_within_180_days": 32,
+  "left_within_30_days": 18,
+  "left_within_180_days": 31,
   "frontline_attendance_plus_abandonment": 22,
   "frontline_total": 41,
   "mfg_hires_2026": 53,
@@ -2070,7 +2166,7 @@
     "shifts": "Mid-Shift",
     "separations": 9,
     "voluntary": 6,
-    "left_within_90_days": 7,
+    "left_within_90_days": 6,
     "roster_team_size_by_month": [
      0,
      0,
@@ -2287,5 +2383,673 @@
    11,
    1
   ]
+ },
+ "workers_comp": [
+  {
+   "period": "Jan 2025",
+   "month": null,
+   "segment": "MFG",
+   "injuries": 0,
+   "lost_time_days": 0,
+   "restricted_duty_days": 0,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 0
+   }
+  },
+  {
+   "period": "Jan 2025",
+   "month": null,
+   "segment": "SG&A",
+   "injuries": 0,
+   "lost_time_days": 0,
+   "restricted_duty_days": 0,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 0
+   }
+  },
+  {
+   "period": "Feb 2025",
+   "month": null,
+   "segment": "MFG",
+   "injuries": 0,
+   "lost_time_days": 0,
+   "restricted_duty_days": 0,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 0
+   }
+  },
+  {
+   "period": "Feb 2025",
+   "month": null,
+   "segment": "SG&A",
+   "injuries": 0,
+   "lost_time_days": 0,
+   "restricted_duty_days": 0,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 0
+   }
+  },
+  {
+   "period": "Mar 2025",
+   "month": null,
+   "segment": "MFG",
+   "injuries": 0,
+   "lost_time_days": 0,
+   "restricted_duty_days": 0,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 0
+   }
+  },
+  {
+   "period": "Mar 2025",
+   "month": null,
+   "segment": "SG&A",
+   "injuries": 0,
+   "lost_time_days": 0,
+   "restricted_duty_days": 0,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 0
+   }
+  },
+  {
+   "period": "Apr 2025",
+   "month": null,
+   "segment": "MFG",
+   "injuries": 0,
+   "lost_time_days": 0,
+   "restricted_duty_days": 0,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 0
+   }
+  },
+  {
+   "period": "Apr 2025",
+   "month": null,
+   "segment": "SG&A",
+   "injuries": 0,
+   "lost_time_days": 0,
+   "restricted_duty_days": 0,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 0
+   }
+  },
+  {
+   "period": "May 2025",
+   "month": null,
+   "segment": "MFG",
+   "injuries": 2,
+   "lost_time_days": 0,
+   "restricted_duty_days": 13,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 2
+   }
+  },
+  {
+   "period": "May 2025",
+   "month": null,
+   "segment": "SG&A",
+   "injuries": 0,
+   "lost_time_days": 0,
+   "restricted_duty_days": 0,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 0
+   }
+  },
+  {
+   "period": "Jun 2025",
+   "month": null,
+   "segment": "MFG",
+   "injuries": 0,
+   "lost_time_days": 0,
+   "restricted_duty_days": 0,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 0
+   }
+  },
+  {
+   "period": "Jun 2025",
+   "month": null,
+   "segment": "SG&A",
+   "injuries": 0,
+   "lost_time_days": 0,
+   "restricted_duty_days": 0,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 0
+   }
+  },
+  {
+   "period": "Jul 2025",
+   "month": null,
+   "segment": "MFG",
+   "injuries": 2,
+   "lost_time_days": 0,
+   "restricted_duty_days": 0,
+   "injuries_first_180_days": 1,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 1,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 1
+   }
+  },
+  {
+   "period": "Jul 2025",
+   "month": null,
+   "segment": "SG&A",
+   "injuries": 0,
+   "lost_time_days": 0,
+   "restricted_duty_days": 0,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 0
+   }
+  },
+  {
+   "period": "Aug 2025",
+   "month": null,
+   "segment": "MFG",
+   "injuries": 2,
+   "lost_time_days": 0,
+   "restricted_duty_days": 0,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 2
+   }
+  },
+  {
+   "period": "Aug 2025",
+   "month": null,
+   "segment": "SG&A",
+   "injuries": 0,
+   "lost_time_days": 0,
+   "restricted_duty_days": 0,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 0
+   }
+  },
+  {
+   "period": "Sep 2025",
+   "month": null,
+   "segment": "MFG",
+   "injuries": 1,
+   "lost_time_days": 0,
+   "restricted_duty_days": 0,
+   "injuries_first_180_days": 1,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 1,
+    "91-180 days": 0,
+    "Over 180 days": 0
+   }
+  },
+  {
+   "period": "Sep 2025",
+   "month": null,
+   "segment": "SG&A",
+   "injuries": 1,
+   "lost_time_days": 0,
+   "restricted_duty_days": 0,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 1
+   }
+  },
+  {
+   "period": "Oct 2025",
+   "month": 1,
+   "segment": "MFG",
+   "injuries": 0,
+   "lost_time_days": 0,
+   "restricted_duty_days": 26,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 0
+   }
+  },
+  {
+   "period": "Oct 2025",
+   "month": 1,
+   "segment": "SG&A",
+   "injuries": 0,
+   "lost_time_days": 1,
+   "restricted_duty_days": 0,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 0
+   }
+  },
+  {
+   "period": "Nov 2025",
+   "month": 2,
+   "segment": "MFG",
+   "injuries": 0,
+   "lost_time_days": 0,
+   "restricted_duty_days": 35,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 0
+   }
+  },
+  {
+   "period": "Nov 2025",
+   "month": 2,
+   "segment": "SG&A",
+   "injuries": 0,
+   "lost_time_days": 0,
+   "restricted_duty_days": 0,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 0
+   }
+  },
+  {
+   "period": "Dec 2025",
+   "month": 3,
+   "segment": "MFG",
+   "injuries": 1,
+   "lost_time_days": 0,
+   "restricted_duty_days": 35,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 1
+   }
+  },
+  {
+   "period": "Dec 2025",
+   "month": 3,
+   "segment": "SG&A",
+   "injuries": 0,
+   "lost_time_days": 0,
+   "restricted_duty_days": 0,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 0
+   }
+  },
+  {
+   "period": "Jan 2026",
+   "month": 4,
+   "segment": "MFG",
+   "injuries": 0,
+   "lost_time_days": 0,
+   "restricted_duty_days": 28,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 0
+   }
+  },
+  {
+   "period": "Jan 2026",
+   "month": 4,
+   "segment": "SG&A",
+   "injuries": 0,
+   "lost_time_days": 0,
+   "restricted_duty_days": 0,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 0
+   }
+  },
+  {
+   "period": "Feb 2026",
+   "month": 5,
+   "segment": "MFG",
+   "injuries": 0,
+   "lost_time_days": 0,
+   "restricted_duty_days": 24,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 0
+   }
+  },
+  {
+   "period": "Feb 2026",
+   "month": 5,
+   "segment": "SG&A",
+   "injuries": 0,
+   "lost_time_days": 0,
+   "restricted_duty_days": 0,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 0
+   }
+  },
+  {
+   "period": "Mar 2026",
+   "month": 6,
+   "segment": "MFG",
+   "injuries": 0,
+   "lost_time_days": 0,
+   "restricted_duty_days": 0,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 0
+   }
+  },
+  {
+   "period": "Mar 2026",
+   "month": 6,
+   "segment": "SG&A",
+   "injuries": 1,
+   "lost_time_days": 7,
+   "restricted_duty_days": 19,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 1
+   }
+  },
+  {
+   "period": "Apr 2026",
+   "month": 7,
+   "segment": "MFG",
+   "injuries": 1,
+   "lost_time_days": 0,
+   "restricted_duty_days": 0,
+   "injuries_first_180_days": 1,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 1,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 0
+   }
+  },
+  {
+   "period": "Apr 2026",
+   "month": 7,
+   "segment": "SG&A",
+   "injuries": 0,
+   "lost_time_days": 0,
+   "restricted_duty_days": 28,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 0
+   }
+  },
+  {
+   "period": "May 2026",
+   "month": 8,
+   "segment": "MFG",
+   "injuries": 1,
+   "lost_time_days": 0,
+   "restricted_duty_days": 1,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 1
+   }
+  },
+  {
+   "period": "May 2026",
+   "month": 8,
+   "segment": "SG&A",
+   "injuries": 0,
+   "lost_time_days": 26,
+   "restricted_duty_days": 9,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 0
+   }
+  },
+  {
+   "period": "Jun 2026",
+   "month": 9,
+   "segment": "MFG",
+   "injuries": 0,
+   "lost_time_days": 0,
+   "restricted_duty_days": 10,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 0
+   }
+  },
+  {
+   "period": "Jun 2026",
+   "month": 9,
+   "segment": "SG&A",
+   "injuries": 0,
+   "lost_time_days": 28,
+   "restricted_duty_days": 0,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 0
+   }
+  },
+  {
+   "period": "Jul 2026",
+   "month": 10,
+   "segment": "MFG",
+   "injuries": 1,
+   "lost_time_days": 0,
+   "restricted_duty_days": 0,
+   "injuries_first_180_days": 1,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 1,
+    "Over 180 days": 0
+   }
+  },
+  {
+   "period": "Jul 2026",
+   "month": 10,
+   "segment": "SG&A",
+   "injuries": 0,
+   "lost_time_days": 28,
+   "restricted_duty_days": 0,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 0
+   }
+  },
+  {
+   "period": "Aug 2026",
+   "month": 11,
+   "segment": "MFG",
+   "injuries": 3,
+   "lost_time_days": 6,
+   "restricted_duty_days": 47,
+   "injuries_first_180_days": 1,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 1,
+    "91-180 days": 0,
+    "Over 180 days": 2
+   }
+  },
+  {
+   "period": "Aug 2026",
+   "month": 11,
+   "segment": "SG&A",
+   "injuries": 0,
+   "lost_time_days": 18,
+   "restricted_duty_days": 0,
+   "injuries_first_180_days": 0,
+   "injuries_tenure_unknown": 0,
+   "injuries_by_tenure": {
+    "0-30 days": 0,
+    "31-90 days": 0,
+    "91-180 days": 0,
+    "Over 180 days": 0
+   }
+  }
+ ],
+ "wc_expected_totals": {
+  "2026": {
+   "MFG": {
+    "injuries": 6,
+    "lost_time_days": 6,
+    "restricted_duty_days": 110
+   },
+   "SG&A": {
+    "injuries": 1,
+    "lost_time_days": 107,
+    "restricted_duty_days": 56
+   }
+  },
+  "2025": {
+   "MFG": {
+    "injuries": 8,
+    "lost_time_days": 0,
+    "restricted_duty_days": 109
+   },
+   "SG&A": {
+    "injuries": 1,
+    "lost_time_days": 1,
+    "restricted_duty_days": 0
+   }
+  }
  }
 }
