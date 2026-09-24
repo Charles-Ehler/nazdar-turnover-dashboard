@@ -215,7 +215,7 @@
         w.periods.map(p => [p.label, p.wc ? p.wc.injuries : na('Not in the report yet'), p.wc ? p.wc.lost_time_days : '', p.wc ? p.wc.restricted_duty_days : '', p.seps, p.rate == null ? na('No headcount yet') : pct(p.rate, 1), p.per100 == null ? '' : p.per100.toFixed(1)]))]; },
     bridge: () => { const key = S.dept === 'SG&A' ? null : S.dept === 'All MFG' ? 'Nazdar MFG' : 'Packaging + Processing';
       if (!key) return ['Monthly bridge', '<p>The bridge is built for manufacturing only.</p>'];
-      return [`Monthly bridge, ${key}`, '<p>Implied end = start + hires − separations. Gap = next month\'s reported start − implied end (transfers or timing; the source has no transfer records).</p>' + table(['Month', 'Start', 'Hires', 'Separations', 'Net', 'Implied end', 'Next start', 'Gap'],
+      return [`Monthly bridge, ${key}`, '<p>Implied end = start + hires − separations. Gap = next month\'s reported start − implied end (likely transfers, which are tracked separately and not in these lists, or timing).</p>' + table(['Month', 'Start', 'Hires', 'Separations', 'Net', 'Implied end', 'Next start', 'Gap'],
         calc.bridge(D, key, S).map(x => [x.label, x.start ?? na('Not reported yet'), x.hires, x.seps, x.net > 0 ? '+' + x.net : x.net, x.implied ?? '', x.next ?? '', x.diff == null ? '' : x.diff > 0 ? '+' + x.diff : x.diff]))]; },
   };
   let lastFocus = null;

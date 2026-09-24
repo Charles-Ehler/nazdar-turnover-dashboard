@@ -644,11 +644,18 @@ function renderSection5(s) {
   const mk = (id, key, title) => {
     const b = calc.bridge(D, key, s);
     const gap = b.filter(x => x.diff != null && x.diff !== 0);
+    // Start to the last reported headcount, using only the months in between; later months have no headcount to check against.
+    const f = b.find(x => x.start != null), li = b.map(x => x.next != null).lastIndexOf(true), part = li >= 0 ? b.slice(b.indexOf(f), li + 1) : [];
+    const ph = part.reduce((a, x) => a + x.hires, 0), ps = part.reduce((a, x) => a + x.seps, 0), after = b.slice(li + 1);
+    const tie = f && part.length ? `Start of ${full(f.label)}: ${f.start}. Hired ${ph}, left ${ps} through ${full(b[li].label)}, so ${f.start + ph - ps} expected at the start of ${full(b[li + 1] ? b[li + 1].label : b[li].label)}; HR reported ${b[li].next}.` +
+      (b[li].next - (f.start + ph - ps) ? ` The difference of ${Math.abs(b[li].next - (f.start + ph - ps))} is likely transfers or timing.` : '') +
+      (after.length ? ` After that: ${after.reduce((a, x) => a + x.hires, 0)} hired and ${after.reduce((a, x) => a + x.seps, 0)} left, with no headcount reported yet to check against.` : '') : '';
     tableFigure(id, {
-      takeaway: `${title}: ${b.reduce((a, x) => a + x.hires, 0)} hires and ${b.reduce((a, x) => a + x.seps, 0)} separations ${monthsLabel(s)}; ${gap.length ? `${gap.length} month${gap.length > 1 ? 's' : ''} do not reconcile to the reported headcount, likely transfers or timing` : 'every month reconciles to the reported headcount'}.`,
+      takeaway: `${title}: ${b.reduce((a, x) => a + x.hires, 0)} hires and ${b.reduce((a, x) => a + x.seps, 0)} separations ${monthsLabel(s)}; ${gap.length ? `${gap.length} month${gap.length > 1 ? 's' : ''} do not reconcile to the reported headcount, likely transfers (tracked separately, not in these lists) or timing` : 'every month reconciles to the reported headcount'}.`,
       caption: `${title}. Implied end = start-of-month headcount + hires − separations. Gap to reconcile = next month's reported headcount − implied end.`,
       html: table(['Month', 'Start headcount', 'Hires', 'Separations', 'Net', 'Implied end', 'Next start', 'Gap to reconcile'],
         b.map(x => [x.label, cell(x.start, NA_HC), x.hires, x.seps, x.net > 0 ? '+' + x.net : x.net, cell(x.implied, NA_HC), cell(x.next, NA_HC), x.diff == null ? na(NA_HC) : (x.diff > 0 ? '+' + x.diff : x.diff)])),
+      callout: tie,
     });
     return b;
   };
