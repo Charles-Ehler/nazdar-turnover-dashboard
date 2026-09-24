@@ -147,6 +147,7 @@ tbody tr.total td, tbody tr.total th { font-weight: 700; border-top: 2px solid v
 .injury-lead .lead-stat { font-size: 24px; line-height: 1.25; font-weight: 700; margin: 14px 0 12px; }
 .seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--n500); border-radius: 2px; overflow: hidden; }
 .seg-label { display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin-bottom: 4px; }
+.seg-label em { font-style: normal; font-weight: 400; text-transform: none; letter-spacing: 0; }
 .seg-btn { font: inherit; font-size: 13px; font-weight: 700; padding: 6px 12px; border: 0; background: var(--card); color: var(--text); cursor: pointer; text-align: left; line-height: 1.25; }
 .seg-btn + .seg-btn { border-left: 1px solid var(--n500); }
 .seg-btn small { display: block; font-weight: 400; color: var(--muted); }

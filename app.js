@@ -729,7 +729,7 @@ function renderInjuryLead(s) {
   const t = calc.injuryLead(D, s, injuryAll), segName = t.seg, whole = calc.wcTenure(D, s, true);
   const rng = injuryAll ? `${whole.from} to ${whole.to}` : monthsLabel(s);
   const btn = (all, label, sub) => `<button type="button" class="seg-btn" data-all="${all}" aria-pressed="${injuryAll === all}">${label}<small>${sub}</small></button>`;
-  el('h7').innerHTML = `<span class="seg-label">Count injuries from</span>
+  el('h7').innerHTML = `<span class="seg-label">Count injuries from <em>(changes the headline and the chart under it)</em></span>
     <div class="seg" role="group" aria-label="Count injuries from">${btn(false, 'The months picked above', monthsLabel(s))}${btn(true, 'Every month HR has', `${whole.from} to ${whole.to}`)}</div>
     <p class="lead-stat">${t.title}</p>
     ${t.known && t.wfShare != null ? `<div class="vs">
