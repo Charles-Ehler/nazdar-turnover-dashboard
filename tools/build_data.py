@@ -204,6 +204,24 @@ def build(xlsx, as_of, history=None, start=None, rosters=None, previous=None, wc
                 if t["Hire Date"] != new:
                     print(f"NOTE: hire date for {fx['first_name']} {fx['last_name']} corrected {t['Hire Date'].date()} -> {new.date()} (data/hire-date-corrections.csv)", file=sys.stderr)
                     t["Hire Date"] = new
+    # People in the Terms tab who are missing from the Hires tab. Their hire row is built from the Terms row.
+    # Remove a line from data/missing-hires.csv once Taylor's Hires tab has the person.
+    missing = Path(__file__).resolve().parent.parent / "data" / "missing-hires.csv"
+    if missing.exists():
+        import csv
+        for mh in csv.DictReader(missing.open(encoding="utf-8")):
+            k = key_name(mh["last_name"], mh["first_name"])
+            if any(key_name(h["Last Name"], h["First Name"]) == k for h in hires):
+                print(f"NOTE: {mh['first_name']} {mh['last_name']} is in the Hires tab now; remove the line from data/missing-hires.csv", file=sys.stderr)
+                continue
+            t = next((t for t in terms if key_name(t["Last Name"], t["First Name"]) == k and isinstance(t.get("Hire Date"), dt.datetime)), None)
+            if t is None or not in_window(t["Hire Date"]):
+                sys.exit(f"FATAL: data/missing-hires.csv: {mh['first_name']} {mh['last_name']} has no Terms row with a hire date in the window")
+            seg = norm(t.get(seg_col(t)))
+            hires.append({"Company": t.get("Company"), "MFG/SG&A": seg, "Department": t.get("Department"), "Shift": t.get("Shift"),
+                          "Supervisor": t.get("Supervisor"), "Last Name": t["Last Name"], "First Name": t["First Name"],
+                          "Hire Date": t["Hire Date"], "Hire Source": "Not recorded", "Status": "Terminated"})
+            print(f"NOTE: added hire {mh['first_name']} {mh['last_name']} ({t['Hire Date'].date()}) from the Terms tab (data/missing-hires.csv)", file=sys.stderr)
     mfg_terms = [t for t in terms if is_us(t, "MFG")]
     sga_terms = [t for t in terms if is_us(t, "SG&A")]
     mfg_hires = [h for h in hires if is_us(h, "MFG")]

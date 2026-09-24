@@ -227,12 +227,15 @@ const calc = {
     eq('Attendance + abandonment share', Math.round(r.attnShare * 100), 54);
     eq('2026 MFG hires', c.total.hires, E.mfg_hires_2026);
     eq('Still employed', c.total.still_employed, E.mfg_hires_still_employed);
-    eq('Still employed share', Math.round(c.total.still_employed / c.total.hires * 100), 47);
-    eq('MFG hires by month (Sep 22 reload)', D.hires_by_month['Nazdar MFG'], [0, 3, 1, 3, 1, 7, 2, 7, 9, 7, 15, 2]);
+    eq('Still employed share', Math.round(c.total.still_employed / c.total.hires * 100), 46);
+    eq('MFG hires by month (Sep 22 reload)', D.hires_by_month['Nazdar MFG'], [0, 3, 1, 3, 1, 7, 2, 7, 9, 7, 16, 2]);
+    // Whole window: the 18 people who left within 30 days are the same 18 new hires who left within 30 days (Cyril added Sep 24).
+    const cw = calc.cohorts(D, 'all', 'All', 1, D.meta.months.length).total, tw30 = calc.tenure(D, { ...DEFAULT_STATE, m0: 1, m1: D.meta.months.length })[0].n;
+    eq('Whole window hires, still employed, 30-day retained of counted, hires gone in 30 days = leavers gone in 30 days', [cw.hires, cw.still_employed, cw.retained_30, cw.eligible_30, cw.eligible_30 - cw.retained_30, tw30], [58, 28, 36, 54, 18, 18]);
     eq('Retention 30', [c.total.retained_30, c.total.eligible_30], E.retention_30);
     eq('Retention 90', [c.total.retained_90, c.total.eligible_90], E.retention_90);
     eq('Retention 180', [c.total.retained_180, c.total.eligible_180], E.retention_180);
-    eq('Retention rates %', [c.total.r30, c.total.r90, c.total.r180].map(v => Math.round(v * 100)), [65, 52, 22]);
+    eq('Retention rates %', [c.total.r30, c.total.r90, c.total.r180].map(v => Math.round(v * 100)), [64, 52, 22]);
     eq('Processing mid-shift', calc.sum(D, x => inYear(x) && x.department === 'Processing' && x.shift === 'Mid-Shift'), E.processing_mid_shift_separations);
     const sg = { ...s, dept: 'SG&A' }, sy = calc.ytd(D, sg);
     eq('SG&A separations', sy.seps, E.sga_separations_ytd);
@@ -562,8 +565,8 @@ function renderSection2() {
     const lv = calc.tenure(D, { ...state, cat: 'All', tenure: 'All', dept: 'All MFG' }), lvAll = lv.reduce((a, b) => a + b.n, 0), early = T.eligible_30 - T.retained_30, gap = lv[0].n - early;
     tie = `Why ${T.eligible_30}, not ${lvAll}: this tab starts from the ${T.hires} people hired, not the ${lvAll} who left. ` +
       (T.hires > T.eligible_30 ? `${T.hires - T.eligible_30} started too recently to count, so ${T.eligible_30} are counted. ` : '') +
-      `${early} of the ${T.eligible_30} left within 30 days. The Turnover tab's ${lv[0].n} early leavers are those ${early}` +
-      (gap > 0 ? ` plus ${gap} with no matching row in the Hires tab.` : '.');
+      `${early} of the ${T.eligible_30} left within 30 days` +
+      (gap > 0 ? `. The Turnover tab's ${lv[0].n} early leavers are those ${early} plus ${gap} with no matching row in the Hires tab.` : gap === 0 ? `: the same ${early} people the Turnover tab shows leaving in their first 30 days.` : '.');
   }
   tableFigure('t21', {
     takeaway: T.hires ? `${T.still_employed} of ${T.hires} hires (${pct(T.still_employed / T.hires, 0)}) are still employed; 30-day retention ${T.eligible_30 ? pct(T.r30, 0) : 'n/a'}, 90-day ${T.eligible_90 ? pct(T.r90, 0) : 'n/a'}, 180-day ${T.eligible_180 ? pct(T.r180, 0) : 'n/a'}.` : 'No hires match this selection.',

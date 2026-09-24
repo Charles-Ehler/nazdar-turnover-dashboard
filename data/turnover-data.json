@@ -1925,6 +1925,20 @@
   {
    "hire_month": 11,
    "department_group": "Frontline",
+   "source": "Not recorded",
+   "hires": 1,
+   "eligible_30": 1,
+   "retained_30": 0,
+   "eligible_90": 0,
+   "retained_90": 0,
+   "eligible_180": 0,
+   "retained_180": 0,
+   "still_employed": 0,
+   "left_within_30": 1
+  },
+  {
+   "hire_month": 11,
+   "department_group": "Frontline",
    "source": "Referral",
    "hires": 3,
    "eligible_30": 2,
@@ -2091,11 +2105,11 @@
   "left_within_180_days": 31,
   "frontline_attendance_plus_abandonment": 22,
   "frontline_total": 41,
-  "mfg_hires_2026": 53,
+  "mfg_hires_2026": 54,
   "mfg_hires_still_employed": 25,
   "retention_30": [
    32,
-   49
+   50
   ],
   "retention_90": [
    14,
@@ -2366,7 +2380,7 @@
    7,
    9,
    7,
-   15,
+   16,
    2
   ],
   "Packaging + Processing": [
@@ -2380,7 +2394,7 @@
    6,
    8,
    6,
-   11,
+   12,
    1
   ]
  },
