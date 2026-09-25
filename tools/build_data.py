@@ -112,6 +112,20 @@ def tenure_days(t):
     return (t["Separation Date"] - t["Hire Date"]).days
 
 
+PRIVATE_NAME = "Turnover dashboard private"
+PRIVATE_GUESSES = [Path.home() / "OneDrive - Nazdar" / PRIVATE_NAME,                       # Windows
+                   Path.home() / "Library" / "CloudStorage" / "OneDrive-Nazdar" / PRIVATE_NAME]  # Mac
+
+
+def private_dir(given):
+    """The private OneDrive folder with the correction files that name employees. Never inside the repo: it is public."""
+    for p in ([Path(given)] if given else PRIVATE_GUESSES):
+        if p.is_dir():
+            return p
+    sys.exit(f"FATAL: private folder not found (tried {', '.join(str(p) for p in ([Path(given)] if given else PRIVATE_GUESSES))}). "
+             "Pass --private with the folder that holds hire-date-corrections.csv and missing-hires.csv.")
+
+
 def pick(wb, *names):
     return next(n for n in names if n in wb.sheetnames)
 
@@ -141,7 +155,7 @@ def dedupe(rows, key, what):
     return out
 
 
-def build(xlsx, as_of, history=None, start=None, rosters=None, previous=None, wc=None, wc_history=None):
+def build(xlsx, as_of, history=None, start=None, rosters=None, previous=None, wc=None, wc_history=None, private=None):
     wb = openpyxl.load_workbook(xlsx, read_only=True, data_only=True)
     start = start or dt.date(as_of.year, 1, 1)
     n_months = (as_of.year - start.year) * 12 + as_of.month - start.month + 1
@@ -191,8 +205,10 @@ def build(xlsx, as_of, history=None, start=None, rosters=None, previous=None, wc
     terms = dedupe(terms, lambda t: (key_name(t["Last Name"], t["First Name"]), t["Separation Date"]), "separation")
     hires = dedupe(hires, lambda h: (key_name(h["Last Name"], h["First Name"]), h["Hire Date"]), "hire")
     # HR-confirmed hire dates that replace a wrong Hire Date on a Terms row (tenure at exit and at injury).
-    # Remove a line from data/hire-date-corrections.csv once Taylor's workbook carries the right date.
-    fixes = Path(__file__).resolve().parent.parent / "data" / "hire-date-corrections.csv"
+    # Remove a line from hire-date-corrections.csv (private folder) once Taylor's workbook carries the right date.
+    priv = private_dir(private)
+    print(f"NOTE: private corrections from {priv}", file=sys.stderr)
+    fixes = priv / "hire-date-corrections.csv"
     if fixes.exists():
         import csv
         for fx in csv.DictReader(fixes.open(encoding="utf-8")):
@@ -202,26 +218,26 @@ def build(xlsx, as_of, history=None, start=None, rosters=None, previous=None, wc
             for t in hit:
                 new = dt.datetime.fromisoformat(fx["hire_date"])
                 if t["Hire Date"] != new:
-                    print(f"NOTE: hire date for {fx['first_name']} {fx['last_name']} corrected {t['Hire Date'].date()} -> {new.date()} (data/hire-date-corrections.csv)", file=sys.stderr)
+                    print(f"NOTE: hire date for {fx['first_name']} {fx['last_name']} corrected {t['Hire Date'].date()} -> {new.date()} (hire-date-corrections.csv)", file=sys.stderr)
                     t["Hire Date"] = new
     # People in the Terms tab who are missing from the Hires tab. Their hire row is built from the Terms row.
-    # Remove a line from data/missing-hires.csv once Taylor's Hires tab has the person.
-    missing = Path(__file__).resolve().parent.parent / "data" / "missing-hires.csv"
+    # Remove a line from missing-hires.csv (private folder) once Taylor's Hires tab has the person.
+    missing = priv / "missing-hires.csv"
     if missing.exists():
         import csv
         for mh in csv.DictReader(missing.open(encoding="utf-8")):
             k = key_name(mh["last_name"], mh["first_name"])
             if any(key_name(h["Last Name"], h["First Name"]) == k for h in hires):
-                print(f"NOTE: {mh['first_name']} {mh['last_name']} is in the Hires tab now; remove the line from data/missing-hires.csv", file=sys.stderr)
+                print(f"NOTE: {mh['first_name']} {mh['last_name']} is in the Hires tab now; remove the line from missing-hires.csv", file=sys.stderr)
                 continue
             t = next((t for t in terms if key_name(t["Last Name"], t["First Name"]) == k and isinstance(t.get("Hire Date"), dt.datetime)), None)
             if t is None or not in_window(t["Hire Date"]):
-                sys.exit(f"FATAL: data/missing-hires.csv: {mh['first_name']} {mh['last_name']} has no Terms row with a hire date in the window")
+                sys.exit(f"FATAL: missing-hires.csv: {mh['first_name']} {mh['last_name']} has no Terms row with a hire date in the window")
             seg = norm(t.get(seg_col(t)))
             hires.append({"Company": t.get("Company"), "MFG/SG&A": seg, "Department": t.get("Department"), "Shift": t.get("Shift"),
                           "Supervisor": t.get("Supervisor"), "Last Name": t["Last Name"], "First Name": t["First Name"],
                           "Hire Date": t["Hire Date"], "Hire Source": "Not recorded", "Status": "Terminated"})
-            print(f"NOTE: added hire {mh['first_name']} {mh['last_name']} ({t['Hire Date'].date()}) from the Terms tab (data/missing-hires.csv)", file=sys.stderr)
+            print(f"NOTE: added hire {mh['first_name']} {mh['last_name']} ({t['Hire Date'].date()}) from the Terms tab (missing-hires.csv)", file=sys.stderr)
     mfg_terms = [t for t in terms if is_us(t, "MFG")]
     sga_terms = [t for t in terms if is_us(t, "SG&A")]
     mfg_hires = [h for h in hires if is_us(h, "MFG")]
@@ -664,6 +680,7 @@ def main():
     ap.add_argument("--rosters", help="workbook with the monthly roster tabs, when the main workbook has none")
     ap.add_argument("--wc", help="HR monthly report workbook with the Mo WC Loss Days tab (workers' comp, Section 04)")
     ap.add_argument("--wc-history", help="plain injury list for earlier years (Employee, Date of Injury, Hire Date, MFG/SG&A)")
+    ap.add_argument("--private", help=f"folder with the correction files that name employees (default: the '{PRIVATE_NAME}' folder in OneDrive)")
     ap.add_argument("--from", dest="start", help="first month of the window, YYYY-MM (default: January of the as-of year)")
     ap.add_argument("--out", default=Path(__file__).resolve().parent.parent / "data" / "turnover-data.json")
     a = ap.parse_args()
@@ -671,7 +688,7 @@ def main():
     start = dt.date.fromisoformat(a.start + "-01") if a.start else None
     out = Path(a.out)
     previous = json.loads(out.read_text(encoding="utf-8")) if out.exists() else None
-    data = build(a.xlsx, as_of, a.history, start, a.rosters, previous, a.wc, a.wc_history)
+    data = build(a.xlsx, as_of, a.history, start, a.rosters, previous, a.wc, a.wc_history, a.private)
     if previous:
         archive = out.parent / "archive" / f"turnover-data-{previous['meta']['as_of']}.json"
         archive.parent.mkdir(exist_ok=True)
