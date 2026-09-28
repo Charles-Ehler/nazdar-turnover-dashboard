@@ -803,8 +803,8 @@ function renderInjuryLead(s) {
 const TABS = ['s0', 's1', 's2', 's3', 's7', 's5', 's4', 's6'];
 // Readable names in the address bar (#injuries, #retention&dept=Packaging). Section ids stay fixed inside the page,
 // and old links (#tab=s2) still resolve.
-const SLUG = { s0: 'overview', s1: 'turnover', s2: 'retention', s3: 'shifts', s7: 'injuries', s5: 'bridge', s4: 'voice', s6: 'basis' };
-const tabFrom = x => (TABS.includes(x) ? x : Object.keys(SLUG).find(k => SLUG[k] === x));
+const SLUG = { s0: 'overview', s1: 'turnover', s2: 'retention', s3: 'shifts', s7: 'injuries', s5: 'bridge', s4: 'voice', s6: 'instructions' };
+const tabFrom = x => (TABS.includes(x) ? x : x === 'basis' ? 's6' : Object.keys(SLUG).find(k => SLUG[k] === x));  // #basis: links sent before Sep 28
 let tab = 's0';
 function showTab(id, scrollTop = true) {
   if (!TABS.includes(id)) id = 's0';

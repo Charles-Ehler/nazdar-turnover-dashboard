@@ -240,6 +240,8 @@ footer ul { padding-left: 20px; }
   .chartbox { height: 260px; }
 }
 
+.howto h3 { margin-top: 20px; }
+.howto .notes li { margin-bottom: 6px; }
 .print-foot { display: none; }
 @media print {
   .panel-tab { display: block !important; break-before: page; }

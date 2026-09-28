@@ -89,7 +89,7 @@ git add -A && git commit -m "Data refresh through 2026-10-20" && git push
 
 ## Sharing a view
 
-The address bar carries the section and the filters, so a link opens the same view: `#injuries&dept=SG%26A&m=4-12`. Section names: `overview`, `turnover`, `retention`, `shifts`, `injuries`, `bridge`, `voice`, `basis`. Older links in the `#tab=s2` form still open the right section.
+The address bar carries the section and the filters, so a link opens the same view: `#injuries&dept=SG%26A&m=4-12`. Section names: `overview`, `turnover`, `retention`, `shifts`, `injuries`, `bridge`, `voice`, `instructions` (older `#basis` links still work). Older links in the `#tab=s2` form still open the right section.
 
 ## Definitions used on the page
 
