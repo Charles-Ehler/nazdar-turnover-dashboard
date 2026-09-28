@@ -2,8 +2,10 @@
  "meta": {
   "title": "Nazdar manufacturing turnover: October 2025 to September 2026",
   "as_of": "2026-09-22",
+  "separations_through": "2026-09-18",
+  "hires_through": "2026-09-22",
   "window_start": "2025-10-01",
-  "basis": "Nazdar US manufacturing (Shawnee) only; separations through 2026-09-18; hires through 2026-09-22. Retirements shown as their own category. Months are fiscal periods (2025-09-28 to 2026-10-03), matching the monthly report.",
+  "basis": "Nazdar US manufacturing; separations through 2026-09-18; hires through 2026-09-22. Retirements shown as their own category. Months are fiscal periods (2025-09-28 to 2026-10-03), matching the monthly report.",
   "fiscal_periods": [
    {
     "label": "Oct 2025",
@@ -2124,7 +2126,7 @@
   "sga_retirements": 11
  },
  "supervisors_packaging_processing": {
-  "note": "Counts follow shift and team size; supervisors changed during the year (Logan Borders left in April, Edwin Reyes in June), so read this as a coverage view, not a performance measure. Team sizes come from the monthly roster tabs, Jan to Aug 2026.",
+  "note": "Counts follow shift and team size, and supervisors changed during the year (Logan Borders left in April, Edwin Reyes in June), so read this as where the pressure is, not as a performance rating. Two leavers were recoded to the supervisor they actually reported to, per HR on September 22. Team sizes come from the monthly roster tabs, Jan to Aug 2026.",
   "rows": [
    {
     "supervisor": "Tim Aranda",

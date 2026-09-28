@@ -181,10 +181,17 @@
     $('#t-injury-r').innerHTML = c.r == null ? `Only ${plural(c.n, "month", "months")} with both figures here, too few for a correlation.`
       : `MFG correlation r = <strong>${c.r.toFixed(2)}</strong> over ${c.n} months${c.without && c.without.r != null ? `; without ${full(c.without.label)}, r = ${c.without.r.toFixed(2)}` : ''}. A correlation on a sample this small is a signal to investigate, not proof of cause.`;
   }
+  function renderParity() {
+    const tie = S.dept === 'All MFG' ? calc.retentionTie(D, S) : '';
+    $('#t-retention-hint').textContent = tie || 'Hires in the selected months, and how many stayed each milestone (of those employed long enough to count).';
+    const p = calc.partial(D);
+    $('#t-month-partial').textContent = p && S.m1 >= p.month ? p.text : '';
+    $('#t-month-partial').hidden = !$('#t-month-partial').textContent;
+  }
   function renderNewInjury() {
     const t = calc.injuryLead(D, S, false);
     $('#t-newinj-h').textContent = t.title;
-    $('#t-newinj-vs').innerHTML = t.known && t.wfShare != null ? `<div><b>${pct(t.wfShare)}</b><span>of ${t.seg} workers are new</span></div><div class="hot"><b>${pct(t.injShare)}</b><span>of ${t.seg} injuries were new employees (${t.first180} of ${t.known})</span></div>` : '';
+    $('#t-newinj-vs').innerHTML = t.known && t.wfShare != null ? `<div><b>${pct(t.wfShare)}</b><span>of ${t.seg} workers were new on HR's ${t.asOf} roster (${t.wf.first_180_days} of ${t.wf.total})</span></div><div class="hot"><b>${pct(t.injShare)}</b><span>of ${t.seg} injuries were new employees (${t.first180} of ${t.known})</span></div>` : '';
     $('#t-newinj-n').textContent = t.note;
     $('#t-newinj-n').hidden = !t.note;
   }
@@ -232,7 +239,7 @@
     pills('#p-tenure', 'Time on the job', 'tenure', [['All', 'All'], ['0-30 days', '0-30 d'], ['31-90 days', '31-90 d'], ['91-180 days', '91-180 d'], ['Over 180 days', '180+ d']]);
     renderTimeline();
     const y = calc.ytd(D, S), monthly = calc.monthly(D, S);
-    renderLede(y, monthly); renderMonth(monthly); renderStats(y); renderTenure(); renderReasons(); renderShift(); renderRetention(); renderInjury(); renderNewInjury(); renderBridge();
+    renderLede(y, monthly); renderMonth(monthly); renderStats(y); renderTenure(); renderReasons(); renderShift(); renderRetention(); renderInjury(); renderNewInjury(); renderParity(); renderBridge();
     if ($('#drawer').classList.contains('open')) { const k = $('#drawer').dataset.key; if (k) { const [h, b] = DETAILS[k](); $('#drawer-h').textContent = h; $('#drawer-body').innerHTML = b; } }
   }
 

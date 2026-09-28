@@ -169,6 +169,26 @@ const calc = {
       from: rows.length ? rows[0].period : null, to: rows.length ? rows[rows.length - 1].period : null,
       injShare: known ? first180 / known : null, wf, asOf: D.wc_workforce && D.wc_workforce.as_of, wfShare: wf && wf.total ? wf.first_180_days / wf.total : null };
   },
+  // The window's last month while it is still open: separations and hires stop before the fiscal month closes.
+  partial(D) {
+    const fp = D.meta.fiscal_periods, last = D.meta.months[D.meta.months.length - 1], end = fp && fp[fp.length - 1].end;
+    if (!end || !D.meta.separations_through || D.meta.as_of >= end) return null;
+    const M = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    const d = x => `${M[+x.slice(5, 7) - 1]} ${+x.slice(8, 10)}`, [mo, yr] = last.split(' ');
+    const name = M.find(m => m.startsWith(mo)) + ' ' + yr;
+    return { label: last, month: D.meta.months.length,
+      text: `${name} is partial: separations through ${d(D.meta.separations_through)}, hires through ${d(D.meta.hires_through)}; the fiscal month closes ${d(end)}.` };
+  },
+  // Retention counts people hired; Turnover by month counts people who left. One sentence that ties the two (Sep 24).
+  retentionTie(D, s) {
+    const T = calc.cohorts(D, 'all', 'All', s.m0, s.m1).total;
+    if (!T.hires) return '';
+    const lv = calc.tenure(D, { ...s, cat: 'All', tenure: 'All', dept: 'All MFG' }), left = lv.reduce((a, b) => a + b.n, 0);
+    const both = T.hires - T.still_employed, early = T.eligible_30 - T.retained_30;
+    return `This section counts the ${T.hires} people hired in these months. Turnover by month counts the ${left} who left. ` +
+      `${both} ${both === 1 ? 'person is' : 'people are'} on both lists: new hires who have already left. ${early} of them left within 30 days.` +
+      (T.hires > T.eligible_30 ? ` ${T.hires - T.eligible_30} hires started too recently to reach 30 days, so the 30-day rate counts ${T.eligible_30}.` : '');
+  },
   // The injury headline both views show: new employees' share of injuries against their share of workers.
   injuryLead(D, s, all) {
     const t = calc.wcTenure(D, s, all), ratio = t.injShare != null && t.wfShare ? t.injShare / t.wfShare : null;
@@ -262,6 +282,13 @@ const calc = {
       eq('WC MFG injuries per 100 avg headcount', +w.per100.toFixed(2), 4.71);
       eq('WC MFG separations vs injuries r, months, r without Aug 2026', [+c.r.toFixed(2), c.n, +c.without.r.toFixed(2)], [0.71, 11, 0.1]);
     }
+    // The CEO deck's figures (Sep 28). If one fails, report it; do not change the deck to match.
+    const wholeS = { ...DEFAULT_STATE, m0: 1, m1: D.meta.months.length };
+    const early = calc.reasons(D, { ...wholeS, tenure: '0-30 days' }), cnt = n => early.list.filter(x => x.reason === n).reduce((a, x) => a + x.n, 0);  // one Job Abandonment is coded Involuntary, so it is listed twice
+    eq('Deck: Packaging + Processing, first 30 days: total, Poor Attendance, Job Abandonment, both', [early.total, cnt('Poor Attendance'), cnt('Job Abandonment'), early.attn], [15, 6, 5, 11]);
+    eq('Deck: whole-window MFG tenure buckets', calc.tenure(D, wholeS).map(x => x.n), [18, 10, 6, 21]);
+    const cmp = calc.compare(D, wholeS);
+    eq('Deck: SG&A whole window separations, avg headcount; MFG and SG&A rate excl. retirements %; ratio', [cmp.sga.seps, +cmp.sga.avg.toFixed(2), Math.round(cmp.mfg.exRet * 100), Math.round(cmp.sga.exRet * 100), +cmp.times.toFixed(1)], [31, 285.36, 35, 6, 5.5]);
     // The reasons table must total the same as the charts for every Category x Tenure choice (Taylor and Blanca, Sep 23).
     const mism = [];
     ['All', ...CATS].forEach(cat => ['All', ...TENURES].forEach(tenure => {
@@ -439,6 +466,9 @@ function countUp() {
   });
 }
 
+// "Sep 2026*" while the window's last month is still open; the caption says why.
+const markPartial = l => { const p = calc.partial(D); return p && l === p.label ? l + '*' : l; };
+const partialCaption = s => { const p = calc.partial(D); return p && s.m1 >= p.month ? `*${p.text}` : ''; };
 function renderKpis(s) {
   const y = calc.ytd(D, s);
   const t30 = calc.sum(D, r => calc.pred(s, ['tenure'])(r) && r.tenure_bucket === '0-30 days');
@@ -455,6 +485,8 @@ function renderKpis(s) {
     k(y.rate == null ? na(NA_HC) : pct(y.rate, 0), 'Turnover rate', y.avg ? `of average headcount (${num(y.avg)})` : '') +
     k(c.total.hires ? pct(c.total.still_employed / c.total.hires, 0) : na('No hires'), 'Hires still employed', `${c.total.still_employed} of ${c.total.hires} MFG hires`) +
     k(c.total.hires, 'MFG hires', 'hired in these months');
+  el('kpi-note').textContent = partialCaption(s).replace(/^\*/, '');
+  el('kpi-note').hidden = !el('kpi-note').textContent;
   countUp();
 }
 
@@ -539,14 +571,14 @@ function renderSection1(s) {
   const mx = calc.matrix(D, s);
   const head1 = `<tr><th scope="col" rowspan="2">Month</th>${mx.depts.map(d => `<th scope="colgroup" colspan="4" class="grp">${d === 'All MFG' ? 'All MFG*' : d}</th>`).join('')}<th scope="col" rowspan="2">${mx.sga ? 'SG&amp;A' : 'MFG'} turnover %</th></tr>`;
   const head2 = `<tr>${mx.depts.map(() => '<th scope="col">Vol</th><th scope="col">Invol</th><th scope="col">Ret</th><th scope="col">Total</th>').join('')}</tr>`;
-  const body = mx.rows.map((r, i) => `<tr${i === mx.rows.length - 1 ? ' class="total"' : ''}><th scope="row">${r.label}</th>${r.cols.map(c => c.map((v, j) => `<td class="${j === 3 ? 'tot' : ''}">${v || (j === 3 ? 0 : '')}</td>`).join('')).join('')}<td>${r.rate == null ? na(NA_HC) : pct(r.rate)}</td></tr>`).join('');
+  const body = mx.rows.map((r, i) => `<tr${i === mx.rows.length - 1 ? ' class="total"' : ''}><th scope="row">${markPartial(r.label)}</th>${r.cols.map(c => c.map((v, j) => `<td class="${j === 3 ? 'tot' : ''}">${v || (j === 3 ? 0 : '')}</td>`).join('')).join('')}<td>${r.rate == null ? na(NA_HC) : pct(r.rate)}</td></tr>`).join('');
   const mt = mx.rows[mx.rows.length - 1].cols, all = mt[mt.length - 1];
   const split = `${all[3]} (${all[0]} voluntary, ${all[1]} involuntary, ${all[2]} retirements)`;
   tableFigure('t15', {
     takeaway: mx.sga ? `SG&A: ${split}.` : `By department: Packaging ${mt[0][3]}, Processing ${mt[1][3]}, all manufacturing ${split}.`,
     caption: mx.sga
-      ? `SG&A separations by month and category, ${monthsLabel(s)}${s.tenure === 'All' ? '' : ', tenure ' + s.tenure}. The Category filter does not apply to this table. Turnover % = SG&A separations ÷ start-of-month SG&A headcount.`
-      : `Every department and category by month, ${monthsLabel(s)}${s.tenure === 'All' ? '' : ', tenure ' + s.tenure}. Category and Department filters do not apply to this table. Turnover % = all MFG separations ÷ start-of-month MFG headcount. *All MFG also includes the manufacturing departments outside Packaging and Processing (Plant Administration, Warehouse MFG, Quality Control MFG): ${all[3] - mt[0][3] - mt[1][3]} of the ${all[3]} here.`,
+      ? `${partialCaption(s)} SG&A separations by month and category, ${monthsLabel(s)}${s.tenure === 'All' ? '' : ', tenure ' + s.tenure}. The Category filter does not apply to this table. Turnover % = SG&A separations ÷ start-of-month SG&A headcount.`
+      : `${partialCaption(s)} Every department and category by month, ${monthsLabel(s)}${s.tenure === 'All' ? '' : ', tenure ' + s.tenure}. Category and Department filters do not apply to this table. Turnover % = all MFG separations ÷ start-of-month MFG headcount. *All MFG also includes the manufacturing departments outside Packaging and Processing (Plant Administration, Warehouse MFG, Quality Control MFG): ${all[3] - mt[0][3] - mt[1][3]} of the ${all[3]} here.`,
     html: `<div class="table-scroll"><table class="matrix"><thead>${head1}${head2}</thead><tbody>${body}</tbody></table></div>`,
   });
 }
@@ -559,15 +591,8 @@ function renderSection2() {
   const scopeTxt = `${{ all: 'All Nazdar MFG', frontline: 'Packaging + Processing', sga: 'Nazdar SG&A' }[scope]} hires ${monthsLabel(state)}${source === 'All' ? '' : ', source: ' + source}`;
   const rc = (x, n) => (x['eligible_' + n] ? `${pct(x['retained_' + n] / x['eligible_' + n], 0)} <span class="cnt">(${x['retained_' + n]} of ${x['eligible_' + n]})</span>` : na(NA_COHORT));
   const T = c.total;
-  // "18 of 55" (leavers) and "36 of 53" (hires) get read as the same thing, so spell out how they connect.
-  let tie = '';
-  if (scope === 'all' && source === 'All' && T.hires) {
-    const lv = calc.tenure(D, { ...state, cat: 'All', tenure: 'All', dept: 'All MFG' }), lvAll = lv.reduce((a, b) => a + b.n, 0), early = T.eligible_30 - T.retained_30, gap = lv[0].n - early;
-    tie = `Why ${T.eligible_30}, not ${lvAll}: this tab starts from the ${T.hires} people hired, not the ${lvAll} who left. ` +
-      (T.hires > T.eligible_30 ? `${T.hires - T.eligible_30} started too recently to count, so ${T.eligible_30} are counted. ` : '') +
-      `${early} of the ${T.eligible_30} left within 30 days` +
-      (gap > 0 ? `. The Turnover tab's ${lv[0].n} early leavers are those ${early} plus ${gap} with no matching row in the Hires tab.` : gap === 0 ? `: the same ${early} people the Turnover tab shows leaving in their first 30 days.` : '.');
-  }
+  el('ret-tie').textContent = scope === 'all' && source === 'All' ? calc.retentionTie(D, state) : '';
+  el('ret-tie').hidden = !el('ret-tie').textContent;
   tableFigure('t21', {
     takeaway: T.hires ? `${T.still_employed} of ${T.hires} hires (${pct(T.still_employed / T.hires, 0)}) are still employed; 30-day retention ${T.eligible_30 ? pct(T.r30, 0) : 'n/a'}, 90-day ${T.eligible_90 ? pct(T.r90, 0) : 'n/a'}, 180-day ${T.eligible_180 ? pct(T.r180, 0) : 'n/a'}.` : 'No hires match this selection.',
     caption: `${scopeTxt}, by hire month. Each milestone shows retained ÷ eligible, with the counts in brackets; n/a means no hire in that month has been with us that long yet.`,
@@ -575,7 +600,6 @@ function renderSection2() {
     html: table(['Hire month', 'Hires', 'Reached 30 days', 'Reached 90 days', 'Reached 180 days', 'Still employed'],
       c.byMonth.map(x => [x.label, x.hires, rc(x, 30), rc(x, 90), rc(x, 180), `${pct(x.still_employed / x.hires, 0)} <span class="cnt">(${x.still_employed})</span>`])
         .concat([['Total', T.hires, rc(T, 30), rc(T, 90), rc(T, 180), T.hires ? `${pct(T.still_employed / T.hires, 0)} <span class="cnt">(${T.still_employed})</span>` : na('No hires')]]), { totalLast: true }),
-    callout: tie,
   });
   const rows = c.byMonth.filter(x => x.eligible_30);
   const pctFmt = v => Math.round(v) + '%';
@@ -655,9 +679,9 @@ function renderSection5(s) {
       (after.length ? ` After that: ${after.reduce((a, x) => a + x.hires, 0)} hired and ${after.reduce((a, x) => a + x.seps, 0)} left, with no headcount reported yet to check against.` : '') : '';
     tableFigure(id, {
       takeaway: `${title}: ${b.reduce((a, x) => a + x.hires, 0)} hires and ${b.reduce((a, x) => a + x.seps, 0)} separations ${monthsLabel(s)}; ${gap.length ? `${gap.length} month${gap.length > 1 ? 's' : ''} do not reconcile to the reported headcount, likely transfers (tracked separately, not in these lists) or timing` : 'every month reconciles to the reported headcount'}.`,
-      caption: `${title}. Implied end = start-of-month headcount + hires − separations. Gap to reconcile = next month's reported headcount − implied end.`,
-      html: table(['Month', 'Start headcount', 'Hires', 'Separations', 'Net', 'Implied end', 'Next start', 'Gap to reconcile'],
-        b.map(x => [x.label, cell(x.start, NA_HC), x.hires, x.seps, x.net > 0 ? '+' + x.net : x.net, cell(x.implied, NA_HC), cell(x.next, NA_HC), x.diff == null ? na(NA_HC) : (x.diff > 0 ? '+' + x.diff : x.diff)])),
+      caption: `${partialCaption(s)} ${title}. Implied end = start-of-month headcount + hires − separations. Reported next start = HR's headcount at the start of the next month. Difference = reported − implied.`,
+      html: table(['Month', 'Start headcount', 'Hires', 'Separations', 'Net', 'Implied end', 'Reported next start', 'Difference (transfers, tracked separately, and timing)'],
+        b.map(x => [markPartial(x.label), cell(x.start, NA_HC), x.hires, x.seps, x.net > 0 ? '+' + x.net : x.net, cell(x.implied, NA_HC), cell(x.next, NA_HC), x.diff == null ? na(NA_HC) : (x.diff > 0 ? '+' + x.diff : x.diff)])),
       callout: tie,
     });
     return b;
@@ -721,7 +745,7 @@ function renderSection7(s) {
   // If r collapses without the month of most separations, that one month is the whole "link": say so plainly.
   const c = calc.wcCorrelation(D, s), oneMonth = c.r != null && c.without && c.without.r != null && Math.abs(c.without.r) < Math.abs(c.r) / 2;
   el('r7').innerHTML = c.r == null ? 'Too few months to compare injuries and separations.'
-    : oneMonth ? `Injuries and separations only rose together in ${full(c.without.label)}. Without that month there is no real link (r = ${c.without.r.toFixed(2)}).`
+    : oneMonth ? `Injuries and separations only rose together in ${full(c.without.label)}. Across the other ${c.n - 1} months there is no link (r = ${c.without.r.toFixed(2)}). <span class="caption">With ${full(c.without.label)} included, r = ${c.r.toFixed(2)} over ${c.n} months.</span>`
     : `Injuries and separations move together (r = ${c.r.toFixed(2)} over ${c.n} months). A signal, not proof.`;
 
   const pd = peakOf(haveWc, p => p.wc.lost_time_days + p.wc.restricted_duty_days);
@@ -760,7 +784,7 @@ function renderInjuryLead(s) {
     <div class="seg" role="group" aria-label="Count injuries from">${btn(false, monthsLabel(s))}${btn(true, `${whole.from} to ${whole.to}`)}</div>
     <p class="lead-stat">${t.title}</p>
     ${t.known && t.wfShare != null ? `<div class="vs">
-      <div><b>${pct(t.wfShare, 0)}</b><span>of ${segName} workers are new</span></div>
+      <div><b>${pct(t.wfShare, 0)}</b><span>of ${segName} workers were new on HR's ${t.asOf} roster (${t.wf.first_180_days} of ${t.wf.total})</span></div>
       <div class="hot"><b>${pct(t.injShare, 0)}</b><span>of ${segName} injuries were new employees (${t.first180} of ${t.known})</span></div>
     </div>` : ''}
     <p class="caption">${t.note}</p>`;
@@ -831,6 +855,20 @@ function renderAll() {
   renderSection7(state);
 }
 
+// Print or Save as PDF (browser menu; no button on purpose): open every section and collapsed table, redraw charts
+// at print size, then put the page back.
+let printOpened = [];
+window.addEventListener('beforeprint', () => {
+  document.body.classList.add('printing');
+  printOpened = [...document.querySelectorAll('details:not([open])')]; printOpened.forEach(d => { d.open = true; });
+  document.querySelector('.print-foot').textContent = `${D.meta.basis} Version ${document.querySelector('.stamp-v').textContent}, published ${document.querySelector('.stamp-t').textContent}.`;
+  Object.values(charts).forEach(c => c.resize());
+});
+window.addEventListener('afterprint', () => {
+  document.body.classList.remove('printing');
+  printOpened.forEach(d => { d.open = false; }); printOpened = [];
+  Object.values(charts).forEach(c => c.resize());
+});
 function init(data) {
   D = data;
   el('basis').textContent = D.meta.basis;

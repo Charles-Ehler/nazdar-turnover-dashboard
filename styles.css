@@ -240,7 +240,15 @@ footer ul { padding-left: 20px; }
   .chartbox { height: 260px; }
 }
 
+.print-foot { display: none; }
 @media print {
+  .panel-tab { display: block !important; break-before: page; }
+  .panel-tab:first-of-type { break-before: auto; }
+  .tabs, .filterbar, .pager, .seg, .seg-label { display: none !important; }
+  .layout { display: block; }
+  figure, .kpis, table { break-inside: avoid; }
+  .print-foot { display: block; position: fixed; bottom: 0; left: 0; right: 0; font-size: 9px; color: #666; padding: 2px 0; background: #fff; }
+  body { padding-bottom: 20px; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
   body { background: #fff; }
   .page-header { border-bottom: 2px solid var(--text); }

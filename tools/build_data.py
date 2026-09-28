@@ -45,6 +45,7 @@ from pathlib import Path
 warnings.filterwarnings("ignore", module="openpyxl")
 import openpyxl  # noqa: E402
 
+SEND_TO_TAYLOR = []  # private corrections applied this run; printed to the console only, never written to a file
 MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 FULL = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
 NORMALISE = {
@@ -219,6 +220,7 @@ def build(xlsx, as_of, history=None, start=None, rosters=None, previous=None, wc
                 new = dt.datetime.fromisoformat(fx["hire_date"])
                 if t["Hire Date"] != new:
                     print(f"NOTE: hire date for {fx['first_name']} {fx['last_name']} corrected {t['Hire Date'].date()} -> {new.date()} (hire-date-corrections.csv)", file=sys.stderr)
+                    SEND_TO_TAYLOR.append(f"Terms tab: {fx['first_name']} {fx['last_name']} shows hire date {t['Hire Date'].date()}; the HR-confirmed hire date is {new.date()}.")
                     t["Hire Date"] = new
     # People in the Terms tab who are missing from the Hires tab. Their hire row is built from the Terms row.
     # Remove a line from missing-hires.csv (private folder) once Taylor's Hires tab has the person.
@@ -238,6 +240,7 @@ def build(xlsx, as_of, history=None, start=None, rosters=None, previous=None, wc
                           "Supervisor": t.get("Supervisor"), "Last Name": t["Last Name"], "First Name": t["First Name"],
                           "Hire Date": t["Hire Date"], "Hire Source": "Not recorded", "Status": "Terminated"})
             print(f"NOTE: added hire {mh['first_name']} {mh['last_name']} ({t['Hire Date'].date()}) from the Terms tab (missing-hires.csv)", file=sys.stderr)
+            SEND_TO_TAYLOR.append(f"Hires tab: add {mh['first_name']} {mh['last_name']}, {norm(t.get('Department'))}, hired {t['Hire Date'].date()} (in Terms, left {t['Separation Date'].date()}).")
     mfg_terms = [t for t in terms if is_us(t, "MFG")]
     sga_terms = [t for t in terms if is_us(t, "SG&A")]
     mfg_hires = [h for h in hires if is_us(h, "MFG")]
@@ -447,8 +450,10 @@ def build(xlsx, as_of, history=None, start=None, rosters=None, previous=None, wc
         "meta": {
             "title": f"Nazdar manufacturing turnover: {FULL[start.month - 1]} {start.year} to {FULL[as_of.month - 1]} {as_of.year}",
             "as_of": as_of.isoformat(),
+            "separations_through": last_sep.isoformat(),
+            "hires_through": as_of.isoformat(),
             "window_start": start.isoformat(),
-            "basis": f"Nazdar US manufacturing (Shawnee) only; separations through {last_sep}; hires through {as_of}. "
+            "basis": f"Nazdar US manufacturing; separations through {last_sep}; hires through {as_of}. "
                      f"Retirements shown as their own category."
                      + (f" Months are fiscal periods ({fiscal[0][1]} to {fiscal[-1][2]}), matching the monthly report." if fiscal else ""),
             "fiscal_periods": [{"label": l, "start": s0.isoformat(), "end": e0.isoformat()} for l, s0, e0 in fiscal] if fiscal else None,
@@ -471,8 +476,9 @@ def build(xlsx, as_of, history=None, start=None, rosters=None, previous=None, wc
         "hire_cohorts": cohort_rows,
         "expected_totals_for_validation": expected,
         "supervisors_packaging_processing": {
-            "note": "Counts follow shift and team size; supervisors changed during the year (Logan Borders left in April, Edwin Reyes in June), "
-                    "so read this as a coverage view, not a performance measure. Team sizes come from the monthly roster tabs, "
+            "note": "Counts follow shift and team size, and supervisors changed during the year (Logan Borders left in April, Edwin Reyes in June), "
+                    "so read this as where the pressure is, not as a performance rating. Two leavers were recoded to the supervisor they "
+                    "actually reported to, per HR on September 22. Team sizes come from the monthly roster tabs, "
                     f"{roster_span(dept_shift, months)}.",
             "rows": sup_rows,
         },
@@ -704,3 +710,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+    print("\nSend to Taylor (console only, never saved):" if SEND_TO_TAYLOR else "\nSend to Taylor: nothing, no private corrections were applied.", file=sys.stderr)
+    for x in SEND_TO_TAYLOR:
+        print(f"  - {x}", file=sys.stderr)

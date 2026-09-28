@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="concept.css?v=a9df8b8">
+<link rel="stylesheet" href="concept.css?v=06c00a3">
 </head>
 <body>
 <header class="topbar">
@@ -39,6 +39,7 @@
     <article class="tile span-8" id="t-month">
       <header><h2 id="t-month-h"></h2><button type="button" class="more" data-detail="month">Details</button></header>
       <p class="hint">Separations by fiscal month and category. Click a month to focus on it.</p>
+      <p class="hint" id="t-month-partial"></p>
       <div class="plot tall"><canvas id="c-month"></canvas></div>
     </article>
 
@@ -64,7 +65,7 @@
 
     <article class="tile span-6" id="t-retention">
       <header><h2 id="t-retention-h"></h2><button type="button" class="more" data-detail="retention">Details</button></header>
-      <p class="hint">Hires in the selected months, and how many stayed each milestone (of those employed long enough to count).</p>
+      <p class="hint" id="t-retention-hint">Hires in the selected months, and how many stayed each milestone (of those employed long enough to count).</p>
       <div class="funnel" id="f-retention"></div>
     </article>
 
@@ -106,8 +107,8 @@
 
 <script>window.TURNOVER_NO_UI = true;</script>
 <script src="../vendor/chart.umd.js"></script>
-<script src="../data/data.js?v=a9df8b8"></script>
-<script src="../app.js?v=a9df8b8"></script>
-<script src="concept.js?v=a9df8b8"></script>
+<script src="../data/data.js?v=06c00a3"></script>
+<script src="../app.js?v=06c00a3"></script>
+<script src="concept.js?v=06c00a3"></script>
 </body>
 </html>
