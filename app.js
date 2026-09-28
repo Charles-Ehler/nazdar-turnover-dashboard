@@ -467,8 +467,8 @@ function countUp() {
 }
 
 // "Sep 2026*" while the window's last month is still open; the caption says why.
-const markPartial = l => { const p = calc.partial(D); return p && l === p.label ? l + '*' : l; };
-const partialCaption = s => { const p = calc.partial(D); return p && s.m1 >= p.month ? `*${p.text}` : ''; };
+const markPartial = l => { const p = calc.partial(D); return p && l === p.label ? l + '†' : l; };  // * is taken by All MFG* in the month table
+const partialCaption = s => { const p = calc.partial(D); return p && s.m1 >= p.month ? `†${p.text}` : ''; };
 function renderKpis(s) {
   const y = calc.ytd(D, s);
   const t30 = calc.sum(D, r => calc.pred(s, ['tenure'])(r) && r.tenure_bucket === '0-30 days');
@@ -485,7 +485,7 @@ function renderKpis(s) {
     k(y.rate == null ? na(NA_HC) : pct(y.rate, 0), 'Turnover rate', y.avg ? `of average headcount (${num(y.avg)})` : '') +
     k(c.total.hires ? pct(c.total.still_employed / c.total.hires, 0) : na('No hires'), 'Hires still employed', `${c.total.still_employed} of ${c.total.hires} MFG hires`) +
     k(c.total.hires, 'MFG hires', 'hired in these months');
-  el('kpi-note').textContent = partialCaption(s).replace(/^\*/, '');
+  el('kpi-note').textContent = partialCaption(s).replace(/^†/, '');
   el('kpi-note').hidden = !el('kpi-note').textContent;
   countUp();
 }
@@ -561,7 +561,8 @@ function renderSection1(s) {
   const r = calc.reasons(D, s);
   const scopeR = r.depts.join(' + ');
   tableFigure('t14', {
-    takeaway: r.total ? `${r.list[0].reason} is the most common coded reason in ${scopeR} (${r.list[0].n} of ${r.total}).` : `No separation reasons recorded for ${scopeR}.`,
+    takeaway: r.total ? (() => { const by = {}; r.list.forEach(x => { by[x.reason] = (by[x.reason] || 0) + x.n; }); const top = Object.entries(by).sort((a, b) => b[1] - a[1])[0];
+      return `${top[0]} is the most common coded reason in ${scopeR} (${top[1]} of ${r.total}).`; })() : `No separation reasons recorded for ${scopeR}.`,
     caption: `Separation reasons as coded in the HR log, ${scopeR}, ${monthsLabel(s)}${s.cat === 'All' ? '' : ', ' + s.cat.toLowerCase()}${s.tenure === 'All' ? '' : ', tenure ' + s.tenure}. Coding quirks (e.g. one Job Abandonment coded Involuntary) are preserved as recorded.`,
     html: table(['Reason', 'Count', 'Share', 'Coded as'], r.list.map(x => [x.reason, x.n, pct(x.share), `<span class="swatch" style="background:${COLORS[x.category]}"></span>${x.category}`]).concat([['Total', r.total, '100.0%', '']]), { totalLast: true }),
     callout: `Poor Attendance + Job Abandonment: ${r.attn} of ${r.total} ${scopeR} exits (${pct(r.attnShare, 0)}).`,
@@ -587,7 +588,7 @@ function renderSection2() {
   const scope = el('f2-scope').value, source = el('f2-source').value;
   const c = calc.cohorts(D, scope, source, state.m0, state.m1);
   // Hiring Event is left out of the picker on purpose (the job fair was already covered with Ed); those hires still count under All.
-  if (el('f2-source').options.length === 1) c.sources.filter(src => src !== 'Hiring Event').forEach(src => el('f2-source').add(new Option(src)));
+  if (el('f2-source').options.length === 1) c.sources.filter(src => src !== 'Hiring Event' && calc.cohorts(D, 'all', src, 1, D.meta.months.length).total.hires + calc.cohorts(D, 'sga', src, 1, D.meta.months.length).total.hires > 0).forEach(src => el('f2-source').add(new Option(src)));
   const scopeTxt = `${{ all: 'All Nazdar MFG', frontline: 'Packaging + Processing', sga: 'Nazdar SG&A' }[scope]} hires ${monthsLabel(state)}${source === 'All' ? '' : ', source: ' + source}`;
   const rc = (x, n) => (x['eligible_' + n] ? `${pct(x['retained_' + n] / x['eligible_' + n], 0)} <span class="cnt">(${x['retained_' + n]} of ${x['eligible_' + n]})</span>` : na(NA_COHORT));
   const T = c.total;
@@ -703,7 +704,7 @@ function renderSection6() {
   const ai = calc.mi(D, 'Aug'), aug = calc.sum(D, r => isMfg(r) && r.month === ai), hc = D.headcount_start_of_month['Nazdar MFG'][ai - 1];
   const ytdState = { ...DEFAULT_STATE, m0: D.meta.year_start_month_index };
   const m = calc.monthly(D, DEFAULT_STATE).filter(x => x.rate != null && x.month !== ai), prior = m.reduce((a, b) => (b.rate > a.rate ? b : a)), y = calc.ytd(D, ytdState);
-  el('s6-body').innerHTML = `This dashboard uses Nazdar US manufacturing only, separations through 9/18, on the fiscal calendar the monthly report uses (August = ${D.meta.fiscal_periods ? D.meta.fiscal_periods[ai - 1].start.slice(5).replace('-', '/') + ' to ' + D.meta.fiscal_periods[ai - 1].end.slice(5).replace('-', '/') : 'calendar month'}). On that basis August is ${aug} ÷ ${hc} = ${pct(aug / hc)}, and the prior monthly high is ${full(prior.label)} at ${pct(prior.rate)}. The Hiring &amp; Retention Snapshot dated September 19 reported August at ${pct(D.meta.snapshot_reported_august_rate)}: the same ${aug} US separations plus 2 in UK plant administration, 15 ÷ 155, against the same prior high of 4.7%. For ${D.meta.months[D.meta.year_start_month_index - 1].slice(-4)} year to date, the snapshot's 29.7% divides 46 separations (43 US + 3 UK, through the August close on 9/5) by the August headcount of 155; this dashboard's ${pct(y.rate, 0)} divides ${y.seps} (${monthsLabel(ytdState)}) by the January to August average of ${num(y.avg)}. All of these are correct on their own definitions.`;
+  el('s6-body').innerHTML = `This dashboard uses Nazdar US manufacturing only, separations through 9/18, on the fiscal calendar the monthly report uses (August = ${D.meta.fiscal_periods ? D.meta.fiscal_periods[ai - 1].start.slice(5).replace('-', '/') + ' to ' + D.meta.fiscal_periods[ai - 1].end.slice(5).replace('-', '/') : 'calendar month'}). On that basis August is ${aug} ÷ ${hc} = ${pct(aug / hc)}, and the prior monthly high since ${full(D.meta.months[0])} is ${m.filter(x => x.rate.toFixed(3) === prior.rate.toFixed(3)).map(x => full(x.label)).join(' and ')} at ${pct(prior.rate)}. The Hiring &amp; Retention Snapshot dated September 19 reported August at ${pct(D.meta.snapshot_reported_august_rate)}: the same ${aug} US separations plus 2 in UK plant administration, 15 ÷ 155, against the same prior high of 4.7%. For ${D.meta.months[D.meta.year_start_month_index - 1].slice(-4)} year to date, the snapshot's 29.7% divides 46 separations (43 US + 3 UK, through the August close on 9/5) by the August headcount of 155; this dashboard's ${pct(y.rate, 0)} divides ${y.seps} (${monthsLabel(ytdState)}) by the January to August average of ${num(y.avg)}. All of these are correct on their own definitions.`;
 }
 
 // Section 04: workers' comp injuries and lost days against turnover (id s7; ids stay fixed so old links still work).
